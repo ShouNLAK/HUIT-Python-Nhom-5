@@ -1,0 +1,56 @@
+[
+  {
+    "maDat": "D0001",
+    "maKH": "KH001",
+    "maTour": "T001",
+    "soNguoi": 2,
+    "ngayDat": "2025-12-01",
+    "trangThai": "da_thanh_toan",
+    "tongTien": 7000000
+  },
+  {
+    "maDat": "D0002",
+    "maKH": "KH002",
+    "maTour": "T002",
+    "soNguoi": 4,
+    "ngayDat": "2025-12-02",
+    "trangThai": "chua_thanh_toan",
+    "tongTien": 20800000
+  },
+  {
+    "maDat": "D0003",
+    "maKH": "KH003",
+    "maTour": "T003",
+    "soNguoi": 1,
+    "ngayDat": "2025-12-05",
+    "trangThai": "da_thanh_toan",
+    "tongTien": 2800000
+  },
+  {
+    "maDat": "D0004",
+    "maKH": "KH001",
+    "maTour": "T005",
+    "soNguoi": 3,
+    "ngayDat": "2025-12-10",
+    "trangThai": "da_thanh_toan",
+    "tongTien": 13500000
+  },
+  {
+    "maDat": "D0005",
+    "maKH": "KH004",
+    "maTour": "T004",
+    "soNguoi": 2,
+    "ngayDat": "2025-12-12",
+    "trangThai": "huy",
+    "tongTien": 6400000
+  },
+  {
+    "maDat": "D0006",
+    "maKH": "KH001",
+    "maTour": "T002",
+    "soNguoi": 2,
+    "ngayDat": "now",
+    "trangThai": "huy",
+    "tongTien": 10400000
+  }
+]

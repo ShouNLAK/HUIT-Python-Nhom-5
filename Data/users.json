@@ -1,0 +1,56 @@
+[
+  {
+    "username": "admin",
+    "password": "123",
+    "role": "admin",
+    "maKH": null
+  },
+  {
+    "username": "longhdv",
+    "password": "123",
+    "role": "hdv",
+    "maKH": "HDV001"
+  },
+  {
+    "username": "maihdv",
+    "password": "123",
+    "role": "hdv",
+    "maKH": "HDV002"
+  },
+  {
+    "username": "hunghdv",
+    "password": "123",
+    "role": "hdv",
+    "maKH": "HDV003"
+  },
+  {
+    "username": "user1",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH001"
+  },
+  {
+    "username": "user2",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH002"
+  },
+  {
+    "username": "user3",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH003"
+  },
+  {
+    "username": "user4",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH004"
+  },
+  {
+    "username": "user5",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH005"
+  }
+]

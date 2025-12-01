@@ -1,0 +1,212 @@
+[
+  {
+    "maTour": "T001",
+    "tenTour": "Đà Lạt - Thành phố ngàn hoa (3N2Đ)",
+    "gia": 3500000,
+    "soCho": 20,
+    "lichTrinh": [
+      {
+        "ngay": "2025-12-20",
+        "diaDiem": "Quảng trường Lâm Viên",
+        "moTa": "Tham quan nụ hoa Atiso và chụp hình check-in",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2025-12-20",
+        "diaDiem": "Vườn hoa thành phố",
+        "moTa": "Ngắm các loài hoa đặc trưng của Đà Lạt",
+        "phuongTien": "Đi bộ"
+      },
+      {
+        "ngay": "2025-12-21",
+        "diaDiem": "Thung lũng tình yêu",
+        "moTa": "Tham quan hồ Đa Thiện và đồi Vọng Cảnh",
+        "phuongTien": "Xe điện"
+      },
+      {
+        "ngay": "2025-12-21",
+        "diaDiem": "Đỉnh Langbiang",
+        "moTa": "Ngắm toàn cảnh thành phố từ trên cao",
+        "phuongTien": "Xe Jeep"
+      },
+      {
+        "ngay": "2025-12-22",
+        "diaDiem": "Chợ Đà Lạt",
+        "moTa": "Mua sắm đặc sản và quà lưu niệm",
+        "phuongTien": "Đi bộ"
+      }
+    ],
+    "huongDanVien": "HDV001",
+    "ngayDi": "2025-12-20",
+    "ngayVe": "2025-12-22"
+  },
+  {
+    "maTour": "T002",
+    "tenTour": "Phú Quốc - Thiên đường đảo ngọc (4N3Đ)",
+    "gia": 5200000,
+    "soCho": 17,
+    "lichTrinh": [
+      {
+        "ngay": "2025-12-24",
+        "diaDiem": "Grand World Phú Quốc",
+        "moTa": "Tham quan thành phố không ngủ",
+        "phuongTien": "Xe điện"
+      },
+      {
+        "ngay": "2025-12-25",
+        "diaDiem": "VinWonders",
+        "moTa": "Vui chơi tại công viên chủ đề lớn nhất Việt Nam",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2025-12-25",
+        "diaDiem": "Vinpearl Safari",
+        "moTa": "Tham quan vườn thú bán hoang dã",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2025-12-26",
+        "diaDiem": "Bãi Sao",
+        "moTa": "Tắm biển và thưởng thức hải sản",
+        "phuongTien": "Tàu du lịch"
+      },
+      {
+        "ngay": "2025-12-26",
+        "diaDiem": "Hòn Thơm",
+        "moTa": "Trải nghiệm cáp treo vượt biển dài nhất thế giới",
+        "phuongTien": "Cáp treo"
+      },
+      {
+        "ngay": "2025-12-27",
+        "diaDiem": "Chợ đêm Phú Quốc",
+        "moTa": "Thưởng thức ẩm thực đường phố",
+        "phuongTien": "Đi bộ"
+      }
+    ],
+    "huongDanVien": "HDV002",
+    "ngayDi": "2025-12-24",
+    "ngayVe": "2025-12-27"
+  },
+  {
+    "maTour": "T003",
+    "tenTour": "TPHCM - Thành phố mang tên Bác",
+    "gia": 2800000.0,
+    "soCho": 25,
+    "lichTrinh": [
+      {
+        "ngay": "2025-12-30",
+        "diaDiem": "Dinh Độc Lập",
+        "moTa": "Mở đầu trang sử mới",
+        "phuongTien": "Đi bộ"
+      },
+      {
+        "ngay": "2025-12-30",
+        "diaDiem": "Bến Nhà Rồng",
+        "moTa": "Tìm hiểu nơi Người ra đi tìm đường cứu nước",
+        "phuongTien": "Đi bộ"
+      },
+      {
+        "ngay": "2025-12-31",
+        "diaDiem": "Bitexco Building",
+        "moTa": "Cột mốc mở đầu thời kỳ mới",
+        "phuongTien": "Xe buýt"
+      },
+      {
+        "ngay": "2025-12-31",
+        "diaDiem": "Landmark 81 Saigon",
+        "moTa": "Thời kỳ vươn mình",
+        "phuongTien": "Xe buýt"
+      }
+    ],
+    "huongDanVien": "HDV003",
+    "ngayDi": "2025-12-30",
+    "ngayVe": "2025-12-31"
+  },
+  {
+    "maTour": "T004",
+    "tenTour": "Hạ Long - Kỳ quan thiên nhiên (2N1Đ)",
+    "gia": 3200000.0,
+    "soCho": 30,
+    "lichTrinh": [
+      {
+        "ngay": "2026-01-01",
+        "diaDiem": "Vịnh Hạ Long",
+        "moTa": "Du thuyền tham quan vịnh",
+        "phuongTien": "Du thuyền"
+      },
+      {
+        "ngay": "2026-01-01",
+        "diaDiem": "Hang Sửng Sốt",
+        "moTa": "Khám phá hang động đẹp nhất vịnh",
+        "phuongTien": "Đi bộ"
+      },
+      {
+        "ngay": "2026-01-02",
+        "diaDiem": "Đảo Ti Tốp",
+        "moTa": "Tắm biển và leo núi ngắm cảnh",
+        "phuongTien": "Tàu nhỏ"
+      }
+    ],
+    "huongDanVien": "HDV004",
+    "ngayDi": "2026-01-01",
+    "ngayVe": "2026-01-02"
+  },
+  {
+    "maTour": "T005",
+    "tenTour": "Đà Nẵng - Hội An - Bà Nà Hills (4N3Đ)",
+    "gia": 4500000.0,
+    "soCho": 20,
+    "lichTrinh": [
+      {
+        "ngay": "2026-01-05",
+        "diaDiem": "Bán đảo Sơn Trà",
+        "moTa": "Viếng chùa Linh Ứng",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2026-01-05",
+        "diaDiem": "Biển Mỹ Khê",
+        "moTa": "Tắm biển",
+        "phuongTien": "Đi bộ"
+      },
+      {
+        "ngay": "2026-01-07",
+        "diaDiem": "Phố cổ Hội An",
+        "moTa": "Tham quan phố cổ, thả đèn hoa đăng",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2026-01-08",
+        "diaDiem": "Ngũ Hành Sơn",
+        "moTa": "Tham quan hang động và làng đá mỹ nghệ",
+        "phuongTien": "Xe bus"
+      },
+      {
+        "ngay": "2026-01-06",
+        "diaDiem": "Núi Bà Nà",
+        "moTa": "Tham quan Cầu Vàng, Làng Pháp",
+        "phuongTien": "Cáp treo"
+      }
+    ],
+    "huongDanVien": "HDV005",
+    "ngayDi": "2026-01-05",
+    "ngayVe": "2026-01-08"
+  },
+  {
+    "maTour": "T006",
+    "tenTour": "Hà Lội - Cuối năm lặn lội",
+    "gia": 2500000.0,
+    "soCho": 30,
+    "lichTrinh": [
+      {
+        "ngay": "2025-12-2",
+        "diaDiem": "Chùa một cột",
+        "moTa": "Đi viếng",
+        "phuongTien": "Máy bay"
+      }
+    ],
+    "huongDanVien": "HDV004",
+    "ngayDi": "2025-12-2",
+    "ngayVe": "2025-12-3"
+  }
+]

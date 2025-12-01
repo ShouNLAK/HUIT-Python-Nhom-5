@@ -1,0 +1,44 @@
+[
+  {
+    "maKH": "KH001",
+    "tenKH": "Nguyễn Văn An",
+    "soDT": "0901000001",
+    "email": "an.nguyen@gmail.com",
+    "soDu": 70000000.0
+  },
+  {
+    "maKH": "KH002",
+    "tenKH": "Trần Thị Bích",
+    "soDT": "0902000002",
+    "email": "bich.tran@gmail.com",
+    "soDu": 20000000
+  },
+  {
+    "maKH": "KH003",
+    "tenKH": "Lê Văn Cường",
+    "soDT": "0903000003",
+    "email": "cuong.le@gmail.com",
+    "soDu": 100000000
+  },
+  {
+    "maKH": "KH004",
+    "tenKH": "Phạm Thị Dung",
+    "soDT": "0904000004",
+    "email": "dung.pham@gmail.com",
+    "soDu": 5000000
+  },
+  {
+    "maKH": "KH005",
+    "tenKH": "Hoàng Văn Em",
+    "soDT": "0905000005",
+    "email": "em.hoang@gmail.com",
+    "soDu": 15000000
+  },
+  {
+    "maKH": "KH006",
+    "tenKH": "Nguyễn Đại Tài",
+    "soDT": "0123466888",
+    "email": "Tai@gmail.com",
+    "soDu": 10000000.0
+  }
+]
