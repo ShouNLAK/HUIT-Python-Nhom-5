@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import messagebox, ttk, simpledialog, filedialog
 from datetime import datetime
 import json
+import re
 from Class.tour import Tour
 from Class.khach_hang import KhachHang
-from Class.user import User
 from Class.dat_tour import DatTour
 from QuanLy.storage import luu_tat_ca
 from GUI.Login.base import GiaoDienCoSo
@@ -109,10 +109,14 @@ def them_hdv(self):
             messagebox.showerror('Lỗi', 'Mã HDV đã tồn tại trong hệ thống')
             return
         self.ql.danhSachHDV.append(data)
+        username = self.ql.ensure_user_for_hdv(data)
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
         top.destroy()
-        messagebox.showinfo('Thành công', f'Đã thêm HDV {data["tenHDV"]}')
+        if username:
+            messagebox.showinfo('Thành công', f'Đã thêm HDV {data["tenHDV"]}\nTài khoản: {username} / Mật khẩu mặc định: 123')
+        else:
+            messagebox.showinfo('Thành công', f'Đã thêm HDV {data["tenHDV"]}')
     self.modal_buttons(container, [
         {'text':'💾 Thêm HDV', 'style':'Accent.TButton', 'command':ok},
         {'text':'❌ Đóng', 'style':'Danger.TButton', 'command':top.destroy}
@@ -137,6 +141,8 @@ def sua_hdv(self):
         hdv['tenHDV'] = entries['ten'].get().strip()
         hdv['sdt'] = entries['sdt'].get().strip()
         hdv['kinhNghiem'] = entries['exp'].get().strip()
+        self.ql.DongBoTenTuHDV(hdv.get('maHDV'))
+        self.ql.ensure_user_for_hdv(hdv)
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
         top.destroy()
@@ -153,6 +159,7 @@ def xoa_hdv(self):
         return
     if messagebox.askyesno('Xác nhận', f'Xóa HDV {hdv.get("tenHDV","")}?'):
         self.ql.danhSachHDV = [h for h in self.ql.danhSachHDV if h is not hdv]
+        self.ql.users = [u for u in self.ql.users if not (u.role == 'hdv' and u.maKH == hdv.get('maHDV'))]
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
 
@@ -350,12 +357,7 @@ def sua_tour(self):
         except Exception as e:
             messagebox.showerror('Lỗi', f'Dữ liệu không hợp lệ: {e}')
             return
-        if self.ql.CapNhatTour(t.maTour, tenTour=ten, gia=gia, soCho=soCho, lichTrinh=lich, huongDanVien=hdv):
-            for tour in self.ql.danhSachTour:
-                if tour.maTour == t.maTour:
-                    tour.ngayDi = ngayDi
-                    tour.ngayVe = ngayVe
-                    break
+        if self.ql.CapNhatTour(t.maTour, tenTour=ten, gia=gia, soCho=soCho, lichTrinh=lich, huongDanVien=hdv, ngayDi=ngayDi, ngayVe=ngayVe):
             luu_tat_ca(self.ql)
             self.hien_thi_tour()
             top.destroy()
@@ -421,10 +423,14 @@ def them_khach(self):
             return
         kh = KhachHang(ma, ten, sdt, email, soDu)
         if self.ql.ThemKhachHang(kh):
+            username = self.ql.ensure_user_for_khach(kh)
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
             top.destroy()
-            messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}')
+            if username:
+                messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}\nTài khoản: {username} / Mật khẩu mặc định: 123')
+            else:
+                messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}')
     self.modal_buttons(container, [
         {'text':'💾 Lưu khách hàng', 'style':'Accent.TButton', 'command':ok},
         {'text':'❌ Đóng', 'style':'Danger.TButton', 'command':top.destroy}
@@ -437,25 +443,45 @@ def dang_ky_guest(self):
     fields = [
         {'name':'username','label':'Tên đăng nhập'},
         {'name':'password','label':'Mật khẩu','show':'*'},
-        {'name':'fullname','label':'Tên khách'}
+        {'name':'fullname','label':'Tên khách'},
+        {'name':'phone','label':'Số điện thoại (10 số)'},
+        {'name':'email','label':'Email liên hệ'}
     ]
     entries = self.build_form_fields(form, fields)
     def ok():
-        username = entries['username'].get()
-        password = entries['password'].get()
-        tenthat = entries['fullname'].get()
+        username = entries['username'].get().strip()
+        password = entries['password'].get().strip()
+        tenthat = entries['fullname'].get().strip()
+        phone = entries['phone'].get().strip()
+        email = entries['email'].get().strip()
         if not username or not password or not tenthat:
             messagebox.showerror('Lỗi', 'Điền đầy đủ thông tin')
             return
-        existing = [int(k.maKH.replace('KH','')) for k in self.ql.danhSachKhachHang if k.maKH and k.maKH.startswith('KH')]
+        if not phone.isdigit() or len(phone) != 10:
+            messagebox.showerror('Lỗi', 'Số điện thoại phải gồm 10 chữ số')
+            return
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            messagebox.showerror('Lỗi', 'Email không hợp lệ')
+            return
+        existing = [
+            int(k.maKH.replace('KH',''))
+            for k in self.ql.danhSachKhachHang
+            if k.maKH and k.maKH.startswith('KH') and k.maKH.replace('KH','').isdigit()
+        ]
         nxt = (max(existing)+1) if existing else 1
         ma = f'KH{str(nxt).zfill(3)}'
-        kh = KhachHang(ma, tenthat, '', '', 0)
-        if self.ql.ThemKhachHang(kh):
-            self.ql.users.append(User(username, password, 'user', ma))
+        kh = KhachHang(ma, tenthat, phone, email, 0)
+        if not self.ql.ThemKhachHang(kh, allow_public=True, auto_link_account=False):
+            messagebox.showerror('Lỗi', 'Không tạo được khách hàng mới')
+            return
+        success, msg = self.ql.DangKyUser(username, password, role='user', maKH=ma, fullName=tenthat)
+        if success:
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', f'Đăng ký thành công. Tài khoản: {username}')
             top.destroy()
+        else:
+            self.ql.danhSachKhachHang = [k for k in self.ql.danhSachKhachHang if k.maKH != ma]
+            messagebox.showerror('Lỗi', msg)
     self.modal_buttons(container, [
         {'text':'Đăng ký', 'style':'Accent.TButton', 'command':ok},
         {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}

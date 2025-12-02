@@ -1,5 +1,4 @@
 import tkinter as tk
-from Class.user import User
 from QuanLy.quan_li_du_lich import QuanLiDuLich
 from QuanLy.storage import tai_tat_ca, luu_tat_ca
 from GUI import GiaoDienCoSo
@@ -11,9 +10,9 @@ def chay():
     ql.danhSachKhachHang = khs
     ql.danhSachDatTour = dats
     ql.danhSachHDV = hdvs
-    ql.users = users
-    if not ql.users:
-        ql.users.append(User('admin', 'admin', 'admin'))
+    ql.users = users or []
+    ql.ensure_default_accounts()
+    ql.dong_bo_tai_khoan_lien_ket()
     goc = tk.Tk()
     GiaoDienCoSo(goc, ql)
     def dong():

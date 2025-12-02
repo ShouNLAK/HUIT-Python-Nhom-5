@@ -3,7 +3,8 @@
     "username": "admin",
     "password": "123",
     "role": "admin",
-    "maKH": null
+    "maKH": null,
+    "fullName": "Nguyễn Lê Anh Khoa"
   },
   {
     "username": "longhdv",
@@ -52,5 +53,23 @@
     "password": "123",
     "role": "user",
     "maKH": "KH005"
+  },
+  {
+    "username": "kh006",
+    "password": "123",
+    "role": "user",
+    "maKH": "KH006"
+  },
+  {
+    "username": "hdv004",
+    "password": "123",
+    "role": "hdv",
+    "maKH": "HDV004"
+  },
+  {
+    "username": "hdv005",
+    "password": "123",
+    "role": "hdv",
+    "maKH": "HDV005"
   }
 ]

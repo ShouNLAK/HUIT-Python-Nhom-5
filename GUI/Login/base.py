@@ -333,7 +333,9 @@ class GiaoDienCoSo:
         u = self.e_user.get()
         p = self.e_pass.get()
         if self.ql.Login(u, p):
-            messagebox.showinfo('Thông báo', f'Đăng nhập thành công (vai trò: {self.ql.currentUser.role})')
+            name = self.ql.LayTenHienThi(self.ql.currentUser)
+            role = self.ql.currentUser.role.upper()
+            messagebox.showinfo('Thông báo', f'Đăng nhập thành công: {name} ({role})')
             self.build_giao_dien_chinh()
         else:
             messagebox.showerror('Lỗi', 'Sai tài khoản hoặc mật khẩu')
@@ -341,6 +343,9 @@ class GiaoDienCoSo:
     def build_giao_dien_chinh(self):
         if self.frame:
             self.frame.destroy()
+        if self.ql.currentUser and self.ql.currentUser.role == 'root':
+            self.build_root_console()
+            return
         self.frame = ttk.Frame(self.root, style='App.TFrame')
         self.frame.pack(fill='both', expand=True)
         try:
@@ -353,7 +358,8 @@ class GiaoDienCoSo:
         summary_bar = ttk.Frame(self.frame, padding=(24,0))
         summary_bar.pack(fill='x')
         role_text = self.ql.currentUser.role.upper() if self.ql.currentUser else ''
-        user_label = ttk.Label(summary_bar, text=f"Tài khoản: {self.ql.currentUser.username} ({role_text})", style='Body.TLabel')
+        display_name = self.ql.LayTenHienThi(self.ql.currentUser) if self.ql.currentUser else ''
+        user_label = ttk.Label(summary_bar, text=f"Tài khoản: {display_name} ({role_text})", style='Body.TLabel')
         user_label.pack(side='left')
         ttk.Button(summary_bar, text='Đăng xuất', style='Danger.TButton', command=self.dang_xuat).pack(side='right')
         def _run_async(func, callback=None, *a, **kw):
@@ -532,6 +538,153 @@ class GiaoDienCoSo:
             self.tv_kh.bind('<Double-Button-1>', self.show_kh_details)
         if getattr(self, 'tv_hdv', None):
             self.tv_hdv.bind('<Double-Button-1>', self.show_hdv_details)
+
+    def build_root_console(self):
+        self.frame = ttk.Frame(self.root, style='App.TFrame')
+        self.frame.pack(fill='both', expand=True)
+        try:
+            self.root.state('zoomed')
+        except Exception:
+            pass
+        header = ttk.Frame(self.frame, padding=(24,18))
+        header.pack(fill='x')
+        ttk.Label(header, text='Điều hành tài khoản Admin', style='Title.TLabel').pack(side='left')
+        ttk.Button(header, text='Đăng xuất', style='Danger.TButton', command=self.dang_xuat).pack(side='right')
+        ttk.Label(self.frame, text='Tài khoản root chỉ được thao tác với Admin', style='Body.TLabel').pack(anchor='w', padx=24, pady=(0,12))
+        controls = ttk.Frame(self.frame, padding=(24,0,24,12))
+        controls.pack(fill='x')
+        self.root_search_var = tk.StringVar()
+        ttk.Entry(controls, textvariable=self.root_search_var, font=self.font_body, width=32).pack(side='left')
+        ttk.Button(controls, text='Tìm', style='Accent.TButton', command=self.root_refresh_admins).pack(side='left', padx=6)
+        ttk.Button(controls, text='Làm mới', style='App.TButton', command=self.root_clear_search).pack(side='left')
+        table_wrap = ttk.Frame(self.frame, padding=(24,0,24,12))
+        table_wrap.pack(fill='both', expand=True)
+        self.root_admin_tree = ttk.Treeview(table_wrap, columns=('Username','FullName'), show='headings')
+        self.root_admin_tree.heading('Username', text='Tên đăng nhập')
+        self.root_admin_tree.heading('FullName', text='Họ tên hiển thị')
+        self.root_admin_tree.column('Username', width=220, anchor='center')
+        self.root_admin_tree.column('FullName', width=320, anchor='w')
+        scroll = ttk.Scrollbar(table_wrap, orient='vertical', command=self.root_admin_tree.yview)
+        self.root_admin_tree.configure(yscrollcommand=scroll.set)
+        self.root_admin_tree.pack(side='left', fill='both', expand=True)
+        scroll.pack(side='right', fill='y')
+        action = ttk.Frame(self.frame, padding=(24,0,24,18))
+        action.pack(fill='x')
+        ttk.Button(action, text='Tạo admin', style='Toolbar.TButton', command=lambda: self.root_open_admin_form('create')).pack(side='left', padx=4)
+        ttk.Button(action, text='Sửa admin', style='App.TButton', command=lambda: self.root_open_admin_form('edit')).pack(side='left', padx=4)
+        ttk.Button(action, text='Xóa admin', style='Danger.TButton', command=self.root_delete_admin).pack(side='left', padx=4)
+        ttk.Button(action, text='Reset mật khẩu về 123', style='Accent.TButton', command=self.root_reset_admin_password).pack(side='left', padx=4)
+        self.root_refresh_admins()
+
+    def root_clear_search(self):
+        if hasattr(self, 'root_search_var'):
+            self.root_search_var.set('')
+        self.root_refresh_admins()
+
+    def root_refresh_admins(self):
+        if not hasattr(self, 'root_admin_tree'):
+            return
+        for item in self.root_admin_tree.get_children():
+            self.root_admin_tree.delete(item)
+        keyword = (getattr(self, 'root_search_var', tk.StringVar()).get() or '').strip().lower()
+        admins = self.ql.LayDanhSachAdmin()
+        if keyword:
+            admins = [a for a in admins if keyword in a.username.lower() or keyword in (a.fullName or '').lower()]
+        for admin in admins:
+            self.root_admin_tree.insert('', tk.END, values=(admin.username, admin.fullName))
+        self.apply_zebra(self.root_admin_tree)
+
+    def root_get_selected_admin(self):
+        if not hasattr(self, 'root_admin_tree'):
+            return None
+        sel = self.root_admin_tree.selection()
+        if not sel:
+            messagebox.showwarning('Chú ý', 'Chọn một tài khoản admin')
+            return None
+        return self.root_admin_tree.item(sel[0], 'values')[0]
+
+    def root_open_admin_form(self, mode):
+        target = None
+        if mode == 'edit':
+            username = self.root_get_selected_admin()
+            if not username:
+                return
+            target = self.ql.TimUser(username)
+            if not target:
+                messagebox.showerror('Lỗi', 'Không tìm thấy tài khoản')
+                return
+        title = 'Tạo admin mới' if mode == 'create' else f'Cập nhật admin: {target.username}'
+        top, container = self.create_modal(title, size=(480, 320))
+        form = ttk.Frame(container, padding=12)
+        form.pack(fill='both', expand=True)
+        ttk.Label(form, text='Tên đăng nhập', style='Form.TLabel').grid(row=0, column=0, sticky='w', pady=4)
+        username_entry = ttk.Entry(form, font=self.font_body)
+        username_entry.grid(row=0, column=1, sticky='ew', padx=(10,0), pady=4)
+        if target:
+            username_entry.insert(0, target.username)
+            username_entry.configure(state='disabled')
+        ttk.Label(form, text='Họ tên hiển thị', style='Form.TLabel').grid(row=1, column=0, sticky='w', pady=4)
+        fullname_entry = ttk.Entry(form, font=self.font_body)
+        fullname_entry.grid(row=1, column=1, sticky='ew', padx=(10,0), pady=4)
+        if target:
+            fullname_entry.insert(0, target.fullName)
+        ttk.Label(form, text='Mật khẩu', style='Form.TLabel').grid(row=2, column=0, sticky='w', pady=4)
+        password_entry = ttk.Entry(form, font=self.font_body, show='*')
+        password_entry.grid(row=2, column=1, sticky='ew', padx=(10,0), pady=4)
+        ttk.Label(form, text='Để trống nếu giữ nguyên', style='Body.TLabel').grid(row=3, column=0, columnspan=2, sticky='w', pady=(4,0))
+        form.columnconfigure(1, weight=1)
+
+        def save_admin():
+            uname = username_entry.get().strip()
+            fname = fullname_entry.get().strip()
+            pwd = password_entry.get().strip()
+            if mode == 'create':
+                if not uname or not fname or not pwd:
+                    messagebox.showerror('Lỗi', 'Vui lòng nhập đầy đủ thông tin')
+                    return
+                success, msg = self.ql.DangKyUser(uname, pwd, role='admin', fullName=fname)
+            else:
+                if not fname:
+                    messagebox.showerror('Lỗi', 'Họ tên không được bỏ trống')
+                    return
+                success, msg = self.ql.CapNhatAdmin(target.username, fullName=fname, password=pwd or None)
+            if success:
+                luu_tat_ca(self.ql)
+                self.root_refresh_admins()
+                top.destroy()
+                messagebox.showinfo('Thông báo', msg)
+            else:
+                messagebox.showerror('Lỗi', msg)
+
+        self.modal_buttons(container, [
+            {'text':'Lưu', 'style':'Accent.TButton', 'command':save_admin},
+            {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
+        ])
+
+    def root_delete_admin(self):
+        username = self.root_get_selected_admin()
+        if not username:
+            return
+        if not messagebox.askyesno('Xác nhận', f'Xóa tài khoản {username}?'):
+            return
+        success, msg = self.ql.XoaAdmin(username)
+        if success:
+            luu_tat_ca(self.ql)
+            self.root_refresh_admins()
+            messagebox.showinfo('Thông báo', msg)
+        else:
+            messagebox.showerror('Lỗi', msg)
+
+    def root_reset_admin_password(self):
+        username = self.root_get_selected_admin()
+        if not username:
+            return
+        success, msg = self.ql.ResetMatKhau(username, '123')
+        if success:
+            luu_tat_ca(self.ql)
+            messagebox.showinfo('Thông báo', 'Đã đặt lại mật khẩu về 123')
+        else:
+            messagebox.showerror('Lỗi', msg)
 
     def refresh_lists(self):
         role = self.ql.currentUser.role if self.ql.currentUser else ''

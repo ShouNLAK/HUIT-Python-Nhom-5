@@ -111,7 +111,13 @@ def tai_tat_ca():
     hdvs = tai_danh_sach(HDV_FILE, lambda item: item)
     users = tai_danh_sach(
         USERS_FILE,
-        lambda data: User(data.get("username"), data.get("password"), data.get("role", "user"), data.get("maKH")),
+        lambda data: User(
+            data.get("username"),
+            data.get("password"),
+            data.get("role", "user"),
+            data.get("maKH"),
+            data.get("fullName"),
+        ),
     )
     return tours, khs, dats, hdvs, users
 
@@ -126,7 +132,18 @@ def luu_tat_ca(ql):
         luu_danh_sach(DAT_FILE, dats)
         if hasattr(ql, "danhSachHDV"):
             luu_danh_sach(HDV_FILE, ql.danhSachHDV)
-        users = [{"username": u.username, "password": u.password, "role": u.role, "maKH": u.maKH} for u in ql.users]
+        def serialize_user(u):
+            data = {
+                "username": u.username,
+                "password": u.password,
+                "role": u.role,
+                "maKH": u.maKH,
+            }
+            if u.role == "admin":
+                data["fullName"] = u.fullName
+            return data
+
+        users = [serialize_user(u) for u in ql.users]
         luu_danh_sach(USERS_FILE, users)
         return True
     except Exception:
