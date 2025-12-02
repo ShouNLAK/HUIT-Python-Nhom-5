@@ -1,11 +1,24 @@
 import base64
 import hashlib
+import io
+import os
 import re
-from datetime import datetime
+import threading
+from datetime import datetime, timedelta
 from Class.user import User
 from Class.tour import Tour
 from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
+from Class.nap_tien import NapTienRequest
+from QuanLy.nap_tien_server import NapTienWebhookServer
+
+try:
+    import qrcode
+
+    QR_LIB_READY = True
+except Exception:
+    qrcode = None
+    QR_LIB_READY = False
 
 
 class QuanLiDuLich:
@@ -16,6 +29,9 @@ class QuanLiDuLich:
     DEFAULT_ADMIN_USERNAME = "admin"
     DEFAULT_ADMIN_PASSWORD = "Admin@123"
     DEFAULT_ADMIN_NAME = "Quản trị viên"
+    DEFAULT_QR_EXPIRE_MINUTES = 15
+    DEFAULT_WEBHOOK_HOST = "0.0.0.0"
+    DEFAULT_WEBHOOK_PORT = 5050
     def __init__(self):
         self.danhSachTour = []
         self.danhSachKhachHang = []
@@ -23,6 +39,21 @@ class QuanLiDuLich:
         self.danhSachHDV = []
         self.users = []
         self.currentUser = None
+        self.danhSachNapTien = []
+        self._nap_tien_lock = threading.Lock()
+        self._nap_tien_server = None
+        self._auto_save_handler = None
+        self._qr_base_url = None
+
+    def set_auto_save(self, handler):
+        self._auto_save_handler = handler
+
+    def _trigger_auto_save(self):
+        if callable(self._auto_save_handler):
+            try:
+                self._auto_save_handler()
+            except Exception:
+                pass
 
     def _parse_date(self, value):
         if not value:
@@ -111,6 +142,179 @@ class QuanLiDuLich:
             candidate = f"{base}{counter}"
             counter += 1
         return candidate
+
+    def _utcnow_iso(self):
+        return datetime.utcnow().replace(microsecond=0).isoformat()
+
+    def _generate_request_token(self):
+        raw = base64.urlsafe_b64encode(os.urandom(12)).decode("ascii")
+        return raw.rstrip("=")
+
+    def _ensure_webhook_running(self):
+        if self._nap_tien_server and self._nap_tien_server.running:
+            return True
+        return self.khoi_dong_webhook_server()
+
+    def _build_qr_url(self, request_id, token):
+        base_url = (
+            (self._nap_tien_server.public_base_url if self._nap_tien_server else None)
+            or self._qr_base_url
+            or os.environ.get("NAP_TIEN_PUBLIC_URL")
+            or f"http://127.0.0.1:{self.DEFAULT_WEBHOOK_PORT}"
+        )
+        self._qr_base_url = base_url
+        return f"{base_url.rstrip('/')}/nap-tien?code={request_id}&token={token}"
+
+    def _generate_qr_image(self, content, request_id):
+        if not QR_LIB_READY or not qrcode:
+            return None, "Thiếu thư viện qrcode. Chạy: pip install qrcode[pil]"
+        try:
+            qr = qrcode.QRCode(box_size=10, border=2)
+            qr.add_data(content)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+            data_uri = f"data:image/png;base64,{encoded}"
+            return data_uri, ""
+        except Exception as exc:
+            return None, f"Không thể tạo QR: {exc}"
+
+    def _tao_ma_nap_tien(self):
+        prefix = datetime.utcnow().strftime("NT%Y%m%d%H%M%S")
+        existing = {req.maGD for req in getattr(self, "danhSachNapTien", [])}
+        idx = 1
+        candidate = f"{prefix}{idx:03d}"
+        while candidate in existing:
+            idx += 1
+            candidate = f"{prefix}{idx:03d}"
+        return candidate
+
+    def TimYeuCauNapTien(self, maGD):
+        for req in getattr(self, "danhSachNapTien", []):
+            if req.maGD == maGD:
+                return req
+        return None
+
+    def LayNapTienTheoKhach(self, maKH):
+        return [req for req in getattr(self, "danhSachNapTien", []) if req.maKH == maKH]
+
+    def _loai_bo_yeu_cau_het_han(self):
+        changed = False
+        for req in getattr(self, "danhSachNapTien", []):
+            if req.trangThai == NapTienRequest.STATUS_PENDING and req.is_expired():
+                req.mark_expired()
+                changed = True
+        if changed:
+            self._trigger_auto_save()
+
+    def khoi_dong_webhook_server(self, host=None, port=None, public_base_url=None):
+        host = host or self.DEFAULT_WEBHOOK_HOST
+        port = port or self.DEFAULT_WEBHOOK_PORT
+        if self._nap_tien_server and self._nap_tien_server.running:
+            return True
+        try:
+            self._nap_tien_server = NapTienWebhookServer(self, host=host, port=port, public_base_url=public_base_url)
+            self._nap_tien_server.start()
+            self._qr_base_url = self._nap_tien_server.public_base_url
+            print(f"Máy chủ webhook nạp tiền đang lắng nghe tại {self._qr_base_url}")
+            return True
+        except Exception as exc:
+            print(f"Không thể khởi động webhook nạp tiền: {exc}")
+            self._nap_tien_server = None
+            return False
+
+    def dung_webhook_nap_tien(self):
+        if self._nap_tien_server:
+            self._nap_tien_server.stop()
+            self._nap_tien_server = None
+
+    def TaoYeuCauNapTien(self, maKH, soTien, expire_minutes=None):
+        self._loai_bo_yeu_cau_het_han()
+        if not self.currentUser:
+            return False, "Bạn phải đăng nhập"
+        if self.currentUser.role == "user" and str(self.currentUser.maKH) != str(maKH):
+            return False, "Bạn chỉ có thể nạp tiền cho tài khoản của mình"
+        try:
+            soTien = float(soTien)
+        except Exception:
+            return False, "Số tiền không hợp lệ"
+        if soTien <= 0:
+            return False, "Số tiền phải lớn hơn 0"
+        kh = self.TimKhacHang(maKH)
+        if not kh:
+            return False, "Không tìm thấy khách hàng"
+        expire_minutes = expire_minutes or self.DEFAULT_QR_EXPIRE_MINUTES
+        if not self._ensure_webhook_running():
+            return False, "Không thể khởi động webhook nạp tiền"
+        request_id = self._tao_ma_nap_tien()
+        token = self._generate_request_token()
+        qr_url = self._build_qr_url(request_id, token)
+        qr_data_uri, error = self._generate_qr_image(qr_url, request_id)
+        if not qr_data_uri:
+            return False, error
+        expires_at = (datetime.utcnow() + timedelta(minutes=expire_minutes)).replace(microsecond=0).isoformat()
+        request = NapTienRequest(
+            maGD=request_id,
+            maKH=maKH,
+            soTien=soTien,
+            token=token,
+            qrContent=qr_url,
+            qrFile=None,
+            qrDataUri=qr_data_uri,
+            expiresAt=expires_at,
+        )
+        with self._nap_tien_lock:
+            self.danhSachNapTien.append(request)
+        self._trigger_auto_save()
+        return True, {
+            "maGiaoDich": request_id,
+            "qrDataUri": qr_data_uri,
+            "qrUrl": qr_url,
+            "expiresAt": expires_at,
+            "soTien": soTien,
+        }
+
+    def LayThongTinNapTien(self, maGD):
+        req = self.TimYeuCauNapTien(maGD)
+        if not req:
+            return None
+        return {
+            "maGiaoDich": req.maGD,
+            "maKH": req.maKH,
+            "soTien": req.soTien,
+            "trangThai": req.trangThai,
+            "expiresAt": req.expiresAt,
+            "qrPath": req.qrFile,
+            "qrDataUri": req.qrDataUri or req.qrFile,
+            "qrUrl": req.qrContent,
+        }
+
+    def XuLyWebhookNapTien(self, request_id, token):
+        self._loai_bo_yeu_cau_het_han()
+        with self._nap_tien_lock:
+            req = self.TimYeuCauNapTien(request_id)
+            if not req:
+                return False, "Không tìm thấy giao dịch"
+            if req.trangThai == NapTienRequest.STATUS_CONFIRMED:
+                return True, "Giao dịch đã được xác nhận trước đó"
+            if req.trangThai == NapTienRequest.STATUS_EXPIRED:
+                return False, "Mã QR đã hết hạn"
+            if token != req.token:
+                return False, "Token không hợp lệ"
+            if req.is_expired():
+                req.mark_expired()
+                self._trigger_auto_save()
+                return False, "Mã QR đã hết hạn"
+            kh = self.TimKhacHang(req.maKH)
+            if not kh:
+                return False, "Không tìm thấy khách hàng"
+            kh.soDu += req.soTien
+            req.mark_confirmed()
+            req.metadata["confirmedAt"] = self._utcnow_iso()
+        self._trigger_auto_save()
+        return True, "Đã cộng tiền vào ví của bạn"
 
     def ensure_user_for_khach(self, kh: KhachHang, default_password="123"):
         if not kh or not kh.maKH:

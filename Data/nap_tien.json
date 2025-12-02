@@ -1,0 +1,50 @@
+[
+  {
+    "maGD": "NT20251202164025001",
+    "maKH": "KH001",
+    "soTien": 2000000.0,
+    "trangThai": "confirmed",
+    "token": "U5tXyUEeDRWcGTyh",
+    "qrContent": "http://169.254.71.60:5050/nap-tien?code=NT20251202164025001&token=U5tXyUEeDRWcGTyh",
+    "qrFile": "C:\\Users\\Shou\\Coding\\Microsoft Visual Code\\HUIT-Python-3\\Đề án\\Data\\qr\\NT20251202164025001.png",
+    "qrDataUri": null,
+    "createdAt": "2025-12-02T16:40:25",
+    "updatedAt": "2025-12-02T16:41:19",
+    "expiresAt": "2025-12-02T16:55:25",
+    "metadata": {
+      "confirmedAt": "2025-12-02T16:41:19"
+    }
+  },
+  {
+    "maGD": "NT20251202164722001",
+    "maKH": "KH001",
+    "soTien": 1000000.0,
+    "trangThai": "confirmed",
+    "token": "o-HxQT0GOGWclK0G",
+    "qrContent": "http://192.168.31.130:5050/nap-tien?code=NT20251202164722001&token=o-HxQT0GOGWclK0G",
+    "qrFile": null,
+    "qrDataUri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAADpElEQVR4nO1cS27jMAwlbQFd2kAP0KMoNyvmSL1BdJQcoEC0LGCDA34ku+0skiaY2hHfwrAtE4loguSjKCPB1Ujd9TIALmRwRRhcEbtRREbDIQdAHGfUewc5yFMyoAi7mNP1cKGVInoSyDUdoSdIY8+XPdGfEQAPwwQQ5aFzEboaLrQPRQQ5IkA/AQwTYDzPASLbQxp7gCgmIMgjQHz7v3+vc6FfVURGFPdAx4xIRzYQDhPiKO77S5fChX5XEQOROoX0YkEE4nlGfD2FLfy9S+FCt0cNqteUUO0gEOTAkYQA08sk9sJu5Me/1LnQbixiZiNg5OcJ4/l5QsjPxGd6D+JbmEBMBaDf/pw6F7rNIobqIfKMlF4+kPhMM0sGsWdYV7Jc5Q+sCCA6M9Nkfil5RE0m6DgQKRll4gmRJuWmdNz4nDoXutFHfHBJKqy9QBqZjGaOE8OZfcRYRgdOPF3lhkdUBBARuwcoJSnmnHLQkhQ7im9nG59T50I3WgStQ4IaCAeM1UAxBreIZthnwp6QQwJXL0kCBi1kVOMHIyGHk43PqXOhm30EcXpZXIFFDc0sZSGjLmnYc65ywwNHDSiJg1gERHnxZQnM7KCwDreIJiwCZNnTOKfx0MpN1UeIMTj7bKMeQZZPmntYVjxlYMU/JOX0qPHoFgEcMMqLX8LEKnGQJ9VveB7RSmYJ6zxCu2jqPXvOa5bt+AiS122Qs1rUrlVsq1951GhjXSMq4ZDSpFmEJZrLI84+W6piR00c7FDK1kt5e81EPLNsRQilwba+fXw9Pa2XOSoj3dOcLocLfalij4CUxvdA3EBD6cDFajaLeJIF0J4baLhDd+C7rj3DIyoCSgF7slLEqlOCIZUJHVA4+2wij6AvZqFpRaEepYumVLa9QtXEfg1A7re1DjpuqLM9HLpLI0xyzztmmmKfpEsaDPMHlVxoJKm+ZONz6lzoHitdfVkArZu4LIWAT/d87fPRbQ9qvkDLaoYNaKK5DNTGu43PqXOhe+0NB+C94RIrrDJhu8SlWsG01HcCt7MaTqUnn29WrlGIp/uIVveGB4ThnTv2J65GcWM+TNKdL42WSLuYU+dC91JEDkB0ks3gM0Lk/b9Jvx9RPx2R/YsiTdleTyC7fuPpqVQv+QsCAhnQPcG7mtOFcKF/5RFUKg6fDwvhcPbZhhnNSjUA8hMJ15BYIf7AqEchIZD8O1Q7e7lXoySL18C/XriTl9u5kMIVYfhRPeIvLH4LBLfdVgQAAAAASUVORK5CYII=",
+    "createdAt": "2025-12-02T16:47:22",
+    "updatedAt": "2025-12-02T16:47:29",
+    "expiresAt": "2025-12-02T17:02:22",
+    "metadata": {
+      "confirmedAt": "2025-12-02T16:47:29"
+    }
+  },
+  {
+    "maGD": "NT20251202165305001",
+    "maKH": "KH001",
+    "soTien": 500000.0,
+    "trangThai": "confirmed",
+    "token": "cPoqywlSo7mwFkNY",
+    "qrContent": "http://192.168.31.130:5050/nap-tien?code=NT20251202165305001&token=cPoqywlSo7mwFkNY",
+    "qrFile": null,
+    "qrDataUri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAADdElEQVR4nO1cXW6kMAy2B6Q+gtQD7FHgBnukqjeDo/QAleBxJZBX/ktoVyuVzqgzEH8PlDCxOiQe+7PjBAl2Y7zslwEIIUMMhCEG4jADMaOhhxUR2xWxl2ct24MWQO68U32Id9qPENoMREUCfdBNFQE0RNBNohs10DDXAJ10mlxoN0LoSAOB+tsHVgae/bFdkV7xiWhgu/FCC6gt6e/y9XYihK4ZiPpDa63ZTSDB/EQIzQQIzXtNYyumISGGvJiBqNh1VATjrz8oXkOa+PJWH/edvogQMuhUkzbmFmjsV7YRNdDYvusHBDP/abghdzF6hjMOBBhZTKTyvxdDRTQ8+DtdQug6jdhgARo4zICGqWSzsL5Y6LFBaMSZdQ9kzmlgFVB7IJM+iaqwRnCY0bmqhEaU4jVI1ELBzQHsAp1/mk1G2IjTC1XkmUpJRXiGSnwFGw/sGwk9pN/Pf73dCKFb8IiJjYKwh+RJlFZwOzHL8BpFMUv4x0N4H+YR+ukQsUYZzBLUQ6iCGMfc8AjRA1Oa4BFF2AhQsGUYstdIHFOshbmO0IhCNKIRMiF68NFrSFga0WeBzLIyHiEZKnEO4j/UKMiz7E4e/J0uIXR9FrvTNJXrhtZHSH6SF75EGaRzMMvT6x5YQNmkwFMzlQmbODR4RFE5S/Dcg9uD7ERMGXStI9Y1CrARi+uBz36OP9yTpMx2aEQh+Ygup5+cQvjF6GXOXwWzPH1V3YpSDsMVdEhcWqf2YcRqsSqa3+/a5ce/3iWE7mUjKMUVvgqqWYjMMmzpI3jEyRUWckoKxE1snimjyFU0zjIiH3F+Zkk55tzOfs5i56REaEQBe7qeCHu9oFZg06B3lquSzV7SL3bwHG1yv4FPNgJSXGHBxWZJw+/CaxRTi02ZTKTVcC+ccITXKKkWe/pgGTakUjhmVMwUaSMoFUT42qelrvLOjfAap89QVTrzyNkoaaLt32p5O9fzAt30zHcr0thWj/9OlxC61d7whghf1HXIlk85P0Lu5GCJW/ynnQih+w7EjJysXrYl+kwrsPe1clsAjXkynH4gmlR++4Yox8vYzo0cicgu8SO901cRQo68nQtS4OkbPb2MLpfNxL7PItRo1ROmxGvkEBRGrIFe+QgqPlnGjqWKc6gONrm7wcvfexGnFx5kci8hpIiBMHwrQ/UXv7VbAxsq588AAAAASUVORK5CYII=",
+    "createdAt": "2025-12-02T16:53:05",
+    "updatedAt": "2025-12-02T16:54:57",
+    "expiresAt": "2025-12-02T17:08:05",
+    "metadata": {
+      "confirmedAt": "2025-12-02T16:54:57"
+    }
+  }
+]

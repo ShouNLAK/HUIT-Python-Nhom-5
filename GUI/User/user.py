@@ -1,8 +1,11 @@
+import base64
+import io
+import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 from Class.dat_tour import DatTour
 from QuanLy.storage import luu_tat_ca
-from GUI.Login.base import GiaoDienCoSo
+from GUI.Login.base import GiaoDienCoSo, PIL_AVAILABLE
 
 def nap_tien(self):
     if not self.ql.currentUser or self.ql.currentUser.role != 'user':
@@ -12,28 +15,125 @@ def nap_tien(self):
     form = ttk.Frame(container)
     form.pack(fill='x')
     entries = self.build_form_fields(form, [{'name':'sotien','label':'Số tiền cần nạp'}])
-    def ok():
+    status_var = tk.StringVar(value='Nhập số tiền và bấm "Tạo mã QR" để tiếp tục')
+    url_var = tk.StringVar(value='')
+    ttk.Label(container, textvariable=status_var, style='Body.TLabel').pack(anchor='w', pady=(12,0))
+    qr_box = ttk.LabelFrame(container, text='Mã QR thanh toán', padding=12, style='Card.TLabelframe')
+    qr_box.pack(fill='both', expand=True, pady=(12,0))
+    qr_label = ttk.Label(qr_box, text='Chưa tạo mã QR', style='Body.TLabel')
+    qr_label.pack(anchor='center')
+    link_row = ttk.Frame(container)
+    link_row.pack(fill='x', pady=(8,0))
+    ttk.Label(link_row, text='Hoặc mở trực tiếp đường dẫn:', style='Body.TLabel').pack(side='left')
+    link_entry = ttk.Entry(link_row, textvariable=url_var, state='readonly', font=self.font_body)
+    link_entry.pack(side='left', fill='x', expand=True, padx=(8,0))
+    def copy_link():
+        val = url_var.get()
+        if not val:
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(val)
+        messagebox.showinfo('Sao chép', 'Đã sao chép liên kết')
+    ttk.Button(link_row, text='Sao chép', style='App.TButton', command=copy_link).pack(side='left', padx=(8,0))
+    request_state = {'id': None, 'job': None}
+
+    def stop_polling():
+        job = request_state.get('job')
+        if job:
+            try:
+                self.root.after_cancel(job)
+            except Exception:
+                pass
+            request_state['job'] = None
+
+    def update_qr_image(source):
+        if not source:
+            return
+        try:
+            photo = None
+            if isinstance(source, str) and source.startswith('data:image'):
+                encoded = source.split(',', 1)[1] if ',' in source else ''
+                if not encoded:
+                    raise ValueError('QR data rỗng')
+                raw = base64.b64decode(encoded)
+                if PIL_AVAILABLE:
+                    from PIL import Image, ImageTk  # type: ignore
+                    img = Image.open(io.BytesIO(raw))
+                    img = img.resize((280, 280))
+                    photo = ImageTk.PhotoImage(img)
+                else:
+                    photo = tk.PhotoImage(data=encoded, format='png')
+            elif isinstance(source, str) and os.path.exists(source):
+                if PIL_AVAILABLE:
+                    from PIL import Image, ImageTk  # type: ignore
+                    img = Image.open(source)
+                    img = img.resize((280, 280))
+                    photo = ImageTk.PhotoImage(img)
+                else:
+                    photo = tk.PhotoImage(file=source)
+            if not photo:
+                raise ValueError('Không thể dựng ảnh QR')
+            qr_label.configure(image=photo, text='')
+            qr_label.image = photo
+        except Exception as exc:
+            qr_label.configure(text=f'Không tải được ảnh QR: {exc}', image='')
+            qr_label.image = None
+
+    def poll_status():
+        req_id = request_state.get('id')
+        if not req_id:
+            return
+        info = self.ql.LayThongTinNapTien(req_id)
+        if not info:
+            status_var.set('Không tìm thấy yêu cầu, có thể đã bị xóa')
+            stop_polling()
+            return
+        state = info.get('trangThai')
+        if state == 'confirmed':
+            status_var.set(f"Đã cộng {self.format_money(info.get('soTien', 0))} vào ví")
+            stop_polling()
+            luu_tat_ca(self.ql)
+            self.hien_thi_khach_user()
+            self.refresh_lists()
+            messagebox.showinfo('Thành công', 'Thanh toán thành công, số dư đã được cập nhật!')
+            top.destroy()
+            return
+        if state == 'expired':
+            status_var.set('Mã QR đã hết hạn, vui lòng tạo lại')
+            stop_polling()
+            return
+        expires = info.get('expiresAt') or ''
+        status_var.set(f'Đang chờ bạn quét QR. Hạn sử dụng: {expires}')
+        request_state['job'] = self.root.after(2000, poll_status)
+
+    def tao_qr():
         try:
             so = float(entries['sotien'].get())
             if so <= 0:
-                raise Exception()
+                raise ValueError
         except Exception:
             messagebox.showerror('Lỗi', 'Số tiền không hợp lệ')
             return
-        kh = self.ql.TimKhacHang(self.ql.currentUser.maKH)
-        if not kh:
-            messagebox.showerror('Lỗi', 'Khách hàng không tồn tại')
+        success, payload = self.ql.TaoYeuCauNapTien(self.ql.currentUser.maKH, so)
+        if not success:
+            messagebox.showerror('Lỗi', payload)
             return
-        kh.soDu += so
-        luu_tat_ca(self.ql)
-        self.hien_thi_khach_user()
-        self.refresh_lists()
-        messagebox.showinfo('Thông báo', f'Nạp {so} thành công')
+        request_state['id'] = payload['maGiaoDich']
+        status_var.set('Đang chờ bạn quét mã QR...')
+        url_var.set(payload.get('qrUrl', ''))
+        update_qr_image(payload.get('qrDataUri') or payload.get('qrPath'))
+        stop_polling()
+        request_state['job'] = self.root.after(2000, poll_status)
+
+    def close_modal():
+        stop_polling()
         top.destroy()
+
     self.modal_buttons(container, [
-        {'text':'Nạp tiền', 'style':'Accent.TButton', 'command':ok},
-        {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
+        {'text':'Tạo mã QR', 'style':'Accent.TButton', 'command':tao_qr},
+        {'text':'Đóng', 'style':'Danger.TButton', 'command':close_modal}
     ])
+    top.protocol('WM_DELETE_WINDOW', close_modal)
 
 def xem_don_user(self):
     if not self.ql.currentUser:

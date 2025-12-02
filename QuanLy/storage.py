@@ -1,18 +1,36 @@
+
 import json
+import sys
 from pathlib import Path
 from Class.tour import Tour
 from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
 from Class.user import User
+from Class.nap_tien import NapTienRequest
 
-BASE_DIR = Path(__file__).parents[1]
-DATA_DIR = BASE_DIR / "Data"
+
+def _resolve_data_dir() -> Path:
+    """Tìm đường dẫn Data phù hợp trong mọi chế độ chạy."""
+    candidates = []
+    if hasattr(sys, "_MEIPASS"):
+        candidates.append(Path(sys._MEIPASS) / "Data")
+    if getattr(sys, "frozen", False):
+        candidates.append(Path(sys.executable).parent / "Data")
+    candidates.append(Path(__file__).resolve().parents[1] / "Data")
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[-1]
+
+
+DATA_DIR = _resolve_data_dir()
 
 TOUR_FILE = DATA_DIR.joinpath("tours.json")
 KH_FILE = DATA_DIR.joinpath("khachhang.json")
 DAT_FILE = DATA_DIR.joinpath("dattour.json")
 HDV_FILE = DATA_DIR.joinpath("hdv.json")
 USERS_FILE = DATA_DIR.joinpath("users.json")
+NAP_TIEN_FILE = DATA_DIR.joinpath("nap_tien.json")
 
 
 def tour_to_dict(tour: Tour):
@@ -85,6 +103,14 @@ def dict_to_dat(data):
     )
 
 
+def nap_tien_to_dict(req: NapTienRequest):
+    return req.to_dict()
+
+
+def dict_to_nap_tien(data):
+    return NapTienRequest.from_dict(data)
+
+
 def tai_danh_sach(file_path: Path, converter):
     try:
         with file_path.open("r", encoding="utf-8") as handle:
@@ -119,7 +145,8 @@ def tai_tat_ca():
             data.get("fullName"),
         ),
     )
-    return tours, khs, dats, hdvs, users
+    nap_tiens = tai_danh_sach(NAP_TIEN_FILE, dict_to_nap_tien)
+    return tours, khs, dats, hdvs, users, nap_tiens
 
 
 def luu_tat_ca(ql):
@@ -145,6 +172,8 @@ def luu_tat_ca(ql):
 
         users = [serialize_user(u) for u in ql.users]
         luu_danh_sach(USERS_FILE, users)
+        if hasattr(ql, "danhSachNapTien"):
+            luu_danh_sach(NAP_TIEN_FILE, [nap_tien_to_dict(n) for n in ql.danhSachNapTien])
         return True
     except Exception:
         return False
