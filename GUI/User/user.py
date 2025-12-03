@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+from datetime import datetime
 import tkinter as tk
 from tkinter import messagebox, ttk
 from Class.dat_tour import DatTour
@@ -11,30 +12,54 @@ def nap_tien(self):
     if not self.ql.currentUser or self.ql.currentUser.role != 'user':
         messagebox.showerror('Lỗi', 'Chức năng chỉ dành cho khách hàng')
         return
-    top, container = self.create_modal('Nạp tiền')
-    form = ttk.Frame(container)
+    top, container = self.create_modal('Nạp tiền vào ví', size=(680, 620))
+    
+    # Header section
+    header_frame = ttk.Frame(container, style='Card.TFrame', padding=16)
+    header_frame.pack(fill='x', pady=(0, 16))
+    ttk.Label(header_frame, text='💳 Nạp tiền vào tài khoản', style='Title.TLabel').pack(anchor='w')
+    ttk.Label(header_frame, text='Quét mã QR để nạp tiền nhanh chóng và an toàn', style='Body.TLabel').pack(anchor='w', pady=(4,0))
+    
+    # Form nhập số tiền
+    form_card = ttk.LabelFrame(container, text='Thông tin nạp tiền', padding=16, style='Card.TLabelframe')
+    form_card.pack(fill='x', pady=(0, 16))
+    form = ttk.Frame(form_card)
     form.pack(fill='x')
-    entries = self.build_form_fields(form, [{'name':'sotien','label':'Số tiền cần nạp'}])
-    status_var = tk.StringVar(value='Nhập số tiền và bấm "Tạo mã QR" để tiếp tục')
+    ttk.Label(form, text='Số tiền cần nạp (VND):', style='Form.TLabel').grid(row=0, column=0, sticky='w', pady=8)
+    amount_entry = ttk.Entry(form, font=self.font_body, width=30)
+    amount_entry.grid(row=0, column=1, sticky='ew', padx=(12, 0), pady=8)
+    form.columnconfigure(1, weight=1)
+    entries = {'sotien': amount_entry}
+    
+    # Status
+    status_var = tk.StringVar(value='✨ Nhập số tiền và nhấn "Tạo mã QR" để bắt đầu')
+    status_label = ttk.Label(container, textvariable=status_var, style='BodyBold.TLabel', wraplength=620)
+    status_label.pack(anchor='w', pady=(0, 12))
+    
+    # QR Code display
+    qr_box = ttk.LabelFrame(container, text='Mã QR thanh toán', padding=20, style='Card.TLabelframe')
+    qr_box.pack(fill='both', expand=True, pady=(0, 12))
+    qr_label = ttk.Label(qr_box, text='Chưa tạo mã QR\n\nVui lòng nhập số tiền và tạo mã QR', style='Body.TLabel', justify='center')
+    qr_label.pack(anchor='center', expand=True)
+    
+    # Link section
     url_var = tk.StringVar(value='')
-    ttk.Label(container, textvariable=status_var, style='Body.TLabel').pack(anchor='w', pady=(12,0))
-    qr_box = ttk.LabelFrame(container, text='Mã QR thanh toán', padding=12, style='Card.TLabelframe')
-    qr_box.pack(fill='both', expand=True, pady=(12,0))
-    qr_label = ttk.Label(qr_box, text='Chưa tạo mã QR', style='Body.TLabel')
-    qr_label.pack(anchor='center')
-    link_row = ttk.Frame(container)
-    link_row.pack(fill='x', pady=(8,0))
-    ttk.Label(link_row, text='Hoặc mở trực tiếp đường dẫn:', style='Body.TLabel').pack(side='left')
-    link_entry = ttk.Entry(link_row, textvariable=url_var, state='readonly', font=self.font_body)
-    link_entry.pack(side='left', fill='x', expand=True, padx=(8,0))
+    link_card = ttk.LabelFrame(container, text='Đường dẫn thanh toán', padding=12, style='Card.TLabelframe')
+    link_card.pack(fill='x', pady=(0, 16))
+    link_row = ttk.Frame(link_card)
+    link_row.pack(fill='x')
+    link_entry = ttk.Entry(link_row, textvariable=url_var, state='readonly', font=('Segoe UI', 9))
+    link_entry.pack(side='left', fill='x', expand=True, padx=(0, 8))
     def copy_link():
         val = url_var.get()
         if not val:
+            messagebox.showwarning('Chú ý', 'Chưa có đường dẫn để sao chép')
             return
         self.root.clipboard_clear()
         self.root.clipboard_append(val)
-        messagebox.showinfo('Sao chép', 'Đã sao chép liên kết')
-    ttk.Button(link_row, text='Sao chép', style='App.TButton', command=copy_link).pack(side='left', padx=(8,0))
+        messagebox.showinfo('Sao chép', 'Đã sao chép liên kết vào clipboard')
+    ttk.Button(link_row, text='📋 Sao chép', style='Ghost.TButton', command=copy_link).pack(side='left')
+    
     request_state = {'id': None, 'job': None}
 
     def stop_polling():
@@ -90,20 +115,30 @@ def nap_tien(self):
             return
         state = info.get('trangThai')
         if state == 'confirmed':
-            status_var.set(f"Đã cộng {self.format_money(info.get('soTien', 0))} vào ví")
+            amount = info.get('soTien', 0)
+            status_var.set(f"✅ Đã cộng {self.format_money(amount)} vào ví")
             stop_polling()
             luu_tat_ca(self.ql)
             self.hien_thi_khach_user()
             self.refresh_lists()
-            messagebox.showinfo('Thành công', 'Thanh toán thành công, số dư đã được cập nhật!')
-            top.destroy()
+            kh = self.ql.TimKhacHang(getattr(self.ql.currentUser, 'maKH', None))
+            customer_name = kh.tenKH if kh else (getattr(self.ql.currentUser, 'fullName', '') or getattr(self.ql.currentUser, 'username', ''))
+            timestamp = datetime.now().strftime('%H:%M:%S %d/%m/%Y')
+            if top.winfo_exists():
+                top.destroy()
+            message = (
+                f"Khách hàng: {customer_name}\n"
+                f"Thời gian: {timestamp}\n"
+                f"Số tiền: {self.format_money(amount)}"
+            )
+            messagebox.showinfo('Thanh toán thành công', message)
             return
         if state == 'expired':
-            status_var.set('Mã QR đã hết hạn, vui lòng tạo lại')
+            status_var.set('⏰ Mã QR đã hết hạn, vui lòng tạo lại')
             stop_polling()
             return
         expires = info.get('expiresAt') or ''
-        status_var.set(f'Đang chờ bạn quét QR. Hạn sử dụng: {expires}')
+        status_var.set(f'⏳ Đang chờ bạn quét QR... (Hết hạn: {expires})')
         request_state['job'] = self.root.after(2000, poll_status)
 
     def tao_qr():
@@ -112,14 +147,14 @@ def nap_tien(self):
             if so <= 0:
                 raise ValueError
         except Exception:
-            messagebox.showerror('Lỗi', 'Số tiền không hợp lệ')
+            messagebox.showerror('Lỗi', 'Vui lòng nhập số tiền hợp lệ (lớn hơn 0)')
             return
         success, payload = self.ql.TaoYeuCauNapTien(self.ql.currentUser.maKH, so)
         if not success:
             messagebox.showerror('Lỗi', payload)
             return
         request_state['id'] = payload['maGiaoDich']
-        status_var.set('Đang chờ bạn quét mã QR...')
+        status_var.set(f'📱 Đang chờ quét mã QR để nạp {self.format_money(so)}...')
         url_var.set(payload.get('qrUrl', ''))
         update_qr_image(payload.get('qrDataUri') or payload.get('qrPath'))
         stop_polling()
@@ -129,10 +164,10 @@ def nap_tien(self):
         stop_polling()
         top.destroy()
 
-    self.modal_buttons(container, [
-        {'text':'Tạo mã QR', 'style':'Accent.TButton', 'command':tao_qr},
-        {'text':'Đóng', 'style':'Danger.TButton', 'command':close_modal}
-    ])
+    btn_frame = ttk.Frame(container)
+    btn_frame.pack(fill='x')
+    ttk.Button(btn_frame, text='🎯 Tạo mã QR', style='Accent.TButton', command=tao_qr).pack(side='left', padx=(0, 8))
+    ttk.Button(btn_frame, text='✖ Đóng', style='Danger.TButton', command=close_modal).pack(side='left')
     top.protocol('WM_DELETE_WINDOW', close_modal)
 
 def xem_don_user(self):
@@ -189,6 +224,7 @@ def xem_don_user(self):
             messagebox.showinfo('Thành công', 'Thanh toán thành công!')
             self.refresh_lists()
             tv.item(sel[0], values=(dt.maDat, dt.maTour, dt.soNguoi, 'Đã thanh toán', self.format_money(dt.tongTien)))
+            top.destroy()
     def huy_don():
         sel = tv.selection()
         if not sel:
@@ -277,11 +313,11 @@ def book_selected_tour_for_user(self):
         self.ql.danhSachDatTour.append(dt)
         luu_tat_ca(self.ql)
         self.refresh_lists()
-        if pay_now:
-            messagebox.showinfo('Thông báo', 'Đặt tour và thanh toán thành công!')
-        else:
-            messagebox.showinfo('Thông báo', 'Đặt tour thành công! Vui lòng thanh toán trong "Đơn của tôi".')
         top.destroy()
+        if pay_now:
+            messagebox.showinfo('Thành công', 'Đặt tour và thanh toán thành công!')
+        else:
+            messagebox.showinfo('Thành công', 'Đặt tour thành công! Vui lòng thanh toán trong "Đơn của tôi".')
     btn_bar = ttk.Frame(container)
     btn_bar.pack(fill='x', pady=(16,0))
     ttk.Button(btn_bar, text='Đặt trước (chưa thanh toán)', style='App.TButton', command=lambda: create_booking(False)).pack(side='left', padx=4)

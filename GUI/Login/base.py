@@ -148,22 +148,25 @@ class GiaoDienCoSo:
         ttk.Button(buttons, text='Đăng ký guest', style='Accent.TButton', command=self.dang_ky_guest).pack(side='left', padx=8)
         ttk.Button(buttons, text='Thoát', style='Danger.TButton', command=self.root.quit).pack(side='right')
 
-    def create_modal(self, title, size=None):
+    def create_modal(self, title, size=None, maximize=True):
         top = tk.Toplevel(self.root)
         top.title(title)
         top.configure(bg=self.theme.bg)
         top.transient(self.root)
         top.grab_set()
         width, height = size if size else self.modal_geometry
-        try:
-            sw = self.root.winfo_screenwidth()
-            sh = self.root.winfo_screenheight()
-            top.geometry(f"{sw}x{sh}+0+0")
+        if maximize:
             try:
-                top.state('zoomed')
+                sw = self.root.winfo_screenwidth()
+                sh = self.root.winfo_screenheight()
+                top.geometry(f"{sw}x{sh}+0+0")
+                try:
+                    top.state('zoomed')
+                except Exception:
+                    pass
             except Exception:
-                pass
-        except Exception:
+                self.theme.center(top, width, height)
+        else:
             self.theme.center(top, width, height)
         container = ttk.Frame(top, style='App.TFrame', padding=20)
         container.pack(fill='both', expand=True)
@@ -710,23 +713,48 @@ class GiaoDienCoSo:
         self.hien_thi_tour(dataset=base)
 
     def prompt_search(self, entity):
-        keyword = simpledialog.askstring('Tìm kiếm', f'Nhập từ khóa {entity}', parent=self.root)
-        if keyword is None:
-            return
-        keyword = keyword.strip()
-        if not keyword:
-            return
-        if entity == 'tour':
-            self.search_var.set(keyword)
-            self.search_tour()
-        elif entity == 'customer':
-            if hasattr(self, 'kh_search_var'):
-                self.kh_search_var.set(keyword)
-            self.search_khach()
-        elif entity == 'guide':
-            if hasattr(self, 'hdv_search_var'):
-                self.hdv_search_var.set(keyword)
-            self.search_hdv()
+        top = tk.Toplevel(self.root)
+        top.title('🔍 Tìm kiếm')
+        top.geometry('500x200')
+        top.transient(self.root)
+        top.grab_set()
+        self.theme.center(top, 500, 200)
+        
+        container = ttk.Frame(top, style='Card.TFrame', padding=20)
+        container.pack(fill='both', expand=True)
+        
+        ttk.Label(container, text=f'🔎 Tìm kiếm {entity}', style='Title.TLabel').pack(anchor='w', pady=(0, 12))
+        ttk.Label(container, text='Nhập từ khóa tìm kiếm', style='Body.TLabel').pack(anchor='w', pady=(0, 8))
+        
+        keyword_var = tk.StringVar()
+        entry = ttk.Entry(container, textvariable=keyword_var, font=('Segoe UI', 11))
+        entry.pack(fill='x', pady=(0, 16))
+        entry.focus()
+        
+        def do_search():
+            keyword = keyword_var.get().strip()
+            if not keyword:
+                messagebox.showwarning('Chú ý', 'Vui lòng nhập từ khóa tìm kiếm', parent=top)
+                return
+            if entity == 'Tour':
+                self.search_var.set(keyword)
+                self.search_tour()
+            elif entity == 'Khách hàng':
+                if hasattr(self, 'kh_search_var'):
+                    self.kh_search_var.set(keyword)
+                self.search_khach()
+            elif entity == 'Hướng dẫn viên':
+                if hasattr(self, 'hdv_search_var'):
+                    self.hdv_search_var.set(keyword)
+                self.search_hdv()
+            top.destroy()
+        
+        btn_frame = ttk.Frame(container)
+        btn_frame.pack(fill='x')
+        ttk.Button(btn_frame, text='🔍 Tìm kiếm', style='Accent.TButton', command=do_search).pack(side='left', padx=(0, 8))
+        ttk.Button(btn_frame, text='✖ Hủy', style='Danger.TButton', command=top.destroy).pack(side='left')
+        
+        entry.bind('<Return>', lambda e: do_search())
 
     def search_khach(self):
         if not getattr(self, 'tv_kh', None):
@@ -786,8 +814,12 @@ class GiaoDienCoSo:
             counts[d.maTour] = counts.get(d.maTour, 0) + 1
             if d.trangThai == 'da_thanh_toan':
                 revenue_per_tour[d.maTour] = revenue_per_tour.get(d.maTour, 0) + d.tongTien
-        for ma, c in sorted(counts.items(), key=lambda x: x[1], reverse=True):
-            self.stats_tv_tour.insert('', tk.END, values=(ma, c, self.format_money(revenue_per_tour.get(ma,0))))
+        tour_stats = []
+        for ma, c in counts.items():
+            tour_stats.append((ma, revenue_per_tour.get(ma, 0), c))
+        tour_stats.sort(key=lambda item: (-item[1], item[2], item[0]))
+        for ma, revenue, count in tour_stats:
+            self.stats_tv_tour.insert('', tk.END, values=(ma, count, self.format_money(revenue)))
         topcus = {}
         for d in self.ql.danhSachDatTour:
             if d.trangThai == 'da_thanh_toan':

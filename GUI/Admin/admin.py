@@ -161,7 +161,10 @@ def thong_ke(self):
         counts[d.maTour] = counts.get(d.maTour, 0) + 1
         if d.trangThai == 'da_thanh_toan':
             revenue_per_tour[d.maTour] = revenue_per_tour.get(d.maTour, 0) + d.tongTien
-    popular = sorted(counts.items(), key=lambda x: x[1], reverse=True)
+    tour_stats = []
+    for ma, c in counts.items():
+        tour_stats.append((ma, revenue_per_tour.get(ma, 0), c))
+    tour_stats.sort(key=lambda item: (-item[1], item[2], item[0]))
     topcus = {}
     for d in self.ql.danhSachDatTour:
         if d.trangThai == 'da_thanh_toan':
@@ -193,7 +196,7 @@ def thong_ke(self):
     tabs.add(tour_tab, text='🎯 Tour phổ biến')
     tabs.add(customer_tab, text='⭐ Khách hàng thân thiết')
     
-    ttk.Label(tour_tab, text='Xếp hạng tour theo lượt đặt và doanh thu', style='Body.TLabel').pack(anchor='w', pady=(0,8))
+    ttk.Label(tour_tab, text='Xếp hạng tour theo doanh thu (giảm dần) và lượt đặt (tăng dần khi trùng doanh thu)', style='Body.TLabel').pack(anchor='w', pady=(0,8))
     tv1 = ttk.Treeview(tour_tab, columns=('Rank','MaTour','SoDat','DoanhThu'), show='headings')
     for col, text, w in (
         ('Rank','#',50),
@@ -206,9 +209,8 @@ def thong_ke(self):
     tv1.configure(yscrollcommand=scr1.set)
     tv1.pack(side='left', fill='both', expand=True)
     scr1.pack(side='right', fill='y')
-    for rank, (ma, c) in enumerate(popular, start=1):
-        medal = '🥇' if rank == 1 else '🥈' if rank == 2 else '🥉' if rank == 3 else f'{rank}'
-        tv1.insert('', tk.END, values=(medal, ma, c, self.format_money(revenue_per_tour.get(ma,0))))
+    for rank, (ma, revenue, count) in enumerate(tour_stats, start=1):
+        tv1.insert('', tk.END, values=(rank, ma, count, self.format_money(revenue)))
     self.apply_zebra(tv1)
     
     ttk.Label(customer_tab, text='Xếp hạng khách hàng theo tổng chi tiêu', style='Body.TLabel').pack(anchor='w', pady=(0,8))

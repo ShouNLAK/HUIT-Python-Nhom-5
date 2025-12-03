@@ -5,13 +5,13 @@ from GUI import GiaoDienCoSo
 
 def chay():
     ql = QuanLiDuLich()
-    tours, khs, dats, hdvs, users, nap_tiens = tai_tat_ca()
+    tours, khs, dats, hdvs, users = tai_tat_ca()
     ql.danhSachTour = tours
     ql.danhSachKhachHang = khs
     ql.danhSachDatTour = dats
     ql.danhSachHDV = hdvs
     ql.users = users or []
-    ql.danhSachNapTien = nap_tiens or []
+    ql.danhSachNapTien = []
     ql.set_auto_save(lambda: luu_tat_ca(ql))
     ql.ensure_default_accounts()
     ql.dong_bo_tai_khoan_lien_ket()

@@ -437,7 +437,7 @@ def them_khach(self):
     ])
 
 def dang_ky_guest(self):
-    top, container = self.create_modal('Đăng ký tài khoản khách')
+    top, container = self.create_modal('Đăng ký tài khoản khách', size=(580, 480), maximize=False)
     form = ttk.Frame(container)
     form.pack(fill='x')
     fields = [
@@ -569,6 +569,11 @@ def huy_dat(self, preset_ma_dat=None):
 def dang_xuat(self):
     luu_tat_ca(self.ql)
     self.ql.Logout()
+    try:
+        self.root.state('normal')
+        self.root.geometry('460x260')
+    except Exception:
+        pass
     self.build_dang_nhap()
 
 def quyen_admin(self):

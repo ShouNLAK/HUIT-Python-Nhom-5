@@ -1,44 +1,44 @@
 [
   {
     "maKH": "KH001",
-    "tenKH": "Nguyễn Văn An",
-    "soDT": "0901000001",
-    "email": "an.nguyen@gmail.com",
-    "soDu": 73500000.0
+    "tenKH": "Đặng Quang Huy",
+    "soDT": "0988712554",
+    "email": "huy.dang92@gmail.com",
+    "soDu": 14520300
   },
   {
     "maKH": "KH002",
-    "tenKH": "Trần Thị Bích",
-    "soDT": "0902000002",
-    "email": "bich.tran@gmail.com",
-    "soDu": 20000000
+    "tenKH": "Lê Hoàng Bảo Trâm",
+    "soDT": "0936110298",
+    "email": "baotram.kitty@yahoo.com",
+    "soDu": 3450000
   },
   {
     "maKH": "KH003",
-    "tenKH": "Lê Văn Cường",
-    "soDT": "0903000003",
-    "email": "cuong.le@gmail.com",
-    "soDu": 100000000
+    "tenKH": "Nguyễn Thanh Tùng",
+    "soDT": "0912339887",
+    "email": "tungnt.construction@gmail.com",
+    "soDu": 245680000
   },
   {
     "maKH": "KH004",
-    "tenKH": "Phạm Thị Dung",
-    "soDT": "0904000004",
-    "email": "dung.pham@gmail.com",
-    "soDu": 5000000
+    "tenKH": "Võ Thị Mỹ Duyên",
+    "soDT": "0384552119",
+    "email": "myduyen_vo1998@gmail.com",
+    "soDu": 8900500
   },
   {
     "maKH": "KH005",
-    "tenKH": "Hoàng Văn Em",
-    "soDT": "0905000005",
-    "email": "em.hoang@gmail.com",
-    "soDu": 15000000
+    "tenKH": "Trần Đức Thắng",
+    "soDT": "0772441905",
+    "email": "thangtran.logistics@outlook.com",
+    "soDu": 125500
   },
   {
     "maKH": "KH006",
-    "tenKH": "Nguyễn Đại Tài",
-    "soDT": "0123466888",
-    "email": "Tai@gmail.com",
-    "soDu": 10000000.0
+    "tenKH": "Phan Nhật Minh",
+    "soDT": "0868992301",
+    "email": "pnminh.design@gmail.com",
+    "soDu": 56230000
   }
 ]

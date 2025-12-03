@@ -220,30 +220,6 @@ try:
 except Exception:
     _BING_MAP_CLIENT = None
 
-def get_place_image(self, place):
-    try:
-        q = urllib.parse.quote(place)
-        url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={q}&format=json&utf8=1"
-        req = urllib.request.Request(url, headers={'User-Agent': 'HUIT-App'})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.load(resp)
-            items = data.get('query', {}).get('search', [])
-            if not items:
-                return None
-            title = items[0].get('title')
-        url2 = f"https://en.wikipedia.org/w/api.php?action=query&titles={urllib.parse.quote(title)}&prop=pageimages&format=json&pithumbsize=600"
-        req2 = urllib.request.Request(url2, headers={'User-Agent': 'HUIT-App'})
-        with urllib.request.urlopen(req2, timeout=10) as resp2:
-            data2 = json.load(resp2)
-            pages = data2.get('query', {}).get('pages', {})
-            for p in pages.values():
-                thumb = p.get('thumbnail', {})
-                if thumb:
-                    return thumb.get('source')
-    except Exception:
-        return None
-    return None
-
 def search_place_photo(self, place):
     """Use Google Images (no API key) to find a representative location photo."""
     try:
@@ -314,11 +290,6 @@ def _fetch_place_preview(self, place, date_str=None):
         if place:
             try:
                 photo_url = self.search_place_photo(place)
-            except Exception:
-                photo_url = None
-        if not photo_url:
-            try:
-                photo_url = self.get_place_image(place)
             except Exception:
                 photo_url = None
         photo_bytes = None
@@ -768,12 +739,10 @@ def build_inline_lich_editor(self, parent, initial=None):
                     lk = tk.Label(img_frame, text='🖼 Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
                     lk.pack(padx=8, pady=24)
                     lk.bind('<Button-1>', lambda e, u=img_url: webbrowser.open(u))
-                    Tooltip(lk, img_url)
             else:
                 lk = tk.Label(img_frame, text='🖼 Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
                 lk.pack(padx=8, pady=24)
                 lk.bind('<Button-1>', lambda e, u=img_url: webbrowser.open(u))
-                Tooltip(lk, img_url)
         
         info_card = tk.Frame(content_frame, bg='#ffffff', bd=1, relief='solid')
         info_card.pack(fill='x', padx=4, pady=(0,4))
@@ -929,7 +898,6 @@ def on_tour_select(self, event=None):
     elif role == 'user':
         self.update_user_right_panel(ma)
 
-GiaoDienCoSo.get_place_image = get_place_image
 GiaoDienCoSo.search_place_photo = search_place_photo
 GiaoDienCoSo.download_image_bytes = download_image_bytes
 GiaoDienCoSo._fetch_place_preview = _fetch_place_preview
