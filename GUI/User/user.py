@@ -17,7 +17,7 @@ def nap_tien(self):
     # Header section
     header_frame = ttk.Frame(container, style='Card.TFrame', padding=16)
     header_frame.pack(fill='x', pady=(0, 16))
-    ttk.Label(header_frame, text='💳 Nạp tiền vào tài khoản', style='Title.TLabel').pack(anchor='w')
+    ttk.Label(header_frame, text='Nạp tiền vào tài khoản', style='Title.TLabel').pack(anchor='w')
     ttk.Label(header_frame, text='Quét mã QR để nạp tiền nhanh chóng và an toàn', style='Body.TLabel').pack(anchor='w', pady=(4,0))
     
     # Form nhập số tiền
@@ -32,7 +32,7 @@ def nap_tien(self):
     entries = {'sotien': amount_entry}
     
     # Status
-    status_var = tk.StringVar(value='✨ Nhập số tiền và nhấn "Tạo mã QR" để bắt đầu')
+    status_var = tk.StringVar(value='Nhập số tiền và nhấn "Tạo mã QR" để bắt đầu')
     status_label = ttk.Label(container, textvariable=status_var, style='BodyBold.TLabel', wraplength=620)
     status_label.pack(anchor='w', pady=(0, 12))
     
@@ -58,7 +58,7 @@ def nap_tien(self):
         self.root.clipboard_clear()
         self.root.clipboard_append(val)
         messagebox.showinfo('Sao chép', 'Đã sao chép liên kết vào clipboard')
-    ttk.Button(link_row, text='📋 Sao chép', style='Ghost.TButton', command=copy_link).pack(side='left')
+    ttk.Button(link_row, text='Sao chép', style='Ghost.TButton', command=copy_link).pack(side='left')
     
     request_state = {'id': None, 'job': None}
 
@@ -116,7 +116,7 @@ def nap_tien(self):
         state = info.get('trangThai')
         if state == 'confirmed':
             amount = info.get('soTien', 0)
-            status_var.set(f"✅ Đã cộng {self.format_money(amount)} vào ví")
+            status_var.set(f"Đã cộng {self.format_money(amount)} vào ví")
             stop_polling()
             luu_tat_ca(self.ql)
             self.hien_thi_khach_user()
@@ -134,11 +134,11 @@ def nap_tien(self):
             messagebox.showinfo('Thanh toán thành công', message)
             return
         if state == 'expired':
-            status_var.set('⏰ Mã QR đã hết hạn, vui lòng tạo lại')
+            status_var.set('Mã QR đã hết hạn, vui lòng tạo lại')
             stop_polling()
             return
         expires = info.get('expiresAt') or ''
-        status_var.set(f'⏳ Đang chờ bạn quét QR... (Hết hạn: {expires})')
+        status_var.set(f'Đang chờ bạn quét QR... (Hết hạn: {expires})')
         request_state['job'] = self.root.after(2000, poll_status)
 
     def tao_qr():
@@ -154,7 +154,7 @@ def nap_tien(self):
             messagebox.showerror('Lỗi', payload)
             return
         request_state['id'] = payload['maGiaoDich']
-        status_var.set(f'📱 Đang chờ quét mã QR để nạp {self.format_money(so)}...')
+        status_var.set(f'Đang chờ quét mã QR để nạp {self.format_money(so)}...')
         url_var.set(payload.get('qrUrl', ''))
         update_qr_image(payload.get('qrDataUri') or payload.get('qrPath'))
         stop_polling()

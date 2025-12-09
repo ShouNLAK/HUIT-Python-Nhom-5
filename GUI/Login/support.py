@@ -663,7 +663,7 @@ def build_inline_lich_editor(self, parent, initial=None):
     form_section = tk.Frame(right)
     form_section.pack(fill='x', pady=(0,12))
     
-    tk.Label(form_section, text='Ngày (YYYY-MM-DD)', font=('Segoe UI', 10)).grid(row=0, column=0, sticky='w', pady=4)
+    tk.Label(form_section, text='Ngày (DD/MM/YYYY)', font=('Segoe UI', 10)).grid(row=0, column=0, sticky='w', pady=4)
     tk.Label(form_section, text='Địa điểm', font=('Segoe UI', 10)).grid(row=1, column=0, sticky='w', pady=4)
     tk.Label(form_section, text='Mô tả', font=('Segoe UI', 10)).grid(row=2, column=0, sticky='w', pady=4)
     tk.Label(form_section, text='Phương tiện', font=('Segoe UI', 10)).grid(row=3, column=0, sticky='w', pady=4)
@@ -676,6 +676,15 @@ def build_inline_lich_editor(self, parent, initial=None):
     e_mo.grid(row=2, column=1, sticky='we', pady=4, padx=(8,0))
     e_pt.grid(row=3, column=1, sticky='we', pady=4, padx=(8,0))
     form_section.columnconfigure(1, weight=1)
+    
+    def auto_format_date_support(event=None):
+        content = e_ngay.get().strip()
+        if len(content) == 8 and content.isdigit():
+            formatted = f"{content[:2]}/{content[2:4]}/{content[4:]}"
+            e_ngay.delete(0, tk.END)
+            e_ngay.insert(0, formatted)
+            e_ngay.icursor(tk.END)
+    e_ngay.bind('<KeyRelease>', auto_format_date_support)
     
     preview_container = tk.LabelFrame(right, text='Xem trước địa điểm', font=('Segoe UI', 10, 'bold'), bd=2, relief='groove')
     preview_container.pack(fill='both', expand=True, pady=(0,8))
@@ -696,7 +705,7 @@ def build_inline_lich_editor(self, parent, initial=None):
             tk.Label(preview, text='Nhập địa điểm để xem thông tin và hình ảnh', font=('Segoe UI', 10), fg='#666', bg='#f9f9f9').pack(expand=True)
             return
         if isinstance(result, Exception) or isinstance(result, dict) and result.get('error'):
-            tk.Label(preview, text='⚠ Lỗi khi tải dữ liệu địa điểm', font=('Segoe UI', 10), fg='#c44536', bg='#f9f9f9').pack(expand=True)
+            tk.Label(preview, text='Lỗi khi tải dữ liệu địa điểm', font=('Segoe UI', 10), fg='#c44536', bg='#f9f9f9').pack(expand=True)
             return
         display = result.get('display_name')
         short = result.get('short_name')
@@ -736,11 +745,11 @@ def build_inline_lich_editor(self, parent, initial=None):
                     lbl.image = photo
                     lbl.pack(padx=8, pady=8)
                 except Exception:
-                    lk = tk.Label(img_frame, text='🖼 Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
+                    lk = tk.Label(img_frame, text='Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
                     lk.pack(padx=8, pady=24)
                     lk.bind('<Button-1>', lambda e, u=img_url: webbrowser.open(u))
             else:
-                lk = tk.Label(img_frame, text='🖼 Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
+                lk = tk.Label(img_frame, text='Nhấn để xem ảnh trên trình duyệt', fg='#1b6dc1', cursor='hand2', bg='#ffffff', font=('Segoe UI', 10, 'underline'))
                 lk.pack(padx=8, pady=24)
                 lk.bind('<Button-1>', lambda e, u=img_url: webbrowser.open(u))
         
@@ -756,7 +765,7 @@ def build_inline_lich_editor(self, parent, initial=None):
         tk.Label(info_card, text=title_text, font=('Segoe UI', 12, 'bold'), bg='#ffffff', fg='#1f2933', wraplength=460, justify='left').pack(anchor='w', padx=10, pady=(10,4))
         
         if display and display != short:
-            tk.Label(info_card, text=f'📍 {display}', font=('Segoe UI', 9), bg='#ffffff', fg='#52606d', wraplength=460, justify='left').pack(anchor='w', padx=10, pady=(0,4))
+            tk.Label(info_card, text=f'{display}', font=('Segoe UI', 9), bg='#ffffff', fg='#52606d', wraplength=460, justify='left').pack(anchor='w', padx=10, pady=(0,4))
         
         if lat and lon:
             coord_frame = tk.Frame(info_card, bg='#ffffff')

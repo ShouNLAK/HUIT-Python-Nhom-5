@@ -9,39 +9,64 @@ from Class.dat_tour import DatTour
 from QuanLy.storage import luu_tat_ca
 from GUI.Login.base import GiaoDienCoSo
 
+
+def tu_dong_dinh_dang_ngay(entry_widget):
+    """Auto-format date entry: when user types 8 digits (e.g., 02122025), auto-insert slashes to make DD/MM/YYYY."""
+    def on_key_release(event=None):
+        content = entry_widget.get().strip()
+        if len(content) == 8 and content.isdigit():
+            formatted = f"{content[:2]}/{content[2:4]}/{content[4:]}"
+            entry_widget.delete(0, tk.END)
+            entry_widget.insert(0, formatted)
+            entry_widget.icursor(tk.END)
+    entry_widget.bind('<KeyRelease>', on_key_release)
+
+
 def sua_khach(self):
     if not self.quyen_admin():
         return
     kh = self.get_selected_customer()
     if not kh:
         return
-    top, container = self.create_modal('Cập nhật khách hàng', size=(520, 360))
+    top, container = self.create_modal('Cập nhật khách hàng')
     form = ttk.Frame(container)
     form.pack(fill='x')
     fields = [
-        {'name':'ten','label':'Tên khách','default':kh.tenKH},
-        {'name':'sdt','label':'Số điện thoại','default':kh.soDT},
+        {'name':'ten','label':'Họ và tên','default':kh.tenKH},
+        {'name':'sdt','label':'Số điện thoại *','default':kh.soDT},
         {'name':'email','label':'Email','default':kh.email},
         {'name':'sodu','label':'Số dư','default':str(kh.soDu)}
     ]
     entries = self.build_form_fields(form, fields)
+
     def ok():
-        ten = entries['ten'].get()
-        sdt = entries['sdt'].get()
-        email = entries['email'].get()
+        ten = entries['ten'].get().strip()
+        sdt = entries['sdt'].get().strip()
+        email = entries['email'].get().strip()
         try:
             so_du = float(entries['sodu'].get())
         except Exception:
             messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return
+        if not ten or not sdt or not email:
+            messagebox.showerror('Lỗi', 'Vui lòng nhập đủ Họ tên, SĐT, Email')
+            return
+        if not self.ql.hop_le_so_dien_thoai_vn(sdt):
+            messagebox.showerror('Lỗi', 'Số điện thoại phải 10 số, đúng đầu số VN')
+            return
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            messagebox.showerror('Lỗi', 'Email không hợp lệ')
+            return
         if self.ql.CapNhatKhachHang(maKH=kh.maKH, tenKH=ten, soDT=sdt, email=email, soDu=so_du):
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
             top.destroy()
+
     self.modal_buttons(container, [
         {'text':'Lưu', 'style':'Accent.TButton', 'command':ok},
         {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
     ])
+
 
 def xoa_khach(self):
     if not self.quyen_admin():
@@ -84,14 +109,14 @@ def them_hdv(self):
     fields = [
         {'name':'ma','label':'Mã HDV *', 'help': 'VD: HDV001'},
         {'name':'ten','label':'Họ và tên *', 'help': 'Tên đầy đủ'},
-        {'name':'sdt','label':'Số điện thoại *', 'help': 'SĐT liên lạc'},
+        {'name':'sdt','label':'Số điện thoại *', 'help': '10 số, đúng đầu số VN'},
         {'name':'exp','label':'Kinh nghiệm (năm) *', 'help': 'Số năm kinh nghiệm'}
     ]
     entries = self.build_form_fields(form_card, fields)
     
     help_frame = ttk.Frame(container, style='Card.TFrame', padding=8)
     help_frame.pack(fill='x', pady=(12,0))
-    ttk.Label(help_frame, text='💡 Tất cả các trường đều bắt buộc phải điền', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
+    ttk.Label(help_frame, text='Tất cả các trường đều bắt buộc phải điền', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
     
     def ok():
         data = {
@@ -108,6 +133,9 @@ def them_hdv(self):
         if any(str(h.get('maHDV')) == data['maHDV'] for h in self.ql.danhSachHDV):
             messagebox.showerror('Lỗi', 'Mã HDV đã tồn tại trong hệ thống')
             return
+        if not self.ql.hop_le_so_dien_thoai_vn(data['sdt']):
+            messagebox.showerror('Lỗi', 'Số điện thoại HDV phải 10 số, đúng đầu số VN')
+            return
         self.ql.danhSachHDV.append(data)
         username = self.ql.ensure_user_for_hdv(data)
         luu_tat_ca(self.ql)
@@ -118,8 +146,8 @@ def them_hdv(self):
         else:
             messagebox.showinfo('Thành công', f'Đã thêm HDV {data["tenHDV"]}')
     self.modal_buttons(container, [
-        {'text':'💾 Thêm HDV', 'style':'Accent.TButton', 'command':ok},
-        {'text':'❌ Đóng', 'style':'Danger.TButton', 'command':top.destroy}
+        {'text':'Thêm HDV', 'style':'Accent.TButton', 'command':ok},
+        {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
     ])
 
 def sua_hdv(self):
@@ -141,6 +169,9 @@ def sua_hdv(self):
         hdv['tenHDV'] = entries['ten'].get().strip()
         hdv['sdt'] = entries['sdt'].get().strip()
         hdv['kinhNghiem'] = entries['exp'].get().strip()
+        if not self.ql.hop_le_so_dien_thoai_vn(hdv['sdt']):
+            messagebox.showerror('Lỗi', 'Số điện thoại HDV phải 10 số, đúng đầu số VN')
+            return
         self.ql.DongBoTenTuHDV(hdv.get('maHDV'))
         self.ql.ensure_user_for_hdv(hdv)
         luu_tat_ca(self.ql)
@@ -241,12 +272,31 @@ def them_tour(self):
     hdv_combo = ttk.Combobox(meta, values=hdv_values, state='readonly', font=self.font_body)
     hdv_combo.grid(row=0, column=1, sticky='ew', padx=(8,0), pady=4)
     entries['hdv'] = hdv_combo
-    add_entry(meta, 'Ngày đi (YYYY-MM-DD)', 'ngaydi', 1)
-    add_entry(meta, 'Ngày về (YYYY-MM-DD)', 'ngayve', 2)
+    add_entry(meta, 'Ngày đi (DD/MM/YYYY)', 'ngaydi', 1)
+    add_entry(meta, 'Ngày về (DD/MM/YYYY)', 'ngayve', 2)
+    
+    tu_dong_dinh_dang_ngay(entries['ngaydi'])
+    tu_dong_dinh_dang_ngay(entries['ngayve'])
+
+    ngay_format = ttk.Label(meta, text='', style='Body.TLabel')
+    ngay_format.grid(row=3, column=0, columnspan=2, sticky='w')
+
+    def cap_nhat_dien_giai_ngay():
+        d1 = self.ql.phan_tich_ngay(entries['ngaydi'].get())
+        d2 = self.ql.phan_tich_ngay(entries['ngayve'].get())
+        parts = []
+        if d1:
+            parts.append(f"Đi: {self.ql.dien_giai_ngay(d1)}")
+        if d2:
+            parts.append(f"Về: {self.ql.dien_giai_ngay(d2)}")
+        ngay_format.config(text=' | '.join(parts))
+
+    entries['ngaydi'].bind('<FocusOut>', lambda e: cap_nhat_dien_giai_ngay())
+    entries['ngayve'].bind('<FocusOut>', lambda e: cap_nhat_dien_giai_ngay())
 
     tips = ttk.LabelFrame(left_col, text='Ghi chú', style='Card.TLabelframe', padding=10)
     tips.pack(fill='x', pady=(12,0))
-    ttk.Label(tips, text='• Sử dụng lịch trình bên phải để thêm các mốc cụ thể\n• Thời gian trong lịch trình nên nằm trong khoảng ngày đi/đến', style='Body.TLabel', wraplength=280, justify='left').pack(anchor='w')
+    ttk.Label(tips, text='Nhập các mốc lịch trình ở cột phải. Thời gian phải nằm trong khoảng ngày đi và ngày về.', style='Body.TLabel', wraplength=280, justify='left').pack(anchor='w')
 
     right_lich = ttk.LabelFrame(right_col, text='Biên tập lịch trình trực quan', style='Card.TLabelframe', padding=12)
     right_lich.pack(fill='both', expand=True)
@@ -268,13 +318,22 @@ def them_tour(self):
             lich = editor['get_items']()
             if not ma or not ten:
                 raise Exception('Thiếu thông tin bắt buộc')
+            d1 = self.ql.phan_tich_ngay(ngayDi) if ngayDi else None
+            d2 = self.ql.phan_tich_ngay(ngayVe) if ngayVe else None
+            if ngayDi and not d1:
+                raise Exception('Ngày đi sai định dạng (DD/MM/YYYY)')
+            if ngayVe and not d2:
+                raise Exception('Ngày về sai định dạng (DD/MM/YYYY)')
+            today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+            if d1 and d1 < today:
+                raise Exception('Không được đặt ngày đi trước ngày hệ thống')
             tour = Tour(ma, ten, gia, socho, lich or [], hdv, ngayDi=ngayDi, ngayVe=ngayVe)
             if ngayDi and ngayVe and lich:
-                d1 = datetime.strptime(ngayDi, '%Y-%m-%d')
-                d2 = datetime.strptime(ngayVe, '%Y-%m-%d')
                 for entry in lich:
                     if 'ngay' in entry and entry['ngay']:
-                        di = datetime.strptime(entry['ngay'], '%Y-%m-%d')
+                        di = self.ql.phan_tich_ngay(entry['ngay'])
+                        if not di:
+                            raise Exception('Ngày trong lịch trình sai định dạng (DD/MM/YYYY)')
                         if di < d1 or di > d2:
                             raise Exception('Lịch trình ngoài phạm vi ngày tour')
         except Exception as e:
@@ -317,8 +376,8 @@ def sua_tour(self):
         ('Giá (VND) *', 'gia', str(t.gia)),
         ('Số chỗ tối đa *', 'socho', str(t.soCho)),
         ('Mã HDV', 'hdv', str(t.huongDanVien or '')),
-        ('Ngày đi (YYYY-MM-DD)', 'ngaydi', getattr(t,'ngayDi','') or ''),
-        ('Ngày về (YYYY-MM-DD)', 'ngayve', getattr(t,'ngayVe','') or '')
+        ('Ngày đi (DD/MM/YYYY)', 'ngaydi', getattr(t,'ngayDi','') or ''),
+        ('Ngày về (DD/MM/YYYY)', 'ngayve', getattr(t,'ngayVe','') or '')
     ]
     entries = {}
     for idx, (label, name, default) in enumerate(field_data):
@@ -329,6 +388,10 @@ def sua_tour(self):
         e.grid(row=idx, column=1, sticky='ew', padx=(8,0), pady=4)
         entries[name] = e
     left_form.columnconfigure(1, weight=1)
+    
+    tu_dong_dinh_dang_ngay(entries['ngaydi'])
+    tu_dong_dinh_dang_ngay(entries['ngayve'])
+    
     right_lich = ttk.LabelFrame(content, text='Lịch trình chi tiết', style='Card.TLabelframe', padding=12)
     right_lich.pack(side='left', fill='both', expand=True)
     editor = self.build_inline_lich_editor(right_lich, initial=t.lichTrinh)
@@ -346,12 +409,21 @@ def sua_tour(self):
             lich = editor['get_items']()
             if not ten:
                 raise Exception('Tên tour không được để trống')
+            d1 = self.ql.phan_tich_ngay(ngayDi) if ngayDi else None
+            d2 = self.ql.phan_tich_ngay(ngayVe) if ngayVe else None
+            if ngayDi and not d1:
+                raise Exception('Ngày đi sai định dạng (DD/MM/YYYY)')
+            if ngayVe and not d2:
+                raise Exception('Ngày về sai định dạng (DD/MM/YYYY)')
+            today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+            if d1 and d1 < today:
+                raise Exception('Không được đặt ngày đi trước ngày hệ thống')
             if ngayDi and ngayVe and lich:
-                d1 = datetime.strptime(ngayDi, '%Y-%m-%d')
-                d2 = datetime.strptime(ngayVe, '%Y-%m-%d')
                 for entry in lich:
                     if 'ngay' in entry and entry['ngay']:
-                        di = datetime.strptime(entry['ngay'], '%Y-%m-%d')
+                        di = self.ql.phan_tich_ngay(entry['ngay'])
+                        if not di:
+                            raise Exception('Ngày trong lịch trình sai định dạng (DD/MM/YYYY)')
                         if di < d1 or di > d2:
                             raise Exception('Lịch trình ngoài phạm vi ngày tour')
         except Exception as e:
@@ -398,7 +470,7 @@ def them_khach(self):
     fields = [
         {'name':'ma','label':'Mã khách hàng *', 'help': 'VD: KH001'},
         {'name':'ten','label':'Họ và tên *', 'help': 'Tên đầy đủ của khách hàng'},
-        {'name':'sdt','label':'Số điện thoại', 'help': 'Số điện thoại liên lạc'},
+        {'name':'sdt','label':'Số điện thoại *', 'help': '10 số, đúng đầu số VN'},
         {'name':'email','label':'Email', 'help': 'Địa chỉ email'},
         {'name':'sodu','label':'Số dư ban đầu (VND)', 'help': 'Số tiền ban đầu trong ví'}
     ]
@@ -406,7 +478,7 @@ def them_khach(self):
     
     help_frame = ttk.Frame(container, style='Card.TFrame', padding=8)
     help_frame.pack(fill='x', pady=(12,0))
-    ttk.Label(help_frame, text='💡 Gợi ý: Các trường đánh dấu (*) là bắt buộc phải nhập', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
+    ttk.Label(help_frame, text='Các trường đánh dấu (*) là bắt buộc phải nhập', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
     
     def ok():
         try:
@@ -414,8 +486,11 @@ def them_khach(self):
             ten = entries['ten'].get().strip()
             sdt = entries['sdt'].get().strip()
             email = entries['email'].get().strip()
-            if not ma or not ten:
-                messagebox.showerror('Lỗi', 'Vui lòng nhập đầy đủ thông tin bắt buộc (Mã KH, Họ tên)')
+            if not ma or not ten or not sdt or not email:
+                messagebox.showerror('Lỗi', 'Vui lòng nhập đủ Mã KH, Họ tên, SĐT, Email')
+                return
+            if not self.ql.hop_le_so_dien_thoai_vn(sdt):
+                messagebox.showerror('Lỗi', 'Số điện thoại phải 10 số, đúng đầu số VN')
                 return
             soDu = float(entries['sodu'].get()) if entries['sodu'].get() else 0
         except Exception:
@@ -432,8 +507,8 @@ def them_khach(self):
             else:
                 messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}')
     self.modal_buttons(container, [
-        {'text':'💾 Lưu khách hàng', 'style':'Accent.TButton', 'command':ok},
-        {'text':'❌ Đóng', 'style':'Danger.TButton', 'command':top.destroy}
+        {'text':'Lưu khách hàng', 'style':'Accent.TButton', 'command':ok},
+        {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
     ])
 
 def dang_ky_guest(self):
@@ -457,8 +532,8 @@ def dang_ky_guest(self):
         if not username or not password or not tenthat:
             messagebox.showerror('Lỗi', 'Điền đầy đủ thông tin')
             return
-        if not phone.isdigit() or len(phone) != 10:
-            messagebox.showerror('Lỗi', 'Số điện thoại phải gồm 10 chữ số')
+        if not self.ql.hop_le_so_dien_thoai_vn(phone):
+            messagebox.showerror('Lỗi', 'Số điện thoại phải 10 số, đúng đầu số VN')
             return
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
             messagebox.showerror('Lỗi', 'Email không hợp lệ')
@@ -504,7 +579,7 @@ def dat_tour(self, preset_ma_kh=None):
         {'name':'madat','label':'Mã đặt *', 'help': 'VD: DT001'},
         {'name':'matour','label':'Mã tour *', 'help': 'Mã tour muốn đặt'},
         {'name':'songuoi','label':'Số người *', 'help': 'Số lượng người tham gia'},
-        {'name':'ngay','label':'Ngày đặt', 'help': 'YYYY-MM-DD'},
+        {'name':'ngay','label':'Ngày đặt', 'help': 'DD/MM/YYYY'},
         {'name':'makh','label':'Mã khách hàng *', 'help': 'Mã KH đặt tour'}
     ]
     entries = self.build_form_fields(form_card, fields)
@@ -513,9 +588,11 @@ def dat_tour(self, preset_ma_kh=None):
         entries['makh'].insert(0, preset_ma_kh)
         entries['makh'].configure(state='readonly')
     
+    tu_dong_dinh_dang_ngay(entries['ngay'])
+    
     help_frame = ttk.Frame(container, style='Card.TFrame', padding=8)
     help_frame.pack(fill='x', pady=(12,0))
-    ttk.Label(help_frame, text='💡 Đảm bảo mã tour và mã khách hàng đã tồn tại trong hệ thống', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
+    ttk.Label(help_frame, text='Đảm bảo mã tour và mã khách hàng đã tồn tại trong hệ thống', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
     
     def ok():
         maKH = entries['makh'].get() if self.ql.currentUser and self.ql.currentUser.role == 'admin' else (self.ql.currentUser.maKH if self.ql.currentUser else '')
@@ -527,6 +604,11 @@ def dat_tour(self, preset_ma_kh=None):
             if not madat or not matour or not maKH:
                 messagebox.showerror('Lỗi', 'Vui lòng điền đầy đủ thông tin bắt buộc')
                 return
+            if ngay:
+                parsed = self.ql.phan_tich_ngay(ngay)
+                if not parsed:
+                    messagebox.showerror('Lỗi', 'Ngày đặt không đúng định dạng (DD/MM/YYYY)')
+                    return
             dt = DatTour(madat, maKH, matour, songuoi, ngay)
         except ValueError:
             messagebox.showerror('Lỗi', 'Số người phải là số nguyên hợp lệ')
@@ -534,14 +616,15 @@ def dat_tour(self, preset_ma_kh=None):
         except Exception as e:
             messagebox.showerror('Lỗi', f'Dữ liệu không hợp lệ: {e}')
             return
+
         if self.ql.DatTourMoi(dt):
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thành công', f'Đã tạo đơn đặt tour {madat}')
             self.refresh_lists()
             top.destroy()
     self.modal_buttons(container, [
-        {'text':'✅ Đặt tour', 'style':'Accent.TButton', 'command':ok},
-        {'text':'❌ Đóng', 'style':'Danger.TButton', 'command':top.destroy}
+        {'text':'Đặt tour', 'style':'Accent.TButton', 'command':ok},
+        {'text':'Đóng', 'style':'Danger.TButton', 'command':top.destroy}
     ])
 
 def huy_dat(self, preset_ma_dat=None):

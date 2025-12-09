@@ -391,15 +391,16 @@ class GiaoDienCoSo:
         ttk.Label(left_head, text='Danh sách tour', style='Title.TLabel').pack(side='left')
         tour_frame = ttk.Frame(left_panel)
         tour_frame.pack(fill='both', expand=True)
-        self.tv_tour = ttk.Treeview(tour_frame, columns=('MaTour','TenTour','Gia','SoCho','HDV'), show='headings')
+        self.tv_tour = ttk.Treeview(tour_frame, columns=('MaTour','TenTour','Gia','SoCho','TrangThai','HDV'), show='headings')
         for col, text, w in (
             ('MaTour','Mã Tour',90),
             ('TenTour','Tên Tour',200),
             ('Gia','Giá',120),
             ('SoCho','Số chỗ còn',110),
+            ('TrangThai','Trạng thái',130),
             ('HDV','HDV',90)):
             self.tv_tour.heading(col, text=text)
-            self.tv_tour.column(col, width=w, anchor='center' if col != 'TenTour' else 'w')
+            self.tv_tour.column(col, width=w, anchor='center' if col not in ('TenTour','TrangThai') else 'w')
         tour_scroll = ttk.Scrollbar(tour_frame, orient='vertical', command=self.tv_tour.yview)
         self.tv_tour.configure(yscrollcommand=tour_scroll.set)
         self.tv_tour.pack(side='left', fill='both', expand=True)
@@ -848,7 +849,8 @@ class GiaoDienCoSo:
                 capacity = t.soCho if isinstance(t.soCho, int) else 0
             booked = sum(d.soNguoi for d in self.ql.danhSachDatTour if d.maTour == t.maTour and d.trangThai == 'da_thanh_toan')
             remaining = max(0, capacity - booked)
-            self.tv_tour.insert('', tk.END, values=(t.maTour, t.tenTour, self.format_money(t.gia), remaining, t.huongDanVien))
+            trang_thai = self.ql.dien_giai_trang_thai_tour(t)
+            self.tv_tour.insert('', tk.END, values=(t.maTour, t.tenTour, self.format_money(t.gia), remaining, trang_thai, t.huongDanVien))
         self.apply_zebra(self.tv_tour)
 
     def hien_thi_tour_hdv(self):

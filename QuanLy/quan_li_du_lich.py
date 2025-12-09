@@ -55,26 +55,62 @@ class QuanLiDuLich:
             except Exception:
                 pass
 
-    def _parse_date(self, value):
+    def phan_tich_ngay(self, value):
         if not value:
             return None
-        try:
-            return datetime.strptime(str(value).strip(), "%Y-%m-%d")
-        except Exception:
-            return None
+        text = str(value).strip()
+        # Nhận dạng nhập tắt: 8 chữ số liên tục → DD/MM/YYYY
+        if text.isdigit() and len(text) == 8:
+            try:
+                dd = int(text[:2])
+                mm = int(text[2:4])
+                yyyy = int(text[4:])
+                return datetime(yyyy, mm, dd)
+            except Exception:
+                pass
+        # Thử các định dạng chuẩn: DD/MM/YYYY (preferred), DD-MM-YYYY, YYYY-MM-DD
+        for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(text[:10], fmt)
+            except Exception:
+                continue
+        return None
 
-    def _validate_date_window(self, ngayDi, ngayVe):
-        start = self._parse_date(ngayDi) if ngayDi else None
-        end = self._parse_date(ngayVe) if ngayVe else None
+    def dinh_dang_ngay_ddmmyyyy(self, date_obj):
+        if not date_obj:
+            return ""
+        return date_obj.strftime("%d/%m/%Y")
+
+    def dien_giai_ngay(self, date_obj):
+        if not date_obj:
+            return ""
+        thu_map = {
+            0: "Thứ Hai",
+            1: "Thứ Ba",
+            2: "Thứ Tư",
+            3: "Thứ Năm",
+            4: "Thứ Sáu",
+            5: "Thứ Bảy",
+            6: "Chủ nhật",
+        }
+        thu = thu_map.get(date_obj.weekday(), "")
+        return f"{thu}, ngày {date_obj.day:02d} tháng {date_obj.month:02d} năm {date_obj.year}"
+
+    def kiem_tra_khung_ngay(self, ngayDi, ngayVe):
+        start = self.phan_tich_ngay(ngayDi) if ngayDi else None
+        end = self.phan_tich_ngay(ngayVe) if ngayVe else None
         if ngayDi and not start:
-            return False, None, None, "Ngày đi không đúng định dạng (YYYY-MM-DD)"
+            return False, None, None, "Ngày đi không đúng định dạng (DD/MM/YYYY)"
         if ngayVe and not end:
-            return False, None, None, "Ngày về không đúng định dạng (YYYY-MM-DD)"
+            return False, None, None, "Ngày về không đúng định dạng (DD/MM/YYYY)"
         if start and end and end < start:
             return False, None, None, "Ngày về phải sau hoặc bằng ngày đi"
+        today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        if start and start < today:
+            return False, None, None, "Ngày đi phải từ hôm nay trở đi"
         return True, start, end, ""
 
-    def _validate_lich_trinh(self, lichTrinh, start_date, end_date):
+    def kiem_tra_lich_trinh(self, lichTrinh, start_date, end_date):
         if not lichTrinh:
             return True, ""
         if not isinstance(lichTrinh, list):
@@ -89,11 +125,11 @@ class QuanLiDuLich:
             diem = (entry.get("diaDiem") or "").strip()
             if not ngay:
                 return False, f"Mục lịch trình #{idx} thiếu ngày"
-            ngay_dt = self._parse_date(ngay)
+            ngay_dt = self.phan_tich_ngay(ngay)
             if not ngay_dt:
-                return False, f"Ngày ở mục #{idx} không đúng định dạng (YYYY-MM-DD)"
+                return False, f"Ngày ở mục #{idx} không đúng định dạng (DD/MM/YYYY)"
             if ngay_dt < start_date or ngay_dt > end_date:
-                window = f"{start_date.strftime('%Y-%m-%d')} - {end_date.strftime('%Y-%m-%d')}"
+                window = f"{self.dinh_dang_ngay_ddmmyyyy(start_date)} - {self.dinh_dang_ngay_ddmmyyyy(end_date)}"
                 return False, f"Ngày {ngay} phải nằm trong khoảng {window}"
             if previous and ngay_dt < previous:
                 return False, "Các mốc lịch trình phải được sắp xếp theo thứ tự thời gian"
@@ -101,6 +137,49 @@ class QuanLiDuLich:
                 return False, f"Mục lịch trình #{idx} thiếu địa điểm"
             previous = ngay_dt
         return True, ""
+
+    def trang_thai_tour(self, tour, today=None):
+        today = today or datetime.today().date()
+        start = self.phan_tich_ngay(getattr(tour, "ngayDi", None))
+        end = self.phan_tich_ngay(getattr(tour, "ngayVe", None))
+        if not start:
+            return "chua_len_lich"
+        if end is None:
+            end = start
+        start_d = start.date()
+        end_d = end.date()
+        if end_d < today:
+            return "da_hoan_thanh"
+        if start_d > today:
+            return "da_len_lich"
+        if start_d <= today <= end_d:
+            return "dang_dien_ra"
+        return "chua_len_lich"
+
+    def dien_giai_trang_thai_tour(self, tour, today=None):
+        ma = self.trang_thai_tour(tour, today)
+        mapping = {
+            "da_len_lich": "Đã lên lịch",
+            "dang_dien_ra": "Đang diễn ra",
+            "da_hoan_thanh": "Đã hoàn thành",
+            "chua_len_lich": "Chưa lên lịch"
+        }
+        return mapping.get(ma, "Chưa lên lịch")
+
+    def hop_le_so_dien_thoai_vn(self, phone):
+        if not phone:
+            return False
+        phone = phone.strip()
+        dau_so_hop_le = [
+            "032","033","034","035","036","037","038","039",
+            "052","056","058","059",
+            "070","076","077","078","079",
+            "081","082","083","084","085","086","087","088","089",
+            "090","091","092","093","094","095","096","097","098","099"
+        ]
+        if len(phone) != 10:
+            return False
+        return phone[:3] in dau_so_hop_le and phone.isdigit()
 
     def _expected_link_name(self, role, ma):
         if role == "user":
@@ -515,7 +594,7 @@ class QuanLiDuLich:
             print("Mã khách hàng đã tồn tại!")
             return False
         phone = (kh.soDT or "").strip()
-        if not phone.isdigit() or len(phone) != 10:
+        if not self.hop_le_so_dien_thoai_vn(phone):
             print("Số điện thoại không hợp lệ!")
             return False
         if any(existing.soDT == phone for existing in self.danhSachKhachHang):
@@ -628,7 +707,7 @@ class QuanLiDuLich:
             self.DongBoTenTuKhach(kh.maKH)
             self.ensure_user_for_khach(kh)
         if soDT is not None:
-            if not soDT.isdigit() or len(soDT) != 10:
+            if not self.hop_le_so_dien_thoai_vn(soDT):
                 print("Số điện thoại không hợp lệ!")
                 return False
             if any(other.soDT == soDT and other.maKH != kh.maKH for other in self.danhSachKhachHang):
@@ -686,11 +765,11 @@ class QuanLiDuLich:
             return False
         ngay_di = getattr(tour, "ngayDi", None)
         ngay_ve = getattr(tour, "ngayVe", None)
-        ok, start, end, msg = self._validate_date_window(ngay_di, ngay_ve)
+        ok, start, end, msg = self.kiem_tra_khung_ngay(ngay_di, ngay_ve)
         if not ok:
             print(msg)
             return False
-        ok, msg = self._validate_lich_trinh(getattr(tour, "lichTrinh", []), start, end)
+        ok, msg = self.kiem_tra_lich_trinh(getattr(tour, "lichTrinh", []), start, end)
         if not ok:
             print(msg)
             return False
@@ -715,14 +794,18 @@ class QuanLiDuLich:
         if t is None:
             print("Tour không tồn tại!")
             return False
+        trang_thai = self.trang_thai_tour(t)
+        if trang_thai in ("dang_dien_ra", "da_hoan_thanh"):
+            print("Không thể cập nhật tour đang diễn ra hoặc đã hoàn thành")
+            return False
         new_ngay_di = ngayDi if ngayDi is not None else getattr(t, "ngayDi", None)
         new_ngay_ve = ngayVe if ngayVe is not None else getattr(t, "ngayVe", None)
         schedule = lichTrinh if lichTrinh is not None else t.lichTrinh
-        ok, start, end, msg = self._validate_date_window(new_ngay_di, new_ngay_ve)
+        ok, start, end, msg = self.kiem_tra_khung_ngay(new_ngay_di, new_ngay_ve)
         if not ok:
             print(msg)
             return False
-        ok, msg = self._validate_lich_trinh(schedule, start, end)
+        ok, msg = self.kiem_tra_lich_trinh(schedule, start, end)
         if not ok:
             print(msg)
             return False
@@ -763,34 +846,52 @@ class QuanLiDuLich:
         return True
 
     def DatTourMoi(self, dat: DatTour):
+        # Gán mã khách cho user thường
         if self.currentUser and self.currentUser.role == "user":
             dat.maKH = self.currentUser.maKH
+
         kh = self.TimKhacHang(dat.maKH)
-        t = self.TimTour(dat.maTour)
+        tour = self.TimTour(dat.maTour)
+
+        # Kiểm tra mã trùng
         if any(d.maDat == dat.maDat for d in self.danhSachDatTour):
-            print("Mã đặt tour đã tồn tại!")
-            return False
+            raise ValueError("Mã đặt tour đã tồn tại")
         if not kh:
-            print("Khách hàng không tồn tại")
-            return False
-        if not t:
-            print("Tour không tồn tại")
-            return False
+            raise ValueError("Khách hàng không tồn tại")
+        if not tour:
+            raise ValueError("Tour không tồn tại")
+
+        # Ngày đặt phải hợp lệ
+        ngay_dat = self.phan_tich_ngay(dat.ngay)
+        if not ngay_dat:
+            raise ValueError("Ngày đặt không đúng định dạng (DD/MM/YYYY)")
+        today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        if ngay_dat.date() < today.date():
+            raise ValueError("Không thể đặt tour trong quá khứ")
+
+        # Tour phải còn vé và nằm trong thời gian
         if dat.soNguoi <= 0:
-            print("Số người phải >= 1")
-            return False
-        if dat.soNguoi > t.soCho:
-            print("Không đủ chỗ")
-            return False
-        dat.tongTien = dat.soNguoi * t.gia
+            raise ValueError("Số người phải >= 1")
+        if dat.soNguoi > tour.soCho:
+            raise ValueError("Không đủ chỗ")
+
+        # Kiểm tra trạng thái tour
+        trang_thai = self.trang_thai_tour(tour, today.date())
+        if trang_thai == "da_hoan_thanh":
+            raise ValueError("Tour đã kết thúc, không thể đặt")
+        if tour.ngayDi and ngay_dat.date() < tour.ngayDi:
+            raise ValueError("Ngày đặt phải từ ngày đi trở về sau")
+        if tour.ngayVe and ngay_dat.date() > tour.ngayVe:
+            raise ValueError("Ngày đặt phải trước hoặc trong ngày về")
+
+        dat.tongTien = dat.soNguoi * tour.gia
         if kh.soDu < dat.tongTien:
-            print("Không đủ số dư")
-            return False
+            raise ValueError("Không đủ số dư")
+
         kh.soDu -= dat.tongTien
-        t.soCho -= dat.soNguoi
+        tour.soCho -= dat.soNguoi
         dat.trangThai = "da_thanh_toan"
         self.danhSachDatTour.append(dat)
-        print("Đặt tour thành công")
         return True
 
     def HienThiDanhSachDatTour(self):
@@ -838,8 +939,14 @@ class QuanLiDuLich:
         kh = self.TimKhacHang(d.maKH)
         tourCu = self.TimTour(d.maTour)
         tourMoi = self.TimTour(maTour) if maTour else tourCu
+        if self.trang_thai_tour(tourCu) in ("dang_dien_ra", "da_hoan_thanh"):
+            print("Không thể cập nhật đơn khi tour đang diễn ra hoặc đã hoàn thành")
+            return False
         if not tourMoi:
             print("Tour mới không tồn tại")
+            return False
+        if self.trang_thai_tour(tourMoi) in ("dang_dien_ra", "da_hoan_thanh"):
+            print("Tour mới đang diễn ra hoặc đã hoàn thành, không thể chuyển")
             return False
         soNguoiMoi = soNguoi if soNguoi is not None else d.soNguoi
         if soNguoiMoi <= 0:
@@ -855,6 +962,10 @@ class QuanLiDuLich:
         tongTienMoi = soNguoiMoi * tourMoi.gia
         if tongTienMoi > (kh.soDu + d.tongTien):
             print("Không đủ số dư")
+            return False
+        # Không cho chuyển sang tour đã kết thúc
+        if self.trang_thai_tour(tourMoi) == "da_hoan_thanh":
+            print("Tour mới đã hoàn thành, không thể chuyển")
             return False
         tourCu.soCho += d.soNguoi
         kh.soDu += d.tongTien
@@ -882,6 +993,12 @@ class QuanLiDuLich:
         tour = self.TimTour(d.maTour)
         if not kh or not tour:
             print("Lỗi dữ liệu: khách hàng hoặc tour không tồn tại")
+            return False
+        if self.trang_thai_tour(tour) == "dang_dien_ra":
+            print("Không thể hủy đơn khi tour đang diễn ra")
+            return False
+        if self.trang_thai_tour(tour) == "da_hoan_thanh":
+            print("Không thể hủy đơn khi tour đã hoàn thành")
             return False
         if d.trangThai == "chua_thanh_toan":
             d.trangThai = "huy"
