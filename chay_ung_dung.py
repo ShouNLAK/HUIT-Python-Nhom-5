@@ -6,12 +6,12 @@ from GUI import GiaoDienCoSo
 def chay():
     ql = QuanLiDuLich()
     tours, khs, dats, hdvs, users = tai_tat_ca()
-    ql.danhSachTour = tours
-    ql.danhSachKhachHang = khs
-    ql.danhSachDatTour = dats
-    ql.danhSachHDV = hdvs
-    ql.users = users or []
-    ql.danhSachNapTien = []
+    ql.danh_sach_tour = tours
+    ql.danh_sach_khach_hang = khs
+    ql.danh_sach_dat_tour = dats
+    ql.danh_sach_hdv = hdvs
+    ql.danh_sach_nguoi_dung = users or []
+    ql.danh_sach_nap_tien = []
     ql.set_auto_save(lambda: luu_tat_ca(ql))
     ql.ensure_default_accounts()
     ql.dong_bo_tai_khoan_lien_ket()

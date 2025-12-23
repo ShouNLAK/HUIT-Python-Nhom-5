@@ -3,7 +3,7 @@ from tkinter import messagebox, ttk, simpledialog, filedialog
 from datetime import datetime
 import json
 import re
-from Class.tour import Tour
+from Class.tour import TourDuLich
 from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
 from QuanLy.storage import luu_tat_ca
@@ -32,10 +32,10 @@ def sua_khach(self):
     form = ttk.Frame(container)
     form.pack(fill='x')
     fields = [
-        {'name':'ten','label':'Họ và tên','default':kh.tenKH},
-        {'name':'sdt','label':'Số điện thoại *','default':kh.soDT},
+        {'name':'ten','label':'Họ và tên','default':kh.ten_khach_hang},
+        {'name':'sdt','label':'Số điện thoại *','default':kh.so_dien_thoai},
         {'name':'email','label':'Email','default':kh.email},
-        {'name':'sodu','label':'Số dư','default':str(kh.soDu)}
+        {'name':'sodu','label':'Số dư','default':str(kh.so_du)}
     ]
     entries = self.build_form_fields(form, fields)
 
@@ -57,7 +57,7 @@ def sua_khach(self):
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
             messagebox.showerror('Lỗi', 'Email không hợp lệ')
             return
-        if self.ql.CapNhatKhachHang(maKH=kh.maKH, tenKH=ten, soDT=sdt, email=email, soDu=so_du):
+        if self.ql.cap_nhat_khach_hang(ma_khach_hang=kh.ma_khach_hang, ten_khach_hang=ten, so_dien_thoai=sdt, email=email, so_du=so_du):
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
             top.destroy()
@@ -74,9 +74,9 @@ def xoa_khach(self):
     kh = self.get_selected_customer()
     if not kh:
         return
-    if messagebox.askyesno('Xác nhận', f'Xóa khách hàng {kh.tenKH}?'):
-        if self.ql.XoaKhachHang(kh.maKH):
-            self.ql.users = [u for u in self.ql.users if u.maKH != kh.maKH]
+    if messagebox.askyesno('Xác nhận', f'Xóa khách hàng {kh.ten_khach_hang}?'):
+        if self.ql.xoa_khach_hang(kh.ma_khach_hang):
+            self.ql.danh_sach_nguoi_dung = [u for u in self.ql.danh_sach_nguoi_dung if u.ma_khach_hang != kh.ma_khach_hang]
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
 
@@ -89,8 +89,8 @@ def get_selected_hdv(self):
         return None
     values = self.tv_hdv.item(sel[0], 'values')
     ma = values[0]
-    if hasattr(self.ql, 'danhSachHDV'):
-        return next((h for h in self.ql.danhSachHDV if str(h.get('maHDV')) == str(ma)), None)
+    if hasattr(self.ql, 'danh_sach_hdv'):
+        return next((h for h in self.ql.danh_sach_hdv if str(h.get('maHDV')) == str(ma)), None)
     return None
 
 def them_hdv(self):
@@ -128,15 +128,15 @@ def them_hdv(self):
         if not all(data.values()):
             messagebox.showerror('Lỗi', 'Vui lòng điền đầy đủ tất cả các trường thông tin')
             return
-        if not hasattr(self.ql, 'danhSachHDV'):
-            self.ql.danhSachHDV = []
-        if any(str(h.get('maHDV')) == data['maHDV'] for h in self.ql.danhSachHDV):
+        if not hasattr(self.ql, 'danh_sach_hdv'):
+            self.ql.danh_sach_hdv = []
+        if any(str(h.get('maHDV')) == data['maHDV'] for h in self.ql.danh_sach_hdv):
             messagebox.showerror('Lỗi', 'Mã HDV đã tồn tại trong hệ thống')
             return
         if not self.ql.hop_le_so_dien_thoai_vn(data['sdt']):
             messagebox.showerror('Lỗi', 'Số điện thoại HDV phải 10 số, đúng đầu số VN')
             return
-        self.ql.danhSachHDV.append(data)
+        self.ql.danh_sach_hdv.append(data)
         username = self.ql.ensure_user_for_hdv(data)
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
@@ -172,7 +172,6 @@ def sua_hdv(self):
         if not self.ql.hop_le_so_dien_thoai_vn(hdv['sdt']):
             messagebox.showerror('Lỗi', 'Số điện thoại HDV phải 10 số, đúng đầu số VN')
             return
-        self.ql.DongBoTenTuHDV(hdv.get('maHDV'))
         self.ql.ensure_user_for_hdv(hdv)
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
@@ -189,8 +188,8 @@ def xoa_hdv(self):
     if not hdv:
         return
     if messagebox.askyesno('Xác nhận', f'Xóa HDV {hdv.get("tenHDV","")}?'):
-        self.ql.danhSachHDV = [h for h in self.ql.danhSachHDV if h is not hdv]
-        self.ql.users = [u for u in self.ql.users if not (u.role == 'hdv' and u.maKH == hdv.get('maHDV'))]
+        self.ql.danh_sach_hdv = [h for h in self.ql.danh_sach_hdv if h is not hdv]
+        self.ql.danh_sach_nguoi_dung = [u for u in self.ql.danh_sach_nguoi_dung if not (u.vai_tro == 'hdv' and u.ma_khach_hang == hdv.get('maHDV'))]
         luu_tat_ca(self.ql)
         self.hien_thi_hdv()
 
@@ -198,7 +197,7 @@ def dat_tour_for_customer(self, ma_kh):
     self.dat_tour(preset_ma_kh=ma_kh)
 
 def huy_dat_for_customer(self, ma_kh):
-    ds = [d for d in self.ql.danhSachDatTour if d.maKH == ma_kh]
+    ds = [d for d in self.ql.danh_sach_dat_tour if d.ma_khach_hang == ma_kh]
     if not ds:
         messagebox.showinfo('Thông báo', 'Khách hàng chưa có đơn')
         return
@@ -212,7 +211,7 @@ def huy_dat_for_customer(self, ma_kh):
     tv.pack(side='left', fill='both', expand=True)
     scr.pack(side='right', fill='y')
     for d in ds:
-        tv.insert('', tk.END, values=(d.maDat, d.maTour, d.trangThai, self.format_money(d.tongTien)))
+        tv.insert('', tk.END, values=(d.ma_dat_tour, d.ma_tour, d.trang_thai, self.format_money(d.tong_tien)))
     self.apply_zebra(tv)
     def ok():
         sel = tv.selection()
@@ -220,7 +219,7 @@ def huy_dat_for_customer(self, ma_kh):
             messagebox.showwarning('Chú ý', 'Chọn một đơn để hủy')
             return
         ma = tv.item(sel[0], 'values')[0]
-        if self.ql.HuyDatTour(ma):
+        if self.ql.huy_dat_tour(ma):
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', 'Đã hủy đơn')
             self.refresh_lists()
@@ -268,7 +267,7 @@ def them_tour(self):
     meta = ttk.LabelFrame(left_col, text='Phân công & thời gian', style='Card.TLabelframe', padding=12)
     meta.pack(fill='x', pady=(12,0))
     ttk.Label(meta, text='Mã HDV', style='Form.TLabel').grid(row=0, column=0, sticky='w', pady=4)
-    hdv_values = [h.get('maHDV', '') for h in getattr(self.ql, 'danhSachHDV', [])]
+    hdv_values = [h.get('maHDV', '') for h in getattr(self.ql, 'danh_sach_hdv', [])]
     hdv_combo = ttk.Combobox(meta, values=hdv_values, state='readonly', font=self.font_body)
     hdv_combo.grid(row=0, column=1, sticky='ew', padx=(8,0), pady=4)
     entries['hdv'] = hdv_combo
@@ -327,7 +326,7 @@ def them_tour(self):
             today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
             if d1 and d1 < today:
                 raise Exception('Không được đặt ngày đi trước ngày hệ thống')
-            tour = Tour(ma, ten, gia, socho, lich or [], hdv, ngayDi=ngayDi, ngayVe=ngayVe)
+            tour = TourDuLich(ma, ten, gia, socho, lich or [], hdv, ngay_di=ngayDi, ngay_ve=ngayVe)
             if ngayDi and ngayVe and lich:
                 for entry in lich:
                     if 'ngay' in entry and entry['ngay']:
@@ -339,7 +338,7 @@ def them_tour(self):
         except Exception as e:
             messagebox.showerror('Lỗi', f'Dữ liệu không hợp lệ: {e}')
             return
-        if self.ql.ThemTour(tour):
+        if self.ql.them_tour(tour):
             luu_tat_ca(self.ql)
             self.hien_thi_tour()
             top.destroy()
@@ -358,26 +357,26 @@ def sua_tour(self):
         return
     item = sel[0]
     values = self.tv_tour.item(item, 'values')
-    t = self.ql.TimTour(values[0])
+    t = self.ql.tim_tour(values[0])
     if not t:
         messagebox.showerror('Lỗi', 'Không tìm thấy tour')
         return
-    top, container = self.create_modal(f'Sửa Tour: {t.tenTour}', size=(820, 640))
+    top, container = self.create_modal(f'Sửa Tour: {t.ten_tour}', size=(820, 640))
     header = ttk.Frame(container, style='Card.TFrame')
     header.pack(fill='x', pady=(0,16))
-    ttk.Label(header, text=f'CHỈNH SỬA TOUR: {t.maTour}', style='Title.TLabel').pack(anchor='w')
+    ttk.Label(header, text=f'CHỈNH SỬA TOUR: {t.ma_tour}', style='Title.TLabel').pack(anchor='w')
     ttk.Label(header, text='Cập nhật thông tin và lịch trình của tour', style='Body.TLabel').pack(anchor='w', pady=(4,0))
     content = ttk.Frame(container)
     content.pack(fill='both', expand=True)
     left_form = ttk.LabelFrame(content, text='Thông tin cơ bản', style='Card.TLabelframe', padding=12)
     left_form.pack(side='left', fill='y', padx=(0,12))
     field_data = [
-        ('Tên tour *', 'ten', t.tenTour),
-        ('Giá (VND) *', 'gia', str(t.gia)),
-        ('Số chỗ tối đa *', 'socho', str(t.soCho)),
-        ('Mã HDV', 'hdv', str(t.huongDanVien or '')),
-        ('Ngày đi (DD/MM/YYYY)', 'ngaydi', getattr(t,'ngayDi','') or ''),
-        ('Ngày về (DD/MM/YYYY)', 'ngayve', getattr(t,'ngayVe','') or '')
+        ('Tên tour *', 'ten', t.ten_tour),
+        ('Giá (VND) *', 'gia', str(t.gia_tour)),
+        ('Số chỗ tối đa *', 'socho', str(t.so_cho)),
+        ('Mã HDV', 'hdv', str(t.huong_dan_vien or '')),
+        ('Ngày đi (DD/MM/YYYY)', 'ngaydi', getattr(t, 'ngay_di', '') or ''),
+        ('Ngày về (DD/MM/YYYY)', 'ngayve', getattr(t, 'ngay_ve', '') or '')
     ]
     entries = {}
     for idx, (label, name, default) in enumerate(field_data):
@@ -394,7 +393,7 @@ def sua_tour(self):
     
     right_lich = ttk.LabelFrame(content, text='Lịch trình chi tiết', style='Card.TLabelframe', padding=12)
     right_lich.pack(side='left', fill='both', expand=True)
-    editor = self.build_inline_lich_editor(right_lich, initial=t.lichTrinh)
+    editor = self.build_inline_lich_editor(right_lich, initial=t.lich_trinh)
     editor['frame'].pack(fill='both', expand=True)
     btn_bar = ttk.Frame(container, padding=(0,16,0,0))
     btn_bar.pack(fill='x')
@@ -429,7 +428,7 @@ def sua_tour(self):
         except Exception as e:
             messagebox.showerror('Lỗi', f'Dữ liệu không hợp lệ: {e}')
             return
-        if self.ql.CapNhatTour(t.maTour, tenTour=ten, gia=gia, soCho=soCho, lichTrinh=lich, huongDanVien=hdv, ngayDi=ngayDi, ngayVe=ngayVe):
+        if self.ql.cap_nhat_tour(t.ma_tour, ten_tour=ten, gia_tour=gia, so_cho=soCho, lich_trinh=lich, huong_dan_vien=hdv, ngay_di=ngayDi, ngay_ve=ngayVe):
             luu_tat_ca(self.ql)
             self.hien_thi_tour()
             top.destroy()
@@ -446,12 +445,12 @@ def xoa_tour(self):
         return
     item = sel[0]
     values = self.tv_tour.item(item, 'values')
-    t = self.ql.TimTour(values[0])
+    t = self.ql.tim_tour(values[0])
     if not t:
         messagebox.showerror('Lỗi', 'Không tìm thấy tour')
         return
-    if messagebox.askyesno('Xác nhận', f'Xóa tour {t.tenTour}?'):
-        if self.ql.XoaTour(t.maTour):
+    if messagebox.askyesno('Xác nhận', f'Xóa tour {t.ten_tour}?'):
+        if self.ql.xoa_tour(t.ma_tour):
             luu_tat_ca(self.ql)
             self.hien_thi_tour()
 
@@ -492,12 +491,12 @@ def them_khach(self):
             if not self.ql.hop_le_so_dien_thoai_vn(sdt):
                 messagebox.showerror('Lỗi', 'Số điện thoại phải 10 số, đúng đầu số VN')
                 return
-            soDu = float(entries['sodu'].get()) if entries['sodu'].get() else 0
+            so_du = float(entries['sodu'].get()) if entries['sodu'].get() else 0
         except Exception:
             messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return
-        kh = KhachHang(ma, ten, sdt, email, soDu)
-        if self.ql.ThemKhachHang(kh):
+        kh = KhachHang(ma, ten, sdt, email, so_du)
+        if self.ql.them_khach_hang(kh):
             username = self.ql.ensure_user_for_khach(kh)
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
@@ -539,23 +538,23 @@ def dang_ky_guest(self):
             messagebox.showerror('Lỗi', 'Email không hợp lệ')
             return
         existing = [
-            int(k.maKH.replace('KH',''))
-            for k in self.ql.danhSachKhachHang
-            if k.maKH and k.maKH.startswith('KH') and k.maKH.replace('KH','').isdigit()
+            int(k.ma_khach_hang.replace('KH',''))
+            for k in self.ql.danh_sach_khach_hang
+            if k.ma_khach_hang and k.ma_khach_hang.startswith('KH') and k.ma_khach_hang.replace('KH','').isdigit()
         ]
         nxt = (max(existing)+1) if existing else 1
         ma = f'KH{str(nxt).zfill(3)}'
         kh = KhachHang(ma, tenthat, phone, email, 0)
-        if not self.ql.ThemKhachHang(kh, allow_public=True, auto_link_account=False):
+        if not self.ql.them_khach_hang(kh, allow_public=True, auto_link_account=False):
             messagebox.showerror('Lỗi', 'Không tạo được khách hàng mới')
             return
-        success, msg = self.ql.DangKyUser(username, password, role='user', maKH=ma, fullName=tenthat)
+        success, msg = self.ql.dang_ky_nguoi_dung(username, password, role='user', ma_khach_hang=ma, ten_day_du=tenthat)
         if success:
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', f'Đăng ký thành công. Tài khoản: {username}')
             top.destroy()
         else:
-            self.ql.danhSachKhachHang = [k for k in self.ql.danhSachKhachHang if k.maKH != ma]
+            self.ql.danh_sach_khach_hang = [k for k in self.ql.danh_sach_khach_hang if k.ma_khach_hang != ma]
             messagebox.showerror('Lỗi', msg)
     self.modal_buttons(container, [
         {'text':'Đăng ký', 'style':'Accent.TButton', 'command':ok},
@@ -589,19 +588,35 @@ def dat_tour(self, preset_ma_kh=None):
         entries['makh'].configure(state='readonly')
     
     tu_dong_dinh_dang_ngay(entries['ngay'])
+
+    bal_label = ttk.Label(form_card, text='Số dư khách hàng: -', style='Body.TLabel')
+    bal_label.grid(row=99, column=0, columnspan=2, sticky='w', pady=(8,0))
+    def cap_nhat_so_du(evt=None):
+        ma = entries['makh'].get().strip()
+        kh = next((k for k in getattr(self.ql, 'danh_sach_khach_hang', []) if k.ma_khach_hang == ma), None)
+        if kh:
+            try:
+                bal = float(getattr(kh, 'so_du', 0))
+                bal_label.config(text=f'Số dư khách hàng: {self.format_money(bal)}')
+            except Exception:
+                bal_label.config(text='Số dư khách hàng: -')
+        else:
+            bal_label.config(text='Số dư khách hàng: -')
+    entries['makh'].bind('<FocusOut>', cap_nhat_so_du)
+    cap_nhat_so_du()
     
     help_frame = ttk.Frame(container, style='Card.TFrame', padding=8)
     help_frame.pack(fill='x', pady=(12,0))
     ttk.Label(help_frame, text='Đảm bảo mã tour và mã khách hàng đã tồn tại trong hệ thống', style='Body.TLabel', foreground='#52606d').pack(anchor='w')
     
     def ok():
-        maKH = entries['makh'].get() if self.ql.currentUser and self.ql.currentUser.role == 'admin' else (self.ql.currentUser.maKH if self.ql.currentUser else '')
+        ma_khach_hang = entries['makh'].get() if self.ql.nguoi_dung_hien_tai and self.ql.nguoi_dung_hien_tai.vai_tro == 'admin' else (self.ql.nguoi_dung_hien_tai.ma_khach_hang if self.ql.nguoi_dung_hien_tai else '')
         try:
             madat = entries['madat'].get().strip()
             matour = entries['matour'].get().strip()
             songuoi = int(entries['songuoi'].get())
             ngay = entries['ngay'].get().strip()
-            if not madat or not matour or not maKH:
+            if not madat or not matour or not ma_khach_hang:
                 messagebox.showerror('Lỗi', 'Vui lòng điền đầy đủ thông tin bắt buộc')
                 return
             if ngay:
@@ -609,7 +624,7 @@ def dat_tour(self, preset_ma_kh=None):
                 if not parsed:
                     messagebox.showerror('Lỗi', 'Ngày đặt không đúng định dạng (DD/MM/YYYY)')
                     return
-            dt = DatTour(madat, maKH, matour, songuoi, ngay)
+            dt = DatTour(madat, ma_khach_hang, matour, songuoi, ngay)
         except ValueError:
             messagebox.showerror('Lỗi', 'Số người phải là số nguyên hợp lệ')
             return
@@ -617,7 +632,7 @@ def dat_tour(self, preset_ma_kh=None):
             messagebox.showerror('Lỗi', f'Dữ liệu không hợp lệ: {e}')
             return
 
-        if self.ql.DatTourMoi(dt):
+        if self.ql.dat_tour_moi(dt):
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thành công', f'Đã tạo đơn đặt tour {madat}')
             self.refresh_lists()
@@ -636,8 +651,21 @@ def huy_dat(self, preset_ma_dat=None):
         entries['madat'].delete(0, tk.END)
         entries['madat'].insert(0, preset_ma_dat)
         entries['madat'].configure(state='readonly')
+    info_label = ttk.Label(form, text='', style='Body.TLabel')
+    info_label.grid(row=1, column=0, columnspan=2, sticky='w', pady=(8,0))
+    def cap_nhat_thong_tin_dat(evt=None):
+        ma = entries['madat'].get().strip()
+        d = next((dd for dd in getattr(self.ql, 'danh_sach_dat_tour', []) if dd.ma_dat_tour == ma), None)
+        if not d:
+            info_label.config(text='Không tìm thấy đơn đặt')
+            return
+        kh = next((k for k in getattr(self.ql, 'danh_sach_khach_hang', []) if k.ma_khach_hang == d.ma_khach_hang), None)
+        bal = getattr(kh, 'so_du', 0) if kh else 0
+        info_label.config(text=f'Khách: {d.ma_khach_hang} | Tour: {d.ma_tour} | Số người: {d.so_nguoi} | Số dư KH: {self.format_money(bal)}')
+    entries['madat'].bind('<FocusOut>', cap_nhat_thong_tin_dat)
+    cap_nhat_thong_tin_dat()
     def ok():
-        if self.ql.HuyDatTour(entries['madat'].get()):
+        if self.ql.huy_dat_tour(entries['madat'].get()):
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', 'Hủy đặt thành công')
             self.refresh_lists()
@@ -651,8 +679,13 @@ def huy_dat(self, preset_ma_dat=None):
 
 def dang_xuat(self):
     luu_tat_ca(self.ql)
-    self.ql.Logout()
+    self.ql.dang_xuat()
     try:
+        try:
+            self.stop_balance_updater()
+        except Exception:
+            pass
+        self.root.unbind('<Configure>')
         self.root.state('normal')
         self.root.geometry('460x260')
     except Exception:
@@ -660,7 +693,7 @@ def dang_xuat(self):
     self.build_dang_nhap()
 
 def quyen_admin(self):
-    if not self.ql.currentUser or self.ql.currentUser.role != 'admin':
+    if not self.ql.nguoi_dung_hien_tai or self.ql.nguoi_dung_hien_tai.vai_tro != 'admin':
         messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
         return False
     return True

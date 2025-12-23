@@ -170,6 +170,12 @@
         "phuongTien": "Đi bộ"
       },
       {
+        "ngay": "2026-01-06",
+        "diaDiem": "Núi Bà Nà",
+        "moTa": "Tham quan Cầu Vàng, Làng Pháp",
+        "phuongTien": "Cáp treo"
+      },
+      {
         "ngay": "2026-01-07",
         "diaDiem": "Phố cổ Hội An",
         "moTa": "Tham quan phố cổ, thả đèn hoa đăng",
@@ -180,33 +186,10 @@
         "diaDiem": "Ngũ Hành Sơn",
         "moTa": "Tham quan hang động và làng đá mỹ nghệ",
         "phuongTien": "Xe bus"
-      },
-      {
-        "ngay": "2026-01-06",
-        "diaDiem": "Núi Bà Nà",
-        "moTa": "Tham quan Cầu Vàng, Làng Pháp",
-        "phuongTien": "Cáp treo"
       }
     ],
     "huongDanVien": "HDV005",
     "ngayDi": "2026-01-05",
     "ngayVe": "2026-01-08"
-  },
-  {
-    "maTour": "T006",
-    "tenTour": "Hà Lội - Cuối năm lặn lội",
-    "gia": 2500000.0,
-    "soCho": 30,
-    "lichTrinh": [
-      {
-        "ngay": "2025-12-2",
-        "diaDiem": "Chùa một cột",
-        "moTa": "Đi viếng",
-        "phuongTien": "Máy bay"
-      }
-    ],
-    "huongDanVien": "HDV004",
-    "ngayDi": "2025-12-2",
-    "ngayVe": "2025-12-3"
   }
 ]

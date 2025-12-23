@@ -191,8 +191,7 @@ class BingMapImageAPI:
         self._tile_cache[quadkey] = placeholder
         return placeholder
 
-    @staticmethod
-    def _latlon_to_tile(lat: float, lon: float, zoom: int) -> Tuple[float, float]:
+    def _latlon_to_tile(self, lat: float, lon: float, zoom: int) -> Tuple[float, float]:
         lat = max(min(lat, 85.05112878), -85.05112878)
         lon = ((lon + 180.0) % 360.0) - 180.0
         sin_lat = math.sin(math.radians(lat))
@@ -201,8 +200,7 @@ class BingMapImageAPI:
         pixel_y = (0.5 - math.log((1 + sin_lat) / (1 - sin_lat)) / (4 * math.pi)) * map_size
         return pixel_x / 256.0, pixel_y / 256.0
 
-    @staticmethod
-    def _tile_to_quadkey(tile_x: int, tile_y: int, level: int) -> str:
+    def _tile_to_quadkey(self, tile_x: int, tile_y: int, level: int) -> str:
         quadkey = []
         for i in range(level, 0, -1):
             digit = 0
@@ -221,7 +219,6 @@ except Exception:
     _BING_MAP_CLIENT = None
 
 def search_place_photo(self, place):
-    """Use Google Images (no API key) to find a representative location photo."""
     try:
         if not place:
             return None
@@ -256,7 +253,6 @@ def search_place_photo(self, place):
     return None
 
 def download_image_bytes(self, url):
-    """Download image bytes using a friendly User-Agent header. Returns bytes or None."""
     try:
         if not url:
             return None
@@ -267,7 +263,6 @@ def download_image_bytes(self, url):
         return None
 
 def _fetch_place_preview(self, place, date_str=None):
-    """Blocking helper: fetch display_name, lat, lon, image_url, weather info for date (or current)."""
     key = f"{place}||{date_str or ''}"
     try:
         if getattr(self, '_place_preview_cache', None) is not None and key in self._place_preview_cache:
@@ -376,28 +371,28 @@ def show_tour_details(self, event=None):
     item = sel[0]
     values = self.tv_tour.item(item, 'values')
     ma = values[0]
-    t = self.ql.TimTour(ma)
+    t = self.ql.tim_tour(ma)
     if not t:
         messagebox.showerror('Lỗi', 'Không tìm thấy tour')
         return
-    booked = sum(d.soNguoi for d in self.ql.danhSachDatTour if d.maTour == t.maTour and d.trangThai == 'da_thanh_toan')
+    booked = sum(d.so_nguoi for d in self.ql.danh_sach_dat_tour if d.ma_tour == t.ma_tour and d.trang_thai == 'da_thanh_toan')
     try:
-        total = booked + int(t.soCho)
+        total = booked + int(t.so_cho)
     except Exception:
-        total = booked + (t.soCho if isinstance(t.soCho, int) else booked)
+        total = booked + (t.so_cho if isinstance(t.so_cho, int) else booked)
     hdv_name = ''
-    if hasattr(self.ql, 'danhSachHDV'):
-        for h in self.ql.danhSachHDV:
-            if str(h.get('maHDV')) == str(t.huongDanVien):
+    if hasattr(self.ql, 'danh_sach_hdv'):
+        for h in self.ql.danh_sach_hdv:
+            if str(h.get('maHDV')) == str(t.huong_dan_vien):
                 hdv_name = h.get('tenHDV','')
                 break
-    top, container = self.create_modal(f'Chi tiết tour: {t.tenTour}', size=(980, 620))
+    top, container = self.create_modal(f'Chi tiết tour: {t.ten_tour}', size=(980, 620))
     hdr = ttk.Frame(container)
     hdr.pack(fill='x')
-    ttk.Label(hdr, text=t.tenTour, style='Title.TLabel').pack(side='left')
+    ttk.Label(hdr, text=t.ten_tour, style='Title.TLabel').pack(side='left')
     meta = ttk.Frame(container)
     meta.pack(fill='x', pady=(6,12))
-    ttk.Label(meta, text=f"Mã Tour: {t.maTour}", style='Body.TLabel').grid(row=0, column=0, sticky='w')
+    ttk.Label(meta, text=f"Mã Tour: {t.ma_tour}", style='Body.TLabel').grid(row=0, column=0, sticky='w')
     ttk.Label(meta, text=f"Hướng dẫn viên: {hdv_name}", style='Body.TLabel').grid(row=0, column=1, sticky='w', padx=18)
     ttk.Label(meta, text=f"Chỗ đã đặt: {booked}/{total}", style='Body.TLabel').grid(row=0, column=2, sticky='w', padx=18)
     content = ttk.Frame(container)
@@ -471,7 +466,7 @@ def show_tour_details(self, event=None):
         self._run_async(self._fetch_place_preview, lambda r: _on_result(r), diadiem, ngay)
 
     i = 1
-    for l in t.lichTrinh:
+    for l in t.lich_trinh:
         ngaythu = f"{i}"
         ngay = l.get('ngay','')
         diadiem = l.get('diaDiem', l.get('dia_diem','')) or ''
@@ -511,7 +506,6 @@ def show_tour_details(self, event=None):
         update_preview_for_row(children[0])
 
 def open_lich_trinh_editor(self, initial=None):
-    """Open a modal editor for itinerary. Returns list of dicts or None if cancelled."""
     result = {'data': None}
     top = tk.Toplevel(self.root)
     top.title('Chỉnh sửa Lịch trình')
@@ -632,9 +626,6 @@ def open_lich_trinh_editor(self, initial=None):
     return result['data']
 
 def build_inline_lich_editor(self, parent, initial=None):
-    """Build an inline itinerary editor inside `parent` (a container).
-    Returns a dict with 'frame' (the container) and 'get_items' callable.
-    """
     frame = tk.Frame(parent, bd=1, relief='groove')
     left = tk.Frame(frame)
     left.pack(side='left', fill='both', expand=True)
@@ -898,10 +889,10 @@ def on_tour_select(self, event=None):
         return
     item = sel[0]
     ma = self.tv_tour.item(item, 'values')[0]
-    tour = self.ql.TimTour(ma)
+    tour = self.ql.tim_tour(ma)
     if getattr(self, 'tour_context', None) and tour:
-        self.tour_context.config(text=f"{tour.tenTour} • {self.format_money(tour.gia)}")
-    role = self.ql.currentUser.role if self.ql.currentUser else ''
+        self.tour_context.config(text=f"{tour.ten_tour} • {self.format_money(tour.gia_tour)}")
+    role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
     if role == 'hdv':
         self.update_hdv_right_panel(ma)
     elif role == 'user':

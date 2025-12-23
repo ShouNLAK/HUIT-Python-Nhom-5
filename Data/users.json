@@ -1,75 +1,249 @@
 [
   {
-    "username": "admin",
-    "password": "123",
-    "role": "admin",
+    "tenDangNhap": "admin",
+    "matKhau": "123",
+    "vaiTro": "admin",
     "maKH": null,
-    "fullName": "Nguyễn Lê Anh Khoa"
+    "tenHienThi": "Nguyễn Lê Anh Khoa"
   },
   {
-    "username": "longhdv",
-    "password": "123",
-    "role": "hdv",
-    "maKH": "HDV001"
-  },
-  {
-    "username": "maihdv",
-    "password": "123",
-    "role": "hdv",
-    "maKH": "HDV002"
-  },
-  {
-    "username": "hunghdv",
-    "password": "123",
-    "role": "hdv",
-    "maKH": "HDV003"
-  },
-  {
-    "username": "user1",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user1",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH001"
   },
   {
-    "username": "user2",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user2",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH002"
   },
   {
-    "username": "user3",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user3",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH003"
   },
   {
-    "username": "user4",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user4",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH004"
   },
   {
-    "username": "user5",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user5",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH005"
   },
   {
-    "username": "kh006",
-    "password": "123",
-    "role": "user",
+    "tenDangNhap": "user6",
+    "matKhau": "123",
+    "vaiTro": "user",
     "maKH": "KH006"
   },
   {
-    "username": "hdv004",
-    "password": "123",
-    "role": "hdv",
-    "maKH": "HDV004"
+    "tenDangNhap": "user7",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH007"
   },
   {
-    "username": "hdv005",
-    "password": "123",
-    "role": "hdv",
-    "maKH": "HDV005"
+    "tenDangNhap": "user8",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH008"
+  },
+  {
+    "tenDangNhap": "user9",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH009"
+  },
+  {
+    "tenDangNhap": "user10",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH010"
+  },
+  {
+    "tenDangNhap": "user11",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH011"
+  },
+  {
+    "tenDangNhap": "user12",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH012"
+  },
+  {
+    "tenDangNhap": "user13",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH013"
+  },
+  {
+    "tenDangNhap": "user14",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH014"
+  },
+  {
+    "tenDangNhap": "user15",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH015"
+  },
+  {
+    "tenDangNhap": "user16",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH016"
+  },
+  {
+    "tenDangNhap": "user17",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH017"
+  },
+  {
+    "tenDangNhap": "user18",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH018"
+  },
+  {
+    "tenDangNhap": "user19",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH019"
+  },
+  {
+    "tenDangNhap": "user20",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH020"
+  },
+  {
+    "tenDangNhap": "user21",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH021"
+  },
+  {
+    "tenDangNhap": "user22",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH022"
+  },
+  {
+    "tenDangNhap": "user23",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH023"
+  },
+  {
+    "tenDangNhap": "user24",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH024"
+  },
+  {
+    "tenDangNhap": "user25",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH025"
+  },
+  {
+    "tenDangNhap": "user26",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH026"
+  },
+  {
+    "tenDangNhap": "user27",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH027"
+  },
+  {
+    "tenDangNhap": "user28",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH028"
+  },
+  {
+    "tenDangNhap": "user29",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH029"
+  },
+  {
+    "tenDangNhap": "user30",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH030"
+  },
+  {
+    "tenDangNhap": "user31",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH031"
+  },
+  {
+    "tenDangNhap": "user32",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH032"
+  },
+  {
+    "tenDangNhap": "user33",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH033"
+  },
+  {
+    "tenDangNhap": "user34",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH034"
+  },
+  {
+    "tenDangNhap": "user35",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH035"
+  },
+  {
+    "tenDangNhap": "user36",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH036"
+  },
+  {
+    "tenDangNhap": "user37",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH037"
+  },
+  {
+    "tenDangNhap": "user38",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH038"
+  },
+  {
+    "tenDangNhap": "user39",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH039"
+  },
+  {
+    "tenDangNhap": "user40",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH040"
   }
 ]

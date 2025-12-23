@@ -22,50 +22,54 @@ except Exception:
 class ChuDeHienDai:
     def __init__(self, root):
         self.root = root
-        self.bg = '#f5f6fa'
-        self.surface = '#ffffff'
-        self.primary = '#1b6dc1'
-        self.danger = '#c44536'
-        self.accent = '#1aa5a5'
-        self.text = '#1f2933'
-        self.style = ttk.Style()
+        self.nen = '#f5f6fa'
+        self.be_mat = '#ffffff'
+        self.chinh = '#1b6dc1'
+        self.nguy_hiem = '#c44536'
+        self.nhan_manh = '#1aa5a5'
+        self.van_ban = '#1f2933'
+        self.kieu = ttk.Style()
         try:
-            self.style.theme_use('clam')
+            self.kieu.theme_use('clam')
         except Exception:
             pass
-        self.configure_base()
+        self.cau_hinh_co_ban()
 
-    def configure_base(self):
-        self.root.configure(bg=self.bg)
-        self.style.configure('App.TFrame', background=self.bg)
-        self.style.configure('Card.TFrame', background=self.surface, relief='flat')
-        self.style.configure('Header.TLabel', background=self.primary, foreground='white', font=('Segoe UI', 14, 'bold'))
-        self.style.configure('Title.TLabel', background=self.bg, foreground=self.text, font=('Segoe UI', 12, 'bold'))
-        self.style.configure('Body.TLabel', background=self.surface, foreground=self.text, font=('Segoe UI', 10))
-        self.style.configure('BodyBold.TLabel', background=self.surface, foreground=self.text, font=('Segoe UI', 10, 'bold'))
-        self.style.configure('Context.TFrame', background=self.surface)
-        self.style.configure('App.TButton', font=('Segoe UI', 10), padding=6)
-        self.style.map('App.TButton', background=[('!disabled', self.primary), ('active', '#0f58a6')], foreground=[('!disabled', 'white')])
-        self.style.configure('Accent.TButton', font=('Segoe UI', 10), padding=6)
-        self.style.map('Accent.TButton', background=[('!disabled', self.accent), ('active', '#168b8b')], foreground=[('!disabled', 'white')])
-        self.style.configure('Danger.TButton', font=('Segoe UI', 10), padding=6)
-        self.style.map('Danger.TButton', background=[('!disabled', self.danger), ('active', '#a13224')], foreground=[('!disabled', 'white')])
-        self.style.configure('Toolbar.TButton', font=('Segoe UI', 10, 'bold'), padding=(14, 8))
-        self.style.map('Toolbar.TButton', background=[('!disabled', '#1f6feb'), ('active', '#1553b2')], foreground=[('!disabled', 'white')])
-        self.style.configure('Ghost.TButton', font=('Segoe UI', 10), padding=(10,6))
-        self.style.map('Ghost.TButton', background=[('active', '#e6ecf5')], foreground=[('!disabled', self.text)])
-        self.style.configure('Form.TLabel', background=self.surface, foreground=self.text, font=('Segoe UI', 10))
-        self.style.configure('FormValue.TEntry', font=('Segoe UI', 10))
-        self.style.configure('Card.TLabelframe', background=self.surface, foreground=self.text, font=('Segoe UI', 11, 'bold'))
-        self.style.configure('Card.TLabelframe.Label', background=self.surface, foreground=self.text)
-        self.apply_treeview()
+    def cau_hinh_co_ban(self):
+        self.root.configure(bg=self.nen)
+        self.kieu.configure('App.TFrame', background=self.nen)
+        self.kieu.configure('Card.TFrame', background=self.be_mat, relief='flat')
+        self.kieu.configure('Header.TLabel', background=self.chinh, foreground='white', font=('Segoe UI', 14, 'bold'))
+        self.kieu.configure('Title.TLabel', background=self.nen, foreground=self.van_ban, font=('Segoe UI', 12, 'bold'))
+        self.kieu.configure('Body.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10))
+        self.kieu.configure('BodyBold.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10, 'bold'))
+        self.kieu.configure('Context.TFrame', background=self.be_mat)
+        self.kieu.configure('App.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.map('App.TButton', background=[('!disabled', self.chinh), ('active', '#0f58a6')], foreground=[('!disabled', 'white')])
+        self.kieu.configure('Accent.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.map('Accent.TButton', background=[('!disabled', self.nhan_manh), ('active', '#168b8b')], foreground=[('!disabled', 'white')])
+        self.kieu.configure('Danger.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.map('Danger.TButton', background=[('!disabled', self.nguy_hiem), ('active', '#a13224')], foreground=[('!disabled', 'white')])
+        self.kieu.configure('Toolbar.TButton', font=('Segoe UI', 10, 'bold'), padding=(14, 8))
+        self.kieu.map('Toolbar.TButton', background=[('!disabled', '#1f6feb'), ('active', '#1553b2')], foreground=[('!disabled', 'white')])
+        self.kieu.configure('Ghost.TButton', font=('Segoe UI', 10), padding=(10,6))
+        self.kieu.map('Ghost.TButton', background=[('active', '#e6ecf5')], foreground=[('!disabled', self.van_ban)])
+        self.kieu.configure('Mode.TButton', font=('Segoe UI', 10, 'bold'), padding=(10,6), background='#e9f0ff', foreground=self.van_ban)
+        self.kieu.map('Mode.TButton', background=[('!disabled', '#e9f0ff'), ('active', '#d7e7ff')], foreground=[('!disabled', self.van_ban)])
+        self.kieu.configure('ModeActive.TButton', font=('Segoe UI', 10, 'bold'), padding=(10,6), background=self.chinh, foreground='white')
+        self.kieu.map('ModeActive.TButton', background=[('!disabled', self.chinh), ('active', '#1553b2')], foreground=[('!disabled', 'white')])
+        self.kieu.configure('Form.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10))
+        self.kieu.configure('FormValue.TEntry', font=('Segoe UI', 10))
+        self.kieu.configure('Card.TLabelframe', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 11, 'bold'))
+        self.kieu.configure('Card.TLabelframe.Label', background=self.be_mat, foreground=self.van_ban)
+        self.ap_dung_treeview()
 
-    def apply_treeview(self):
-        self.style.configure('Treeview', font=('Segoe UI', 10), rowheight=26, background='#fdfdfd', fieldbackground='#fdfdfd', bordercolor='#dfe3e8')
-        self.style.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), background=self.primary, foreground='white')
-        self.style.map('Treeview', background=[('selected', self.accent)], foreground=[('selected', 'white')])
+    def ap_dung_treeview(self):
+        self.kieu.configure('Treeview', font=('Segoe UI', 10), rowheight=26, background='#fdfdfd', fieldbackground='#fdfdfd', bordercolor='#dfe3e8')
+        self.kieu.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), background=self.chinh, foreground='white')
+        self.kieu.map('Treeview', background=[('selected', self.nhan_manh)], foreground=[('selected', 'white')])
 
-    def center(self, win, width, height):
+    def trung_tam(self, win, width, height):
         try:
             win.update_idletasks()
             sw = win.winfo_screenwidth()
@@ -76,7 +80,7 @@ class ChuDeHienDai:
         except Exception:
             pass
 
-    def card_frame(self, parent, padding=16):
+    def khung_the(self, parent, padding=16):
         frm = ttk.Frame(parent, style='Card.TFrame', padding=padding)
         frm.pack_propagate(False)
         return frm
@@ -126,10 +130,10 @@ class GiaoDienCoSo:
     def build_dang_nhap(self):
         if self.frame:
             self.frame.destroy()
-        self.frame = tk.Frame(self.root, bg=self.theme.bg)
+        self.frame = tk.Frame(self.root, bg=self.theme.nen)
         self.frame.pack(fill='both', expand=True)
-        self.theme.center(self.root, 460, 260)
-        card = self.theme.card_frame(self.frame, padding=24)
+        self.theme.trung_tam(self.root, 460, 260)
+        card = self.theme.khung_the(self.frame, padding=24)
         card.place(relx=0.5, rely=0.5, anchor='c', width=380, height=200)
         title = ttk.Label(card, text='Đăng nhập hệ thống', style='Title.TLabel')
         title.pack(anchor='center', pady=(0,12))
@@ -137,10 +141,10 @@ class GiaoDienCoSo:
         form.pack(fill='both', expand=True)
         ttk.Label(form, text='Tên đăng nhập', style='Form.TLabel').grid(row=0, column=0, sticky='w')
         ttk.Label(form, text='Mật khẩu', style='Form.TLabel').grid(row=1, column=0, sticky='w', pady=(8,0))
-        self.e_user = ttk.Entry(form, font=self.font_body)
-        self.e_pass = ttk.Entry(form, font=self.font_body, show='*')
-        self.e_user.grid(row=0, column=1, padx=8, sticky='ew')
-        self.e_pass.grid(row=1, column=1, padx=8, sticky='ew', pady=(8,0))
+        self.e_ten_dang_nhap = ttk.Entry(form, font=self.font_body)
+        self.e_mat_khau = ttk.Entry(form, font=self.font_body, show='*')
+        self.e_ten_dang_nhap.grid(row=0, column=1, padx=8, sticky='ew')
+        self.e_mat_khau.grid(row=1, column=1, padx=8, sticky='ew', pady=(8,0))
         form.columnconfigure(1, weight=1)
         buttons = ttk.Frame(card)
         buttons.pack(fill='x', pady=(12,0))
@@ -151,7 +155,7 @@ class GiaoDienCoSo:
     def create_modal(self, title, size=None, maximize=True):
         top = tk.Toplevel(self.root)
         top.title(title)
-        top.configure(bg=self.theme.bg)
+        top.configure(bg=self.theme.nen)
         top.transient(self.root)
         top.grab_set()
         width, height = size if size else self.modal_geometry
@@ -165,9 +169,9 @@ class GiaoDienCoSo:
                 except Exception:
                     pass
             except Exception:
-                self.theme.center(top, width, height)
+                self.theme.trung_tam(top, width, height)
         else:
-            self.theme.center(top, width, height)
+            self.theme.trung_tam(top, width, height)
         container = ttk.Frame(top, style='App.TFrame', padding=20)
         container.pack(fill='both', expand=True)
         return top, container
@@ -233,7 +237,7 @@ class GiaoDienCoSo:
         if not sel:
             return None
         values = self.tv_tour.item(sel[0], 'values')
-        return self.ql.TimTour(values[0])
+        return self.ql.tim_tour(values[0])
 
     def _start_loading(self, container):
         try:
@@ -315,29 +319,29 @@ class GiaoDienCoSo:
             link.pack(side='left', pady=(0,8))
             link.bind('<Button-1>', lambda e, u=photo_url: webbrowser.open(u))
 
-        container._preview_images = previews  # keep references
+        container._preview_images = previews
         info_block = ttk.Frame(wrapper, style='Context.TFrame')
         info_block.pack(fill='both', expand=True)
         ttk.Label(info_block, text=short, style='BodyBold.TLabel').pack(anchor='w')
         ttk.Label(info_block, text=f'Địa chỉ: {display}', style='Body.TLabel').pack(anchor='w', pady=(4,0))
         if lat and lon:
             ttk.Label(info_block, text=f'Tọa độ: {lat}, {lon}', style='Body.TLabel').pack(anchor='w', pady=(4,0))
-            osm_link = ttk.Label(info_block, text='Mở trên OpenStreetMap', foreground=self.theme.primary, cursor='hand2', style='Body.TLabel')
+            osm_link = ttk.Label(info_block, text='Mở trên OpenStreetMap', foreground=self.theme.chinh, cursor='hand2', style='Body.TLabel')
             osm_link.pack(anchor='w', pady=(2,0))
             osm_link.bind('<Button-1>', lambda e, lat=lat, lon=lon: webbrowser.open(f"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map=12/{lat}/{lon}"))
             if map_url:
-                bing_link = ttk.Label(info_block, text='Mở trên Bing Maps (vệ tinh)', foreground=self.theme.primary, cursor='hand2', style='Body.TLabel')
+                bing_link = ttk.Label(info_block, text='Mở trên Bing Maps (vệ tinh)', foreground=self.theme.chinh, cursor='hand2', style='Body.TLabel')
                 bing_link.pack(anchor='w', pady=(2,0))
                 bing_link.bind('<Button-1>', lambda e, u=map_url: webbrowser.open(u))
         weather = info.get('weather')
         ttk.Label(info_block, text=f'Nhiệt độ: {self.format_weather_text(weather)}', style='Body.TLabel').pack(anchor='w', pady=(6,0))
 
     def dang_nhap(self):
-        u = self.e_user.get()
-        p = self.e_pass.get()
-        if self.ql.Login(u, p):
-            name = self.ql.LayTenHienThi(self.ql.currentUser)
-            role = self.ql.currentUser.role.upper()
+        u = self.e_ten_dang_nhap.get()
+        p = self.e_mat_khau.get()
+        if self.ql.dang_nhap(u, p):
+            name = self.ql.lay_ten_hien_thi(self.ql.nguoi_dung_hien_tai)
+            role = self.ql.nguoi_dung_hien_tai.vai_tro.upper()
             messagebox.showinfo('Thông báo', f'Đăng nhập thành công: {name} ({role})')
             self.build_giao_dien_chinh()
         else:
@@ -346,22 +350,25 @@ class GiaoDienCoSo:
     def build_giao_dien_chinh(self):
         if self.frame:
             self.frame.destroy()
-        if self.ql.currentUser and self.ql.currentUser.role == 'root':
+        if self.ql.nguoi_dung_hien_tai and self.ql.nguoi_dung_hien_tai.vai_tro == 'root':
             self.build_root_console()
             return
         self.frame = ttk.Frame(self.root, style='App.TFrame')
         self.frame.pack(fill='both', expand=True)
-        try:
-            self.root.state('zoomed')
-        except Exception:
-            pass
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        width = int(sw * 0.9)
+        height = int(sh * 0.85)
+        self.root.minsize(1200, 800)
+        self.theme.trung_tam(self.root, width, height)
+        self.root.bind('<Configure>', self.on_resize)
         header = ttk.Frame(self.frame, padding=(24,18))
         header.pack(fill='x')
         ttk.Label(header, text='Quản lý Tour du lịch', style='Title.TLabel').pack(side='left')
         summary_bar = ttk.Frame(self.frame, padding=(24,0))
         summary_bar.pack(fill='x')
-        role_text = self.ql.currentUser.role.upper() if self.ql.currentUser else ''
-        display_name = self.ql.LayTenHienThi(self.ql.currentUser) if self.ql.currentUser else ''
+        role_text = self.ql.nguoi_dung_hien_tai.vai_tro.upper() if self.ql.nguoi_dung_hien_tai else ''
+        display_name = self.ql.lay_ten_hien_thi(self.ql.nguoi_dung_hien_tai) if self.ql.nguoi_dung_hien_tai else ''
         user_label = ttk.Label(summary_bar, text=f"Tài khoản: {display_name} ({role_text})", style='Body.TLabel')
         user_label.pack(side='left')
         ttk.Button(summary_bar, text='Đăng xuất', style='Danger.TButton', command=self.dang_xuat).pack(side='right')
@@ -379,7 +386,7 @@ class GiaoDienCoSo:
             threading.Thread(target=worker, daemon=True).start()
         self._run_async = _run_async
         self._place_preview_cache = {}
-        role = self.ql.currentUser.role if self.ql.currentUser else ''
+        role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
         paned = ttk.Panedwindow(self.frame, orient='horizontal')
         paned.pack(fill='both', expand=True, padx=24, pady=18)
         left_panel = ttk.Frame(paned, style='Card.TFrame', padding=16)
@@ -391,16 +398,16 @@ class GiaoDienCoSo:
         ttk.Label(left_head, text='Danh sách tour', style='Title.TLabel').pack(side='left')
         tour_frame = ttk.Frame(left_panel)
         tour_frame.pack(fill='both', expand=True)
-        self.tv_tour = ttk.Treeview(tour_frame, columns=('MaTour','TenTour','Gia','SoCho','TrangThai','HDV'), show='headings')
+        self.tv_tour = ttk.Treeview(tour_frame, columns=('ma_tour','ten_tour','gia','so_cho','trang_thai','hdv'), show='headings')
         for col, text, w in (
-            ('MaTour','Mã Tour',90),
-            ('TenTour','Tên Tour',200),
-            ('Gia','Giá',120),
-            ('SoCho','Số chỗ còn',110),
-            ('TrangThai','Trạng thái',130),
-            ('HDV','HDV',90)):
+            ('ma_tour','Mã Tour',90),
+            ('ten_tour','Tên Tour',200),
+            ('gia','Giá',120),
+            ('so_cho','Số chỗ còn',110),
+            ('trang_thai','Trạng thái',130),
+            ('hdv','HDV',90)):
             self.tv_tour.heading(col, text=text)
-            self.tv_tour.column(col, width=w, anchor='center' if col not in ('TenTour','TrangThai') else 'w')
+            self.tv_tour.column(col, width=w, anchor='center' if col not in ('ten_tour','trang_thai') else 'w')
         tour_scroll = ttk.Scrollbar(tour_frame, orient='vertical', command=self.tv_tour.yview)
         self.tv_tour.configure(yscrollcommand=tour_scroll.set)
         self.tv_tour.pack(side='left', fill='both', expand=True)
@@ -409,7 +416,7 @@ class GiaoDienCoSo:
         self.tour_context = ttk.Label(left_panel, text='Chọn tour để xem thông tin', style='Body.TLabel')
         self.tour_context.pack(fill='x', pady=(12,0))
         self.right_panel = right_panel
-        role = self.ql.currentUser.role if self.ql.currentUser else ''
+        role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
         self.tv_hdv = None
         self.tv_kh = None
         self.tv_dat = None
@@ -433,10 +440,10 @@ class GiaoDienCoSo:
             ttk.Button(kh_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_khach).pack(side='left', padx=(6,0))
             kh_body = ttk.Frame(kh_tab)
             kh_body.pack(fill='both', expand=True)
-            self.tv_kh = ttk.Treeview(kh_body, columns=('MaKH','Ten','SoDT'), show='headings')
-            for col, text, width in (('MaKH','Mã KH',110),('Ten','Tên',200),('SoDT','SĐT',130)):
+            self.tv_kh = ttk.Treeview(kh_body, columns=('ma_khach_hang','ten','so_dien_thoai'), show='headings')
+            for col, text, width in (('ma_khach_hang','Mã KH',110),('ten','Tên',200),('so_dien_thoai','SĐT',130)):
                 self.tv_kh.heading(col, text=text)
-                self.tv_kh.column(col, width=width, anchor='center' if col != 'Ten' else 'w')
+                self.tv_kh.column(col, width=width, anchor='center' if col != 'ten' else 'w')
             kh_scroll = ttk.Scrollbar(kh_body, orient='vertical', command=self.tv_kh.yview)
             self.tv_kh.configure(yscrollcommand=kh_scroll.set)
             self.tv_kh.pack(side='left', fill='both', expand=True)
@@ -448,16 +455,16 @@ class GiaoDienCoSo:
             ttk.Button(hdv_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_hdv).pack(side='left', padx=(6,0))
             hdv_body = ttk.Frame(hdv_tab)
             hdv_body.pack(fill='both', expand=True)
-            self.tv_hdv = ttk.Treeview(hdv_body, columns=('MaHDV','TenHDV','SDT','KinhNghiem'), show='headings')
-            for col, text, width in (('MaHDV','Mã HDV',110),('TenHDV','Tên',200),('SDT','SĐT',140),('KinhNghiem','Kinh nghiệm',120)):
+            self.tv_hdv = ttk.Treeview(hdv_body, columns=('ma_hdv','ten_hdv','sdt','kinh_nghiem'), show='headings')
+            for col, text, width in (('ma_hdv','Mã HDV',110),('ten_hdv','Tên',200),('sdt','SĐT',140),('kinh_nghiem','Kinh nghiệm',120)):
                 self.tv_hdv.heading(col, text=text)
-                self.tv_hdv.column(col, width=width, anchor='center' if col != 'TenHDV' else 'w')
+                self.tv_hdv.column(col, width=width, anchor='center' if col != 'ten_hdv' else 'w')
             hdv_scroll = ttk.Scrollbar(hdv_body, orient='vertical', command=self.tv_hdv.yview)
             self.tv_hdv.configure(yscrollcommand=hdv_scroll.set)
             self.tv_hdv.pack(side='left', fill='both', expand=True)
             hdv_scroll.pack(side='right', fill='y')
-            self.tv_dat = ttk.Treeview(dat_tab, columns=('MaDat','MaTour','MaKH','SoNguoi','TrangThai','Tong'), show='headings')
-            for col, text, width in (('MaDat','Mã Đặt',110),('MaTour','Mã Tour',110),('MaKH','Mã KH',110),('SoNguoi','Số người',90),('TrangThai','Trạng thái',120),('Tong','Tổng tiền',140)):
+            self.tv_dat = ttk.Treeview(dat_tab, columns=('ma_dat','ma_tour','ma_khach_hang','so_nguoi','trang_thai','tong'), show='headings')
+            for col, text, width in (('ma_dat','Mã Đặt',110),('ma_tour','Mã Tour',110),('ma_khach_hang','Mã KH',110),('so_nguoi','Số người',90),('trang_thai','Trạng thái',120),('tong','Tổng tiền',140)):
                 self.tv_dat.heading(col, text=text)
                 self.tv_dat.column(col, width=width, anchor='center')
             dat_scroll = ttk.Scrollbar(dat_tab, orient='vertical', command=self.tv_dat.yview)
@@ -490,32 +497,53 @@ class GiaoDienCoSo:
                 ttk.Button(row, text=text, style=style_name, command=cmd).pack(side='left', padx=4)
             return card
         if role == 'admin':
+            mode_bar = ttk.Frame(toolbar, style='App.TFrame')
+            mode_bar.pack(fill='x', pady=(0,6))
+            modes = [
+                ('Tour', 'Tour'),
+                ('Khách hàng', 'Khách hàng'),
+                ('Hướng dẫn viên', 'Hướng dẫn viên'),
+                ('Hệ thống', 'Hệ thống')
+            ]
+            if not hasattr(self, 'active_section'):
+                self.active_section = 'Tour'
+            self.mode_buttons = {}
+            for key, label in modes:
+                style_name = 'ModeActive.TButton' if getattr(self, 'active_section', 'Tour') == key else 'Mode.TButton'
+                btn = ttk.Button(mode_bar, text=label, style=style_name, command=lambda k=key: (setattr(self, 'active_section', k), self.build_giao_dien_chinh()))
+                btn.pack(side='left', padx=6)
+                self.mode_buttons[key] = btn
+
             wrap = ttk.Frame(toolbar, style='App.TFrame')
             wrap.pack(fill='x')
-            build_toolbar_section(wrap, 'Tour', [
-                ('Thêm', self.them_tour, 'Toolbar.TButton'),
-                ('Sửa', self.sua_tour, 'App.TButton'),
-                ('Xóa', self.xoa_tour, 'Danger.TButton'),
-                ('Tìm', lambda: self.prompt_search('Tour'), 'Ghost.TButton')
-            ])
-            build_toolbar_section(wrap, 'Khách hàng', [
-                ('Thêm', self.them_khach, 'Toolbar.TButton'),
-                ('Sửa', self.sua_khach, 'App.TButton'),
-                ('Xóa', self.xoa_khach, 'Danger.TButton'),
-                ('Tìm', lambda: self.prompt_search('Khách hàng'), 'Ghost.TButton')
-            ])
-            build_toolbar_section(wrap, 'Hướng dẫn viên', [
-                ('Thêm', self.them_hdv, 'Toolbar.TButton'),
-                ('Sửa', self.sua_hdv, 'App.TButton'),
-                ('Xóa', self.xoa_hdv, 'Danger.TButton'),
-                ('Tìm', lambda: self.prompt_search('Hướng dẫn viên'), 'Ghost.TButton')
-            ])
-            build_toolbar_section(wrap, 'Hệ thống', [
-                ('Đặt tour', self.dat_tour, 'Accent.TButton'),
-                ('Hủy đặt', self.huy_dat, 'App.TButton'),
-                ('Thống kê', self.thong_ke, 'Accent.TButton'),
-                ('Làm mới', self.refresh_lists, 'App.TButton'),
-            ])
+            if getattr(self, 'active_section', 'Tour') == 'Tour':
+                build_toolbar_section(wrap, 'Tour', [
+                    ('Thêm', self.them_tour, 'Toolbar.TButton'),
+                    ('Sửa', self.sua_tour, 'App.TButton'),
+                    ('Xóa', self.xoa_tour, 'Danger.TButton'),
+                    ('Tìm', lambda: self.prompt_search('Tour'), 'Ghost.TButton')
+                ])
+            elif getattr(self, 'active_section', '') == 'Khách hàng':
+                build_toolbar_section(wrap, 'Khách hàng', [
+                    ('Thêm', self.them_khach, 'Toolbar.TButton'),
+                    ('Sửa', self.sua_khach, 'App.TButton'),
+                    ('Xóa', self.xoa_khach, 'Danger.TButton'),
+                    ('Tìm', lambda: self.prompt_search('Khách hàng'), 'Ghost.TButton')
+                ])
+            elif getattr(self, 'active_section', '') == 'Hướng dẫn viên':
+                build_toolbar_section(wrap, 'Hướng dẫn viên', [
+                    ('Thêm', self.them_hdv, 'Toolbar.TButton'),
+                    ('Sửa', self.sua_hdv, 'App.TButton'),
+                    ('Xóa', self.xoa_hdv, 'Danger.TButton'),
+                    ('Tìm', lambda: self.prompt_search('Hướng dẫn viên'), 'Ghost.TButton')
+                ])
+            else:
+                build_toolbar_section(wrap, 'Hệ thống', [
+                    ('Đặt tour', self.dat_tour, 'Accent.TButton'),
+                    ('Hủy đặt', self.huy_dat, 'App.TButton'),
+                    ('Thống kê', self.thong_ke, 'Accent.TButton'),
+                    ('Làm mới', self.refresh_lists, 'App.TButton'),
+                ])
         elif role == 'hdv':
             ttk.Button(toolbar, text='Làm mới', style='App.TButton', command=self.refresh_lists).pack(side='right', padx=(0,8))
             ttk.Button(toolbar, text='Đăng xuất', style='Danger.TButton', command=self.dang_xuat).pack(side='right')
@@ -536,12 +564,17 @@ class GiaoDienCoSo:
             self.hien_thi_khach()
             self.hien_thi_hdv()
             self.hien_thi_dat_admin()
+        if role == 'user':
+            try:
+                self.start_balance_updater()
+            except Exception:
+                pass
         if role != 'hdv':
             self.tv_tour.bind('<Double-Button-1>', self.show_tour_details)
         if getattr(self, 'tv_kh', None):
-            self.tv_kh.bind('<Double-Button-1>', self.show_kh_details)
+            self.tv_kh.bind('<Double-Button-1>', self.hien_thi_chi_tiet_kh)
         if getattr(self, 'tv_hdv', None):
-            self.tv_hdv.bind('<Double-Button-1>', self.show_hdv_details)
+            self.tv_hdv.bind('<Double-Button-1>', self.hien_thi_chi_tiet_hdv)
 
     def build_root_console(self):
         self.frame = ttk.Frame(self.root, style='App.TFrame')
@@ -554,6 +587,7 @@ class GiaoDienCoSo:
         header.pack(fill='x')
         ttk.Label(header, text='Điều hành tài khoản Admin', style='Title.TLabel').pack(side='left')
         ttk.Button(header, text='Đăng xuất', style='Danger.TButton', command=self.dang_xuat).pack(side='right')
+        ttk.Button(header, text='Kiểm tra Data', style='App.TButton', command=self.show_data_status).pack(side='right', padx=(0,8))
         ttk.Label(self.frame, text='Tài khoản root chỉ được thao tác với Admin', style='Body.TLabel').pack(anchor='w', padx=24, pady=(0,12))
         controls = ttk.Frame(self.frame, padding=(24,0,24,12))
         controls.pack(fill='x')
@@ -563,11 +597,11 @@ class GiaoDienCoSo:
         ttk.Button(controls, text='Làm mới', style='App.TButton', command=self.root_clear_search).pack(side='left')
         table_wrap = ttk.Frame(self.frame, padding=(24,0,24,12))
         table_wrap.pack(fill='both', expand=True)
-        self.root_admin_tree = ttk.Treeview(table_wrap, columns=('Username','FullName'), show='headings')
-        self.root_admin_tree.heading('Username', text='Tên đăng nhập')
-        self.root_admin_tree.heading('FullName', text='Họ tên hiển thị')
-        self.root_admin_tree.column('Username', width=220, anchor='center')
-        self.root_admin_tree.column('FullName', width=320, anchor='w')
+        self.root_admin_tree = ttk.Treeview(table_wrap, columns=('ten_dang_nhap','ho_ten_hien_thi'), show='headings')
+        self.root_admin_tree.heading('ten_dang_nhap', text='Tên đăng nhập')
+        self.root_admin_tree.heading('ho_ten_hien_thi', text='Họ tên hiển thị')
+        self.root_admin_tree.column('ten_dang_nhap', width=220, anchor='center')
+        self.root_admin_tree.column('ho_ten_hien_thi', width=320, anchor='w')
         scroll = ttk.Scrollbar(table_wrap, orient='vertical', command=self.root_admin_tree.yview)
         self.root_admin_tree.configure(yscrollcommand=scroll.set)
         self.root_admin_tree.pack(side='left', fill='both', expand=True)
@@ -580,6 +614,57 @@ class GiaoDienCoSo:
         ttk.Button(action, text='Reset mật khẩu về 123', style='Accent.TButton', command=self.root_reset_admin_password).pack(side='left', padx=4)
         self.root_refresh_admins()
 
+    def show_data_status(self):
+        top, container = self.create_modal('Trạng thái Data', size=(640, 520), maximize=False)
+        tree = ttk.Treeview(container, columns=('status',), show='tree')
+        tree.pack(fill='both', expand=True)
+        prog = tree.insert('', 'end', text='Chương trình đang chạy')
+        tree.insert(prog, 'end', text='ID tiến trình: %s' % (os.getpid(),))
+        data_root = tree.insert('', 'end', text='Dữ liệu')
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Data'))
+        try:
+            files = sorted(os.listdir(base)) if os.path.isdir(base) else []
+        except Exception:
+            files = []
+        if not files:
+            tree.insert(data_root, 'end', text='(không tìm thấy thư mục Data)')
+        else:
+            for f in files:
+                p = os.path.join(base, f)
+                status = 'Tốt' if os.path.isfile(p) else 'Không hợp lệ'
+                tree.insert(data_root, 'end', text=f + ' — ' + status)
+        self.apply_zebra(tree)
+
+    def start_balance_updater(self, interval=2000):
+        try:
+            self.stop_balance_updater()
+        except Exception:
+            pass
+        def _tick():
+            try:
+                if not self.ql.nguoi_dung_hien_tai or self.ql.nguoi_dung_hien_tai.vai_tro != 'user':
+                    return
+                kh = self.ql.tim_khach_hang(self.ql.nguoi_dung_hien_tai.ma_khach_hang)
+                bal = kh.so_du if kh else 0
+                if hasattr(self, 'balance_label'):
+                    self.balance_label.config(text=f"Số dư: {self.format_money(bal)}")
+            except Exception:
+                pass
+            try:
+                self._balance_job = self.root.after(interval, _tick)
+            except Exception:
+                pass
+        _tick()
+
+    def stop_balance_updater(self):
+        job = getattr(self, '_balance_job', None)
+        if job:
+            try:
+                self.root.after_cancel(job)
+            except Exception:
+                pass
+            self._balance_job = None
+
     def root_clear_search(self):
         if hasattr(self, 'root_search_var'):
             self.root_search_var.set('')
@@ -591,11 +676,11 @@ class GiaoDienCoSo:
         for item in self.root_admin_tree.get_children():
             self.root_admin_tree.delete(item)
         keyword = (getattr(self, 'root_search_var', tk.StringVar()).get() or '').strip().lower()
-        admins = self.ql.LayDanhSachAdmin()
+        admins = self.ql.lay_danh_sach_admin()
         if keyword:
-            admins = [a for a in admins if keyword in a.username.lower() or keyword in (a.fullName or '').lower()]
+            admins = [a for a in admins if keyword in a.ten_dang_nhap.lower() or keyword in (a.ten_hien_thi or '').lower()]
         for admin in admins:
-            self.root_admin_tree.insert('', tk.END, values=(admin.username, admin.fullName))
+            self.root_admin_tree.insert('', tk.END, values=(admin.ten_dang_nhap, admin.ten_hien_thi))
         self.apply_zebra(self.root_admin_tree)
 
     def root_get_selected_admin(self):
@@ -613,11 +698,11 @@ class GiaoDienCoSo:
             username = self.root_get_selected_admin()
             if not username:
                 return
-            target = self.ql.TimUser(username)
+            target = self.ql.tim_nguoi_dung(username)
             if not target:
                 messagebox.showerror('Lỗi', 'Không tìm thấy tài khoản')
                 return
-        title = 'Tạo admin mới' if mode == 'create' else f'Cập nhật admin: {target.username}'
+        title = 'Tạo admin mới' if mode == 'create' else f'Cập nhật admin: {target.ten_dang_nhap}'
         top, container = self.create_modal(title, size=(480, 320))
         form = ttk.Frame(container, padding=12)
         form.pack(fill='both', expand=True)
@@ -625,13 +710,13 @@ class GiaoDienCoSo:
         username_entry = ttk.Entry(form, font=self.font_body)
         username_entry.grid(row=0, column=1, sticky='ew', padx=(10,0), pady=4)
         if target:
-            username_entry.insert(0, target.username)
+            username_entry.insert(0, target.ten_dang_nhap)
             username_entry.configure(state='disabled')
         ttk.Label(form, text='Họ tên hiển thị', style='Form.TLabel').grid(row=1, column=0, sticky='w', pady=4)
         fullname_entry = ttk.Entry(form, font=self.font_body)
         fullname_entry.grid(row=1, column=1, sticky='ew', padx=(10,0), pady=4)
         if target:
-            fullname_entry.insert(0, target.fullName)
+            fullname_entry.insert(0, target.ten_hien_thi)
         ttk.Label(form, text='Mật khẩu', style='Form.TLabel').grid(row=2, column=0, sticky='w', pady=4)
         password_entry = ttk.Entry(form, font=self.font_body, show='*')
         password_entry.grid(row=2, column=1, sticky='ew', padx=(10,0), pady=4)
@@ -646,12 +731,12 @@ class GiaoDienCoSo:
                 if not uname or not fname or not pwd:
                     messagebox.showerror('Lỗi', 'Vui lòng nhập đầy đủ thông tin')
                     return
-                success, msg = self.ql.DangKyUser(uname, pwd, role='admin', fullName=fname)
+                success, msg = self.ql.dang_ky_nguoi_dung(uname, pwd, vai_tro='admin', ten_hien_thi=fname)
             else:
                 if not fname:
                     messagebox.showerror('Lỗi', 'Họ tên không được bỏ trống')
                     return
-                success, msg = self.ql.CapNhatAdmin(target.username, fullName=fname, password=pwd or None)
+                success, msg = self.ql.cap_nhat_admin(target.ten_dang_nhap, ten_hien_thi=fname, mat_khau=pwd or None)
             if success:
                 luu_tat_ca(self.ql)
                 self.root_refresh_admins()
@@ -671,7 +756,7 @@ class GiaoDienCoSo:
             return
         if not messagebox.askyesno('Xác nhận', f'Xóa tài khoản {username}?'):
             return
-        success, msg = self.ql.XoaAdmin(username)
+        success, msg = self.ql.xoa_admin(username)
         if success:
             luu_tat_ca(self.ql)
             self.root_refresh_admins()
@@ -683,7 +768,7 @@ class GiaoDienCoSo:
         username = self.root_get_selected_admin()
         if not username:
             return
-        success, msg = self.ql.ResetMatKhau(username, '123')
+        success, msg = self.ql.dat_lai_mat_khau(username, '123')
         if success:
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', 'Đã đặt lại mật khẩu về 123')
@@ -691,7 +776,7 @@ class GiaoDienCoSo:
             messagebox.showerror('Lỗi', msg)
 
     def refresh_lists(self):
-        role = self.ql.currentUser.role if self.ql.currentUser else ''
+        role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
         if role == 'hdv':
             self.hien_thi_tour_hdv()
         else:
@@ -706,11 +791,11 @@ class GiaoDienCoSo:
 
     def search_tour(self, event=None):
         keyword = (self.search_var.get() or '').strip().lower()
-        base = self.ql.danhSachTour
+        base = self.ql.danh_sach_tour
         if keyword:
-            base = [t for t in base if keyword in (t.tenTour or '').lower() or keyword in (t.maTour or '').lower()]
-        if self.ql.currentUser and self.ql.currentUser.role == 'hdv':
-            base = [t for t in base if str(t.huongDanVien) == str(self.ql.currentUser.maKH)]
+            base = [t for t in base if keyword in (t.ten_tour or '').lower() or keyword in (t.ma_tour or '').lower()]
+        if self.ql.nguoi_dung_hien_tai and self.ql.nguoi_dung_hien_tai.vai_tro == 'hdv':
+            base = [t for t in base if str(t.huong_dan_vien) == str(self.ql.nguoi_dung_hien_tai.ma_khach_hang)]
         self.hien_thi_tour(dataset=base)
 
     def prompt_search(self, entity):
@@ -719,7 +804,7 @@ class GiaoDienCoSo:
         top.geometry('500x200')
         top.transient(self.root)
         top.grab_set()
-        self.theme.center(top, 500, 200)
+        self.theme.trung_tam(top, 500, 200)
         
         container = ttk.Frame(top, style='Card.TFrame', padding=20)
         container.pack(fill='both', expand=True)
@@ -761,16 +846,16 @@ class GiaoDienCoSo:
         if not getattr(self, 'tv_kh', None):
             return
         keyword = (getattr(self, 'kh_search_var', tk.StringVar()).get() or '').strip().lower()
-        rows = self.ql.danhSachKhachHang
+        rows = self.ql.danh_sach_khach_hang
         if keyword:
-            rows = [k for k in rows if keyword in (k.maKH or '').lower() or keyword in (k.tenKH or '').lower() or keyword in (k.soDT or '').lower()]
+            rows = [k for k in rows if keyword in (k.ma_khach_hang or '').lower() or keyword in (k.ten_khach_hang or '').lower() or keyword in (k.so_dien_thoai or '').lower()]
         self.hien_thi_khach(rows)
 
     def search_hdv(self):
         if not getattr(self, 'tv_hdv', None):
             return
         keyword = (getattr(self, 'hdv_search_var', tk.StringVar()).get() or '').strip().lower()
-        rows = getattr(self.ql, 'danhSachHDV', [])
+        rows = getattr(self.ql, 'danh_sach_hdv', [])
         if keyword:
             rows = [h for h in rows if keyword in str(h.get('maHDV','')).lower() or keyword in str(h.get('tenHDV','')).lower() or keyword in str(h.get('sdt','')).lower()]
         self.hien_thi_hdv(rows)
@@ -784,18 +869,18 @@ class GiaoDienCoSo:
         left.pack(side='left', fill='both', expand=True)
         right = ttk.Frame(holder, padding=4)
         right.pack(side='left', fill='both', expand=True)
-        self.stats_tv_tour = ttk.Treeview(left, columns=('MaTour','SoDat','DoanhThu'), show='headings')
-        for col, text, w in (('MaTour','Mã Tour',140),('SoDat','Lượt đặt',100),('DoanhThu','Doanh thu',160)):
+        self.stats_tv_tour = ttk.Treeview(left, columns=('ma_tour','so_dat','doanh_thu'), show='headings')
+        for col, text, w in (('ma_tour','Mã Tour',140),('so_dat','Lượt đặt',100),('doanh_thu','Doanh thu',160)):
             self.stats_tv_tour.heading(col, text=text)
             self.stats_tv_tour.column(col, width=w, anchor='center')
         tour_scroll = ttk.Scrollbar(left, orient='vertical', command=self.stats_tv_tour.yview)
         self.stats_tv_tour.configure(yscrollcommand=tour_scroll.set)
         self.stats_tv_tour.pack(side='left', fill='both', expand=True)
         tour_scroll.pack(side='right', fill='y')
-        self.stats_tv_customer = ttk.Treeview(right, columns=('MaKH','Ten','TongChi'), show='headings')
-        for col, text, w in (('MaKH','Mã KH',120),('Ten','Tên khách',200),('TongChi','Tổng chi',160)):
+        self.stats_tv_customer = ttk.Treeview(right, columns=('ma_khach_hang','ten','tong_chi'), show='headings')
+        for col, text, w in (('ma_khach_hang','Mã KH',120),('ten','Tên khách',200),('tong_chi','Tổng chi',160)):
             self.stats_tv_customer.heading(col, text=text)
-            self.stats_tv_customer.column(col, width=w, anchor='center' if col != 'Ten' else 'w')
+            self.stats_tv_customer.column(col, width=w, anchor='center' if col != 'ten' else 'w')
         cus_scroll = ttk.Scrollbar(right, orient='vertical', command=self.stats_tv_customer.yview)
         self.stats_tv_customer.configure(yscrollcommand=cus_scroll.set)
         self.stats_tv_customer.pack(side='left', fill='both', expand=True)
@@ -806,15 +891,15 @@ class GiaoDienCoSo:
             return
         self.clear_tree(self.stats_tv_tour)
         self.clear_tree(self.stats_tv_customer)
-        tong = sum(d.tongTien for d in self.ql.danhSachDatTour if d.trangThai == 'da_thanh_toan')
+        tong = sum(d.tong_tien for d in self.ql.danh_sach_dat_tour if d.trang_thai == 'da_thanh_toan')
         if getattr(self, 'stats_header', None):
             self.stats_header.config(text=f'Tổng doanh thu: {self.format_money(tong)}')
         counts = {}
         revenue_per_tour = {}
-        for d in self.ql.danhSachDatTour:
-            counts[d.maTour] = counts.get(d.maTour, 0) + 1
-            if d.trangThai == 'da_thanh_toan':
-                revenue_per_tour[d.maTour] = revenue_per_tour.get(d.maTour, 0) + d.tongTien
+        for d in self.ql.danh_sach_dat_tour:
+            counts[d.ma_tour] = counts.get(d.ma_tour, 0) + 1
+            if d.trang_thai == 'da_thanh_toan':
+                revenue_per_tour[d.ma_tour] = revenue_per_tour.get(d.ma_tour, 0) + d.tong_tien
         tour_stats = []
         for ma, c in counts.items():
             tour_stats.append((ma, revenue_per_tour.get(ma, 0), c))
@@ -822,51 +907,51 @@ class GiaoDienCoSo:
         for ma, revenue, count in tour_stats:
             self.stats_tv_tour.insert('', tk.END, values=(ma, count, self.format_money(revenue)))
         topcus = {}
-        for d in self.ql.danhSachDatTour:
-            if d.trangThai == 'da_thanh_toan':
-                topcus[d.maKH] = topcus.get(d.maKH, 0) + d.tongTien
+        for d in self.ql.danh_sach_dat_tour:
+            if d.trang_thai == 'da_thanh_toan':
+                topcus[d.ma_khach_hang] = topcus.get(d.ma_khach_hang, 0) + d.tong_tien
         for ma, s in sorted(topcus.items(), key=lambda x: x[1], reverse=True):
-            kh = self.ql.TimKhacHang(ma)
-            self.stats_tv_customer.insert('', tk.END, values=(ma, kh.tenKH if kh else ma, self.format_money(s)))
+            kh = self.ql.tim_khach_hang(ma)
+            self.stats_tv_customer.insert('', tk.END, values=(ma, kh.ten_khach_hang if kh else ma, self.format_money(s)))
 
     def hien_thi_dat_admin(self):
         if not self.tv_dat:
             return
         self.clear_tree(self.tv_dat)
-        for d in self.ql.danhSachDatTour:
-            self.tv_dat.insert('', tk.END, values=(d.maDat, d.maTour, d.maKH, d.soNguoi, d.trangThai, d.tongTien))
+        for d in self.ql.danh_sach_dat_tour:
+            self.tv_dat.insert('', tk.END, values=(d.ma_dat_tour, d.ma_tour, d.ma_khach_hang, d.so_nguoi, d.trang_thai, d.tong_tien))
         self.apply_zebra(self.tv_dat)
 
     def hien_thi_tour(self, dataset=None):
         if not hasattr(self, 'tv_tour') or not self.tv_tour:
             return
-        rows = dataset if dataset is not None else self.ql.danhSachTour
+        rows = dataset if dataset is not None else self.ql.danh_sach_tour
         self.clear_tree(self.tv_tour)
         for t in rows:
             try:
-                capacity = int(t.soCho)
+                capacity = int(t.so_cho)
             except Exception:
-                capacity = t.soCho if isinstance(t.soCho, int) else 0
-            booked = sum(d.soNguoi for d in self.ql.danhSachDatTour if d.maTour == t.maTour and d.trangThai == 'da_thanh_toan')
+                capacity = t.so_cho if isinstance(t.so_cho, int) else 0
+            booked = sum(d.so_nguoi for d in self.ql.danh_sach_dat_tour if d.ma_tour == t.ma_tour and d.trang_thai == 'da_thanh_toan')
             remaining = max(0, capacity - booked)
             trang_thai = self.ql.dien_giai_trang_thai_tour(t)
-            self.tv_tour.insert('', tk.END, values=(t.maTour, t.tenTour, self.format_money(t.gia), remaining, trang_thai, t.huongDanVien))
+            self.tv_tour.insert('', tk.END, values=(t.ma_tour, t.ten_tour, self.format_money(t.gia_tour), remaining, trang_thai, t.huong_dan_vien))
         self.apply_zebra(self.tv_tour)
 
     def hien_thi_tour_hdv(self):
         if not hasattr(self, 'tv_tour') or not self.tv_tour:
             return
-        hdv_id = self.ql.currentUser.maKH if self.ql.currentUser else ''
-        rows = [t for t in self.ql.danhSachTour if str(t.huongDanVien) == str(hdv_id)]
+        hdv_id = self.ql.nguoi_dung_hien_tai.ma_khach_hang if self.ql.nguoi_dung_hien_tai else ''
+        rows = [t for t in self.ql.danh_sach_tour if str(t.huong_dan_vien) == str(hdv_id)]
         self.hien_thi_tour(dataset=rows)
 
     def hien_thi_hdv(self, dataset=None):
         if not self.tv_hdv:
             return
         self.clear_tree(self.tv_hdv)
-        if not hasattr(self.ql, 'danhSachHDV'):
+        if not hasattr(self.ql, 'danh_sach_hdv'):
             return
-        rows = dataset if dataset is not None else self.ql.danhSachHDV
+        rows = dataset if dataset is not None else self.ql.danh_sach_hdv
         for h in rows:
             self.tv_hdv.insert('', tk.END, values=(h.get('maHDV',''), h.get('tenHDV',''), h.get('sdt',''), h.get('kinhNghiem','')))
         self.apply_zebra(self.tv_hdv)
@@ -874,21 +959,73 @@ class GiaoDienCoSo:
     def hien_thi_khach(self, dataset=None):
         if not self.tv_kh:
             return
-        rows = dataset if dataset is not None else self.ql.danhSachKhachHang
+        rows = dataset if dataset is not None else self.ql.danh_sach_khach_hang
         self.clear_tree(self.tv_kh)
         for k in rows:
-            self.tv_kh.insert('', tk.END, values=(k.maKH, k.tenKH, k.soDT))
+            self.tv_kh.insert('', tk.END, values=(k.ma_khach_hang, k.ten_khach_hang, k.so_dien_thoai))
         self.apply_zebra(self.tv_kh)
+
+    def on_resize(self, event=None):
+        if event and event.widget != self.root:
+            return
+        try:
+            width = self.root.winfo_width()
+            height = self.root.winfo_height()
+            if width < 800 or height < 600:
+                return
+            left_width = int(width * 0.55) 
+            if hasattr(self, 'tv_tour') and self.tv_tour:
+                col_widths_tour = {
+                    'ma_tour': 90,
+                    'ten_tour': max(150, int(left_width * 0.35)),
+                    'gia': 120,
+                    'so_cho': 110,
+                    'trang_thai': max(100, int(left_width * 0.25)),
+                    'hdv': 90
+                }
+                for col, w in col_widths_tour.items():
+                    self.tv_tour.column(col, width=w)
+            right_width = int(width * 0.35)
+            if hasattr(self, 'tv_kh') and self.tv_kh:
+                col_widths_kh = {
+                    'ma_khach_hang': 110,
+                    'ten': max(150, int(right_width * 0.5)),
+                    'so_dien_thoai': 130
+                }
+                for col, w in col_widths_kh.items():
+                    self.tv_kh.column(col, width=w)
+            if hasattr(self, 'tv_hdv') and self.tv_hdv:
+                col_widths_hdv = {
+                    'ma_hdv': 110,
+                    'ten_hdv': max(150, int(right_width * 0.4)),
+                    'sdt': 140,
+                    'kinh_nghiem': 120
+                }
+                for col, w in col_widths_hdv.items():
+                    self.tv_hdv.column(col, width=w)
+            if hasattr(self, 'tv_dat') and self.tv_dat:
+                col_widths_dat = {
+                    'ma_dat': 110,
+                    'ma_tour': 110,
+                    'ma_khach_hang': 110,
+                    'so_nguoi': 90,
+                    'trang_thai': 120,
+                    'tong': 140
+                }
+                for col, w in col_widths_dat.items():
+                    self.tv_dat.column(col, width=w)
+        except Exception:
+            pass
 
     def hien_thi_khach_user(self):
         if not hasattr(self, 'tv_kh') or not self.tv_kh:
             return
-        if not self.ql.currentUser:
+        if not self.ql.nguoi_dung_hien_tai:
             return
         self.clear_tree(self.tv_kh)
-        rows = [k for k in self.ql.danhSachKhachHang if k.maKH == self.ql.currentUser.maKH]
+        rows = [k for k in self.ql.danh_sach_khach_hang if k.ma_khach_hang == self.ql.nguoi_dung_hien_tai.ma_khach_hang]
         for k in rows:
-            self.tv_kh.insert('', tk.END, values=(k.maKH, k.tenKH, k.soDT, k.email, self.format_money(k.soDu)))
+            self.tv_kh.insert('', tk.END, values=(k.ma_khach_hang, k.ten_khach_hang, k.so_dien_thoai, k.email, self.format_money(k.so_du)))
         self.apply_zebra(self.tv_kh)
 
     def get_selected_customer(self):
@@ -900,5 +1037,5 @@ class GiaoDienCoSo:
             return None
         values = self.tv_kh.item(sel[0], 'values')
         ma = values[0]
-        return self.ql.TimKhacHang(ma)
+        return self.ql.tim_khach_hang(ma)
 

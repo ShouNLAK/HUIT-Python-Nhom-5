@@ -4,11 +4,11 @@ from tkinter import filedialog
 import json
 from datetime import datetime
 from collections import defaultdict
-from Class.tour import Tour
+from Class.tour import TourDuLich
 from QuanLy.storage import luu_tat_ca
 from GUI.Login.base import GiaoDienCoSo
 
-def show_hdv_details(self, event=None):
+def hien_thi_chi_tiet_hdv(self, event=None):
     if not self.tv_hdv:
         return
     sel = self.tv_hdv.selection()
@@ -19,23 +19,23 @@ def show_hdv_details(self, event=None):
         return
     ma = values[0]
     hdv = None
-    if hasattr(self.ql, 'danhSachHDV'):
-        hdv = next((h for h in self.ql.danhSachHDV if str(h.get('maHDV', '')) == str(ma)), None)
+    if hasattr(self.ql, 'danh_sach_hdv'):
+        hdv = next((h for h in self.ql.danh_sach_hdv if str(h.get('maHDV', '')) == str(ma)), None)
     if not hdv:
         messagebox.showerror('Lỗi', 'Không tìm thấy thông tin HDV')
         return
-    tours = [t for t in self.ql.danhSachTour if str(t.huongDanVien) == str(ma)]
-    tour_ids = {t.maTour for t in tours}
-    bookings = [d for d in self.ql.danhSachDatTour if d.maTour in tour_ids]
+    tours = [t for t in self.ql.danh_sach_tour if str(t.huong_dan_vien) == str(ma)]
+    tour_ids = {t.ma_tour for t in tours}
+    bookings = [d for d in self.ql.danh_sach_dat_tour if d.ma_tour in tour_ids]
     passengers = []
     for d in bookings:
-        kh = self.ql.TimKhacHang(d.maKH)
+        kh = self.ql.tim_khach_hang(d.ma_khach_hang)
         passengers.append({
-            'maKH': d.maKH,
-            'tenKH': kh.tenKH if kh else 'N/A',
-            'maTour': d.maTour,
-            'soNguoi': d.soNguoi,
-            'trangThai': d.trangThai
+            'ma_khach_hang': d.ma_khach_hang,
+            'ten_khach_hang': kh.ten_khach_hang if kh else 'N/A',
+            'ma_tour': d.ma_tour,
+            'so_nguoi': d.so_nguoi,
+            'trang_thai': d.trang_thai
         })
     top, container = self.create_modal(f"Chi tiết HDV: {hdv.get('tenHDV', '')}", size=(820, 560))
     ttk.Label(container, text='THẺ HƯỚNG DẪN VIÊN', style='Title.TLabel').pack(anchor='w', pady=(0,12))
@@ -54,7 +54,7 @@ def show_hdv_details(self, event=None):
     ttk.Label(info_card, text=f"Họ tên: {hdv.get('tenHDV', '')}", style='Body.TLabel').grid(row=1, column=0, sticky='w', pady=4)
     ttk.Label(info_card, text=f"SĐT: {hdv.get('sdt', '')}", style='Body.TLabel').grid(row=2, column=0, sticky='w', pady=4)
     ttk.Label(info_card, text=f"Kinh nghiệm: {hdv.get('kinhNghiem', '')} năm", style='Body.TLabel').grid(row=3, column=0, sticky='w', pady=4)
-    total_passengers = sum(p['soNguoi'] for p in passengers)
+    total_passengers = sum(p['so_nguoi'] for p in passengers)
     ttk.Label(info_card, text=f"Số tour đang phụ trách: {len(tours)}", style='BodyBold.TLabel').grid(row=4, column=0, sticky='w', pady=(12,4))
     ttk.Label(info_card, text=f"Tổng lượt khách đã dẫn: {total_passengers}", style='Body.TLabel').grid(row=5, column=0, sticky='w')
     info_card.columnconfigure(0, weight=1)
@@ -65,20 +65,19 @@ def show_hdv_details(self, event=None):
     summary_card = ttk.Frame(tour_container, style='Card.TFrame', padding=12)
     summary_card.pack(fill='x', pady=(0,12))
     ttk.Label(summary_card, text=f'Tổng số tour phụ trách: {len(tours)}', style='BodyBold.TLabel').pack(side='left', padx=12)
-    ttk.Label(summary_card, text=f'Tổng lượt khách: {sum(p["soNguoi"] for p in passengers)}', style='Body.TLabel').pack(side='left', padx=12)
+    ttk.Label(summary_card, text=f'Tổng lượt khách: {sum(p["so_nguoi"] for p in passengers)}', style='Body.TLabel').pack(side='left', padx=12)
 
     tour_frame = ttk.LabelFrame(tour_container, text='Danh sách tour được phân công', style='Card.TLabelframe', padding=12)
     tour_frame.pack(fill='both', expand=True)
-
-    tv_tour = ttk.Treeview(tour_frame, columns=('Ma', 'Ten', 'NgayDi', 'NgayVe', 'Gia', 'ConCho', 'DaDat'), show='headings')
+    tv_tour = ttk.Treeview(tour_frame, columns=('ma','ten','ngay_di','ngay_ve','gia','con_cho','da_dat'), show='headings')
     headers = {
-        'Ma': ('Mã Tour', 100, 'center'),
-        'Ten': ('Tên Tour', 260, 'w'),
-        'NgayDi': ('Khởi hành', 220, 'center'),
-        'NgayVe': ('Kết thúc', 220, 'center'),
-        'Gia': ('Giá', 110, 'center'),
-        'ConCho': ('Còn chỗ', 80, 'center'),
-        'DaDat': ('Đã đặt', 80, 'center')
+        'ma': ('Mã Tour', 100, 'center'),
+        'ten': ('Tên Tour', 260, 'w'),
+        'ngay_di': ('Khởi hành', 220, 'center'),
+        'ngay_ve': ('Kết thúc', 220, 'center'),
+        'gia': ('Giá', 110, 'center'),
+        'con_cho': ('Còn chỗ', 80, 'center'),
+        'da_dat': ('Đã đặt', 80, 'center')
     }
     for key, (text, width, anchor) in headers.items():
         tv_tour.heading(key, text=text)
@@ -89,27 +88,27 @@ def show_hdv_details(self, event=None):
     tour_scroll.pack(side='right', fill='y')
     for tour in tours:
         try:
-            capacity = int(tour.soCho)
+            capacity = int(tour.so_cho)
         except Exception:
-            capacity = tour.soCho if isinstance(tour.soCho, int) else 0
-        booked = sum(d.soNguoi for d in bookings if d.maTour == tour.maTour and d.trangThai == 'da_thanh_toan')
+            capacity = tour.so_cho if isinstance(tour.so_cho, int) else 0
+        booked = sum(d.so_nguoi for d in bookings if d.ma_tour == tour.ma_tour and d.trang_thai == 'da_thanh_toan')
         remaining = max(0, capacity - booked)
-        ngay_di_obj = self.ql.phan_tich_ngay(getattr(tour, 'ngayDi', None))
-        ngay_ve_obj = self.ql.phan_tich_ngay(getattr(tour, 'ngayVe', None))
+        ngay_di_obj = self.ql.phan_tich_ngay(getattr(tour, 'ngay_di', None))
+        ngay_ve_obj = self.ql.phan_tich_ngay(getattr(tour, 'ngay_ve', None))
         ngay_di_hien_thi = self.ql.dien_giai_ngay(ngay_di_obj) if ngay_di_obj else '—'
         ngay_ve_hien_thi = self.ql.dien_giai_ngay(ngay_ve_obj) if ngay_ve_obj else '—'
         tv_tour.insert('', tk.END, values=(
-            tour.maTour,
-            tour.tenTour,
+            tour.ma_tour,
+            tour.ten_tour,
             ngay_di_hien_thi,
             ngay_ve_hien_thi,
-            self.format_money(tour.gia),
+            self.format_money(tour.gia_tour),
             remaining,
             booked
         ))
     self.apply_zebra(tv_tour)
 
-def show_kh_details(self, event=None):
+def hien_thi_chi_tiet_kh(self, event=None):
     if not getattr(self, 'tv_kh', None):
         return
     sel = self.tv_kh.selection()
@@ -117,12 +116,12 @@ def show_kh_details(self, event=None):
         messagebox.showwarning('Chú ý', 'Chọn một khách hàng')
         return
     ma = self.tv_kh.item(sel[0], 'values')[0]
-    kh = self.ql.TimKhacHang(ma)
+    kh = self.ql.tim_khach_hang(ma)
     if not kh:
         messagebox.showerror('Lỗi', 'Không tìm thấy khách hàng')
         return
-    orders = [d for d in self.ql.danhSachDatTour if d.maKH == kh.maKH]
-    top, container = self.create_modal(f'Hồ sơ khách: {kh.tenKH}', size=(820, 540))
+    orders = [d for d in self.ql.danh_sach_dat_tour if d.ma_khach_hang == kh.ma_khach_hang]
+    top, container = self.create_modal(f'Hồ sơ khách: {kh.ten_khach_hang}', size=(820, 540))
     ttk.Label(container, text='THẺ KHÁCH HÀNG', style='Title.TLabel').pack(anchor='w', pady=(0,12))
     
     tabs = ttk.Notebook(container)
@@ -136,14 +135,14 @@ def show_kh_details(self, event=None):
     info_card = ttk.Frame(info_tab, style='Card.TFrame', padding=12)
     info_card.pack(fill='both', expand=True)
     
-    ttk.Label(info_card, text=f'Mã KH: {kh.maKH}', style='BodyBold.TLabel').pack(anchor='w', pady=4)
-    ttk.Label(info_card, text=f'Tên KH: {kh.tenKH}', style='Body.TLabel').pack(anchor='w', pady=4)
-    ttk.Label(info_card, text=f'Số điện thoại: {kh.soDT}', style='Body.TLabel').pack(anchor='w', pady=4)
+    ttk.Label(info_card, text=f'Mã KH: {kh.ma_khach_hang}', style='BodyBold.TLabel').pack(anchor='w', pady=4)
+    ttk.Label(info_card, text=f'Tên KH: {kh.ten_khach_hang}', style='Body.TLabel').pack(anchor='w', pady=4)
+    ttk.Label(info_card, text=f'Số điện thoại: {kh.so_dien_thoai}', style='Body.TLabel').pack(anchor='w', pady=4)
     ttk.Label(info_card, text=f'Email: {kh.email}', style='Body.TLabel').pack(anchor='w', pady=4)
-    ttk.Label(info_card, text=f'Ví / Số dư: {self.format_money(kh.soDu)}', style='BodyBold.TLabel').pack(anchor='w', pady=4)
+    ttk.Label(info_card, text=f'Ví / Số dư: {self.format_money(kh.so_du)}', style='BodyBold.TLabel').pack(anchor='w', pady=4)
     
-    tv = ttk.Treeview(orders_tab, columns=('MaDat','MaTour','SoNguoi','TrangThai','Tong'), show='headings')
-    for col, text, w in (('MaDat','Mã đặt',120),('MaTour','Mã tour',120),('SoNguoi','Số người',100),('TrangThai','Trạng thái',140),('Tong','Tổng tiền',140)):
+    tv = ttk.Treeview(orders_tab, columns=('ma_dat','ma_tour','so_nguoi','trang_thai','tong'), show='headings')
+    for col, text, w in (('ma_dat','Mã đặt',120),('ma_tour','Mã tour',120),('so_nguoi','Số người',100),('trang_thai','Trạng thái',140),('tong','Tổng tiền',140)):
         tv.heading(col, text=text)
         tv.column(col, width=w, anchor='center')
     scr = ttk.Scrollbar(orders_tab, orient='vertical', command=tv.yview)
@@ -151,16 +150,16 @@ def show_kh_details(self, event=None):
     tv.pack(side='left', fill='both', expand=True)
     scr.pack(side='right', fill='y')
     for d in orders:
-        tv.insert('', tk.END, values=(d.maDat, d.maTour, d.soNguoi, d.trangThai, self.format_money(d.tongTien)))
+        tv.insert('', tk.END, values=(d.ma_dat_tour, d.ma_tour, d.so_nguoi, d.trang_thai, self.format_money(d.tong_tien)))
     self.apply_zebra(tv)
     
     btn_bar = ttk.Frame(container, padding=(0,12,0,0))
     btn_bar.pack(fill='x')
-    ttk.Button(btn_bar, text='Đặt tour cho khách này', style='Accent.TButton', command=lambda: self.dat_tour_for_customer(kh.maKH)).pack(side='left', padx=4)
-    ttk.Button(btn_bar, text='Hủy đơn của khách', style='Danger.TButton', command=lambda: self.huy_dat_for_customer(kh.maKH)).pack(side='left', padx=4)
+    ttk.Button(btn_bar, text='Đặt tour cho khách này', style='Accent.TButton', command=lambda: self.dat_tour_for_customer(kh.ma_khach_hang)).pack(side='left', padx=4)
+    ttk.Button(btn_bar, text='Hủy đơn của khách', style='Danger.TButton', command=lambda: self.huy_dat_for_customer(kh.ma_khach_hang)).pack(side='left', padx=4)
 
 def thong_ke(self):
-    orders = list(getattr(self.ql, 'danhSachDatTour', []) or [])
+    orders = list(getattr(self.ql, 'danh_sach_dat_tour', []) or [])
     if not orders:
         messagebox.showinfo('Thông báo', 'Chưa có dữ liệu đặt tour để thống kê')
         return
@@ -192,16 +191,16 @@ def thong_ke(self):
         except Exception:
             return 0
 
-    paid = [o for o in orders if getattr(o, 'trangThai', '') == 'da_thanh_toan']
-    pending = [o for o in orders if getattr(o, 'trangThai', '') == 'chua_thanh_toan']
-    canceled = [o for o in orders if getattr(o, 'trangThai', '') == 'huy']
+    paid = [o for o in orders if getattr(o, 'trang_thai', '') == 'da_thanh_toan']
+    pending = [o for o in orders if getattr(o, 'trang_thai', '') == 'chua_thanh_toan']
+    canceled = [o for o in orders if getattr(o, 'trang_thai', '') == 'huy']
     total_bookings = len(orders)
-    total_revenue = sum(safe_amount(getattr(o, 'tongTien', 0)) for o in paid)
+    total_revenue = sum(safe_amount(getattr(o, 'tong_tien', 0)) for o in paid)
     avg_ticket = total_revenue / len(paid) if paid else 0
-    total_customers = len({o.maKH for o in orders})
-    seats_paid = sum(safe_int(getattr(o, 'soNguoi', 0)) for o in paid)
-    outstanding = sum(safe_amount(getattr(o, 'tongTien', 0)) for o in pending)
-    cancelled_value = sum(safe_amount(getattr(o, 'tongTien', 0)) for o in canceled)
+    total_customers = len({o.ma_khach_hang for o in orders})
+    seats_paid = sum(safe_int(getattr(o, 'so_nguoi', 0)) for o in paid)
+    outstanding = sum(safe_amount(getattr(o, 'tong_tien', 0)) for o in pending)
+    cancelled_value = sum(safe_amount(getattr(o, 'tong_tien', 0)) for o in canceled)
 
     status_counts = defaultdict(int)
     monthly_revenue = defaultdict(float)
@@ -212,24 +211,24 @@ def thong_ke(self):
     today = datetime.today().date()
 
     for o in orders:
-        status = getattr(o, 'trangThai', '') or 'khac'
+        status = getattr(o, 'trang_thai', '') or 'khac'
         status_counts[status] += 1
-        amount = safe_amount(getattr(o, 'tongTien', 0))
-        seats = safe_int(getattr(o, 'soNguoi', 0))
-        dt = parse_date(getattr(o, 'ngayDat', None))
+        amount = safe_amount(getattr(o, 'tong_tien', 0))
+        seats = safe_int(getattr(o, 'so_nguoi', 0))
+        dt = parse_date(getattr(o, 'ngay', None))
         if dt:
             month_key = dt.strftime('%Y-%m')
             if status == 'da_thanh_toan':
                 monthly_revenue[month_key] += amount
                 daily_revenue[dt.date()] += amount
                 latest_date = dt if not latest_date or dt > latest_date else latest_date
-        stat = tour_stats.setdefault(o.maTour, {'bookings': 0, 'paid': 0, 'revenue': 0, 'seats': 0})
+        stat = tour_stats.setdefault(o.ma_tour, {'bookings': 0, 'paid': 0, 'revenue': 0, 'seats': 0})
         stat['bookings'] += 1
         stat['seats'] += seats
         if status == 'da_thanh_toan':
             stat['paid'] += 1
             stat['revenue'] += amount
-        cust = customer_stats.setdefault(o.maKH, {'orders': 0, 'paid_orders': 0, 'spend': 0})
+        cust = customer_stats.setdefault(o.ma_khach_hang, {'orders': 0, 'paid_orders': 0, 'spend': 0})
         cust['orders'] += 1
         if status == 'da_thanh_toan':
             cust['paid_orders'] += 1
@@ -402,8 +401,8 @@ def thong_ke(self):
                 break
             bar_len = available_width * (stat['revenue'] / max_val)
             tour_canvas.create_rectangle(160, y0, 160 + bar_len, y1, fill=palette['primary'], outline='')
-            tour_obj = self.ql.TimTour(ma) if hasattr(self.ql, 'TimTour') else None
-            name = tour_obj.tenTour if tour_obj else ma
+            tour_obj = self.ql.tim_tour(ma) if hasattr(self.ql, 'tim_tour') else None
+            name = tour_obj.ten_tour if tour_obj else ma
             if len(name) > 18:
                 name = name[:16] + '..'
             tour_canvas.create_text(padding_left, y0 + bar_height / 2, anchor='w', text=name, font=('Segoe UI', 9, 'bold'), fill='#1f2933')
@@ -430,8 +429,8 @@ def thong_ke(self):
     tv1.pack(side='left', fill='both', expand=True, pady=(6, 0))
     scr1.pack(side='left', fill='y', padx=(2, 0))
     for rank, (ma, stat) in enumerate(top_tours, start=1):
-        tour_obj = self.ql.TimTour(ma) if hasattr(self.ql, 'TimTour') else None
-        name = tour_obj.tenTour if tour_obj else ma
+        tour_obj = self.ql.tim_tour(ma) if hasattr(self.ql, 'tim_tour') else None
+        name = tour_obj.ten_tour if tour_obj else ma
         tv1.insert('', tk.END, values=(rank, ma, name, stat['bookings'], stat['paid'], self.format_money(stat['revenue']), stat['seats']))
     self.apply_zebra(tv1)
 
@@ -451,16 +450,16 @@ def thong_ke(self):
     tv2.pack(side='left', fill='both', expand=True, pady=(6, 0))
     scr2.pack(side='left', fill='y', padx=(2, 0))
     for rank, (ma, stat) in enumerate(top_customers, start=1):
-        kh = self.ql.TimKhacHang(ma) if hasattr(self.ql, 'TimKhacHang') else None
-        name = kh.tenKH if kh else ma
+        kh = self.ql.tim_khach_hang(ma) if hasattr(self.ql, 'tim_khach_hang') else None
+        name = kh.ten_khach_hang if kh else ma
         tv2.insert('', tk.END, values=(rank, ma, name, stat['orders'], stat['paid_orders'], self.format_money(stat['spend'])))
     self.apply_zebra(tv2)
 
     insight = ttk.Frame(container, style='Card.TFrame', padding=12)
     insight.pack(fill='x', pady=(12, 0))
     ttk.Label(insight, text='Nhận định nhanh', style='BodyBold.TLabel').pack(anchor='w')
-    best_tour_text = 'Chưa có tour thanh toán' if not top_tours else f"Tour nổi bật: {self.ql.TimTour(top_tours[0][0]).tenTour if hasattr(self.ql, 'TimTour') and self.ql.TimTour(top_tours[0][0]) else top_tours[0][0]} ({self.format_money(top_tours[0][1]['revenue'])})"
-    best_cus_text = 'Chưa có khách thanh toán' if not top_customers else f"Khách chi tiêu cao nhất: {self.ql.TimKhacHang(top_customers[0][0]).tenKH if hasattr(self.ql, 'TimKhacHang') and self.ql.TimKhacHang(top_customers[0][0]) else top_customers[0][0]} ({self.format_money(top_customers[0][1]['spend'])})"
+    best_tour_text = 'Chưa có tour thanh toán' if not top_tours else f"Tour nổi bật: {self.ql.tim_tour(top_tours[0][0]).ten_tour if hasattr(self.ql, 'tim_tour') and self.ql.tim_tour(top_tours[0][0]) else top_tours[0][0]} ({self.format_money(top_tours[0][1]['revenue'])})"
+    best_cus_text = 'Chưa có khách thanh toán' if not top_customers else f"Khách chi tiêu cao nhất: {self.ql.tim_khach_hang(top_customers[0][0]).ten_khach_hang if hasattr(self.ql, 'tim_khach_hang') and self.ql.tim_khach_hang(top_customers[0][0]) else top_customers[0][0]} ({self.format_money(top_customers[0][1]['spend'])})"
     growth_text = f"Tăng trưởng 30 ngày so với 30 ngày trước: {growth:+.1f}%" if previous_30_revenue else "Chưa đủ dữ liệu so sánh tăng trưởng"
     bullets = [
         best_tour_text,
@@ -470,13 +469,13 @@ def thong_ke(self):
     ]
     ttk.Label(insight, text='\n'.join(f"• {b}" for b in bullets), style='Body.TLabel').pack(anchor='w', pady=(6, 0))
 
-def export_tour(self):
+def xuat_tour(self):
     sel = self.tv_tour.selection()
     if not sel:
         messagebox.showerror('Lỗi', 'Chưa chọn tour để export')
         return
     ma = self.tv_tour.item(sel[0], 'values')[0]
-    t = self.ql.TimTour(ma)
+    t = self.ql.tim_tour(ma)
     if not t:
         messagebox.showerror('Lỗi', 'Tour không tồn tại')
         return
@@ -484,14 +483,14 @@ def export_tour(self):
     if not path:
         return
     obj = {
-        'maTour': t.maTour,
-        'tenTour': t.tenTour,
-        'gia': t.gia,
-        'soCho': t.soCho,
-        'huongDanVien': t.huongDanVien,
-        'ngayDi': getattr(t, 'ngayDi', None),
-        'ngayVe': getattr(t, 'ngayVe', None),
-        'lichTrinh': t.lichTrinh
+        'ma_tour': t.ma_tour,
+        'ten_tour': t.ten_tour,
+        'gia_tour': t.gia_tour,
+        'so_cho': t.so_cho,
+        'huong_dan_vien': t.huong_dan_vien,
+        'ngay_di': getattr(t, 'ngay_di', None),
+        'ngay_ve': getattr(t, 'ngay_ve', None),
+        'lich_trinh': t.lich_trinh
     }
     try:
         with open(path, 'w', encoding='utf-8') as f:
@@ -500,31 +499,31 @@ def export_tour(self):
     except Exception as e:
         messagebox.showerror('Lỗi', f'Không thể lưu file: {e}')
 
-def import_tour(self):
+def nhap_tour(self):
     path = filedialog.askopenfilename(filetypes=[('JSON files','*.json')], title='Chọn file tour JSON để import')
     if not path:
         return
     try:
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        ma = data.get('maTour')
-        ten = data.get('tenTour')
+        ma = data.get('ma_tour') or data.get('maTour')
+        ten = data.get('ten_tour') or data.get('tenTour')
         gia = data.get('gia')
-        soCho = data.get('soCho')
-        lich = data.get('lichTrinh', [])
-        hdv = data.get('huongDanVien')
-        ngayDi = data.get('ngayDi')
-        ngayVe = data.get('ngayVe')
-        tour = Tour(ma, ten, gia, soCho, lich, hdv, ngayDi=ngayDi, ngayVe=ngayVe)
-        if self.ql.ThemTour(tour):
+        so_cho = data.get('so_cho') or data.get('soCho')
+        lich = data.get('lich_trinh') or data.get('lichTrinh', [])
+        hdv = data.get('huong_dan_vien') or data.get('huongDanVien')
+        ngay_di = data.get('ngay_di') or data.get('ngayDi')
+        ngay_ve = data.get('ngay_ve') or data.get('ngayVe')
+        tour = TourDuLich(ma, ten, gia, so_cho, lich, hdv, ngay_di=ngay_di, ngay_ve=ngay_ve)
+        if self.ql.them_tour(tour):
             luu_tat_ca(self.ql)
             self.hien_thi_tour()
             messagebox.showinfo('OK', f'Import tour thành công: {ma}')
     except Exception as e:
         messagebox.showerror('Lỗi', f'Import thất bại: {e}')
 
-GiaoDienCoSo.show_hdv_details = show_hdv_details
-GiaoDienCoSo.show_kh_details = show_kh_details
+GiaoDienCoSo.hien_thi_chi_tiet_hdv = hien_thi_chi_tiet_hdv
+GiaoDienCoSo.hien_thi_chi_tiet_kh = hien_thi_chi_tiet_kh
 GiaoDienCoSo.thong_ke = thong_ke
-GiaoDienCoSo.export_tour = export_tour
-GiaoDienCoSo.import_tour = import_tour
+GiaoDienCoSo.xuat_tour = xuat_tour
+GiaoDienCoSo.nhap_tour = nhap_tour

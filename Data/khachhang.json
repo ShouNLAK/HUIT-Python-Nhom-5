@@ -4,7 +4,7 @@
     "tenKH": "Đặng Quang Huy",
     "soDT": "0988712554",
     "email": "huy.dang92@gmail.com",
-    "soDu": 14520300
+    "soDu": 4120300
   },
   {
     "maKH": "KH002",
@@ -32,13 +32,251 @@
     "tenKH": "Trần Đức Thắng",
     "soDT": "0772441905",
     "email": "thangtran.logistics@outlook.com",
-    "soDu": 125500
+    "soDu": 1255000.0
   },
   {
     "maKH": "KH006",
-    "tenKH": "Phan Nhật Minh",
-    "soDT": "0868992301",
-    "email": "pnminh.design@gmail.com",
-    "soDu": 56230000
+    "tenKH": "Phạm Văn Sơn",
+    "soDT": "0911223344",
+    "email": "son.pv@example.com",
+    "soDu": 500000
+  },
+  {
+    "maKH": "KH007",
+    "tenKH": "Hà Thị Lan",
+    "soDT": "0905123456",
+    "email": "lan.ha@example.com",
+    "soDu": 750000
+  },
+  {
+    "maKH": "KH008",
+    "tenKH": "Ngô Minh Tuấn",
+    "soDT": "0977886655",
+    "email": "tuan.ngo@example.com",
+    "soDu": 1200000
+  },
+  {
+    "maKH": "KH009",
+    "tenKH": "Bùi Thị Hạnh",
+    "soDT": "0963344552",
+    "email": "hanh.bui@example.com",
+    "soDu": 230000
+  },
+  {
+    "maKH": "KH010",
+    "tenKH": "Trịnh Văn Long",
+    "soDT": "0944556677",
+    "email": "long.trinh@example.com",
+    "soDu": 980000
+  },
+  {
+    "maKH": "KH011",
+    "tenKH": "Đỗ Thị Mai",
+    "soDT": "0899112233",
+    "email": "mai.do@example.com",
+    "soDu": 1600000
+  },
+  {
+    "maKH": "KH012",
+    "tenKH": "Phan Văn Huy",
+    "soDT": "0919777888",
+    "email": "huy.phan@example.com",
+    "soDu": 4200000
+  },
+  {
+    "maKH": "KH013",
+    "tenKH": "Lý Thị Nga",
+    "soDT": "0987001122",
+    "email": "nga.ly@example.com",
+    "soDu": 305000
+  },
+  {
+    "maKH": "KH014",
+    "tenKH": "Vũ Đức Anh",
+    "soDT": "0933224455",
+    "email": "anh.vu@example.com",
+    "soDu": 420000
+  },
+  {
+    "maKH": "KH015",
+    "tenKH": "Nguyễn Thị Phương",
+    "soDT": "0922334455",
+    "email": "phuong.nguyen@example.com",
+    "soDu": 2100000
+  },
+  {
+    "maKH": "KH016",
+    "tenKH": "Hoàng Văn Trung",
+    "soDT": "0977112233",
+    "email": "trung.hoang@example.com",
+    "soDu": 670000
+  },
+  {
+    "maKH": "KH017",
+    "tenKH": "Phùng Thị Hồng",
+    "soDT": "0912334455",
+    "email": "hong.phung@example.com",
+    "soDu": 880000
+  },
+  {
+    "maKH": "KH018",
+    "tenKH": "Trần Thị Thu",
+    "soDT": "0901223344",
+    "email": "thu.tran@example.com",
+    "soDu": 1400000
+  },
+  {
+    "maKH": "KH019",
+    "tenKH": "Đinh Văn Phúc",
+    "soDT": "0988123456",
+    "email": "phuc.dinh@example.com",
+    "soDu": 330000
+  },
+  {
+    "maKH": "KH020",
+    "tenKH": "Lâm Thị Kiều",
+    "soDT": "0912887766",
+    "email": "kieu.lam@example.com",
+    "soDu": 2600000
+  },
+  {
+    "maKH": "KH021",
+    "tenKH": "Hoàng Thị Yến",
+    "soDT": "0966112233",
+    "email": "yen.hoang@example.com",
+    "soDu": 980000
+  },
+  {
+    "maKH": "KH022",
+    "tenKH": "Nguyễn Văn Khoa",
+    "soDT": "0903344556",
+    "email": "khoa.nguyen@example.com",
+    "soDu": 1500000
+  },
+  {
+    "maKH": "KH023",
+    "tenKH": "Tô Minh Quân",
+    "soDT": "0933001122",
+    "email": "quan.to@example.com",
+    "soDu": 450000
+  },
+  {
+    "maKH": "KH024",
+    "tenKH": "Ngô Thị Hương",
+    "soDT": "0977223344",
+    "email": "huong.ngo@example.com",
+    "soDu": 1250000
+  },
+  {
+    "maKH": "KH025",
+    "tenKH": "Phạm Thế Anh",
+    "soDT": "0911556677",
+    "email": "the.anh@example.com",
+    "soDu": 600000
+  },
+  {
+    "maKH": "KH026",
+    "tenKH": "Võ Minh Châu",
+    "soDT": "0909887766",
+    "email": "chau.vo@example.com",
+    "soDu": 1750000
+  },
+  {
+    "maKH": "KH027",
+    "tenKH": "Lê Thị Thanh",
+    "soDT": "0938112233",
+    "email": "thanh.le@example.com",
+    "soDu": 820000
+  },
+  {
+    "maKH": "KH028",
+    "tenKH": "Trương Văn Dũng",
+    "soDT": "0987122334",
+    "email": "dung.truong@example.com",
+    "soDu": 210000
+  },
+  {
+    "maKH": "KH029",
+    "tenKH": "Nguyễn Minh Hằng",
+    "soDT": "0966223344",
+    "email": "hang.nguyen@example.com",
+    "soDu": 1340000
+  },
+  {
+    "maKH": "KH030",
+    "tenKH": "Đỗ Văn Hoàng",
+    "soDT": "0912335566",
+    "email": "hoang.do@example.com",
+    "soDu": 470000
+  },
+  {
+    "maKH": "KH031",
+    "tenKH": "Phan Thị Bích",
+    "soDT": "0901225566",
+    "email": "bich.phan@example.com",
+    "soDu": 305000
+  },
+  {
+    "maKH": "KH032",
+    "tenKH": "Lê Văn Nam",
+    "soDT": "0977334455",
+    "email": "nam.le@example.com",
+    "soDu": 980000
+  },
+  {
+    "maKH": "KH033",
+    "tenKH": "Vũ Thị Hồng",
+    "soDT": "0938990011",
+    "email": "hong.vu@example.com",
+    "soDu": 1120000
+  },
+  {
+    "maKH": "KH034",
+    "tenKH": "Đặng Văn Khang",
+    "soDT": "0919001122",
+    "email": "khang.dang@example.com",
+    "soDu": 900000
+  },
+  {
+    "maKH": "KH035",
+    "tenKH": "Nguyễn Thị Oanh",
+    "soDT": "0944778899",
+    "email": "oanh.nguyen@example.com",
+    "soDu": 410000
+  },
+  {
+    "maKH": "KH036",
+    "tenKH": "Trần Văn Sơn",
+    "soDT": "0987223344",
+    "email": "son.tran@example.com",
+    "soDu": 650000
+  },
+  {
+    "maKH": "KH037",
+    "tenKH": "Lương Thị Phương",
+    "soDT": "0911227788",
+    "email": "phuong.luong@example.com",
+    "soDu": 2500000
+  },
+  {
+    "maKH": "KH038",
+    "tenKH": "Bùi Văn Hòa",
+    "soDT": "0977003344",
+    "email": "hoa.bui@example.com",
+    "soDu": 980000
+  },
+  {
+    "maKH": "KH039",
+    "tenKH": "Nguyễn Thị Loan",
+    "soDT": "0902334455",
+    "email": "loan.nguyen@example.com",
+    "soDu": 520000
+  },
+  {
+    "maKH": "KH040",
+    "tenKH": "Phạm Văn Tiến",
+    "soDT": "0933445566",
+    "email": "tien.pham@example.com",
+    "soDu": 730000
   }
 ]

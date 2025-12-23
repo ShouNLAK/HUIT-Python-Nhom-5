@@ -2,10 +2,9 @@
 import json
 import sys
 from pathlib import Path
-from Class.tour import Tour
+from Class.tour import TourDuLich
 from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
-from Class.user import User
 
 
 def _resolve_data_dir() -> Path:
@@ -31,21 +30,35 @@ HDV_FILE = DATA_DIR.joinpath("hdv.json")
 USERS_FILE = DATA_DIR.joinpath("users.json")
 
 
-def tour_to_dict(tour: Tour):
+def tour_thanh_dict(tour: TourDuLich):
+    def _norm_date(d):
+        if not d:
+            return None
+        if isinstance(d, str):
+            for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+                try:
+                    return __import__('datetime').datetime.strptime(d, fmt).strftime('%d-%m-%Y')
+                except Exception:
+                    continue
+            return d
+        try:
+            return d.strftime('%d-%m-%Y')
+        except Exception:
+            return str(d)
     return {
-        "maTour": tour.maTour,
-        "tenTour": tour.tenTour,
-        "gia": tour.gia,
-        "soCho": tour.soCho,
-        "lichTrinh": tour.lichTrinh,
-        "huongDanVien": tour.huongDanVien,
-        "ngayDi": getattr(tour, "ngayDi", None),
-        "ngayVe": getattr(tour, "ngayVe", None),
+        "maTour": tour.ma_tour,
+        "tenTour": tour.ten_tour,
+        "gia": tour.gia_tour,
+        "soCho": tour.so_cho,
+        "lichTrinh": tour.lich_trinh,
+        "huongDanVien": tour.huong_dan_vien,
+        "ngayDi": _norm_date(getattr(tour, "ngay_di", None)),
+        "ngayVe": _norm_date(getattr(tour, "ngay_ve", None)),
     }
 
 
-def dict_to_tour(data):
-    return Tour(
+def dict_thanh_tour(data):
+    return TourDuLich(
         data.get("maTour"),
         data.get("tenTour"),
         data.get("gia", 0),
@@ -57,17 +70,17 @@ def dict_to_tour(data):
     )
 
 
-def kh_to_dict(kh: KhachHang):
+def khach_hang_thanh_dict(kh: KhachHang):
     return {
-        "maKH": kh.maKH,
-        "tenKH": kh.tenKH,
-        "soDT": kh.soDT,
+        "maKH": kh.ma_khach_hang,
+        "tenKH": kh.ten_khach_hang,
+        "soDT": kh.so_dien_thoai,
         "email": kh.email,
-        "soDu": kh.soDu,
+        "soDu": kh.so_du,
     }
 
 
-def dict_to_kh(data):
+def dict_thanh_khach_hang(data):
     return KhachHang(
         data.get("maKH"),
         data.get("tenKH"),
@@ -77,19 +90,19 @@ def dict_to_kh(data):
     )
 
 
-def dat_to_dict(dat: DatTour):
+def dat_thanh_dict(dat: DatTour):
     return {
-        "maDat": dat.maDat,
-        "maKH": dat.maKH,
-        "maTour": dat.maTour,
-        "soNguoi": dat.soNguoi,
-        "ngayDat": dat.ngayDat,
-        "trangThai": dat.trangThai,
-        "tongTien": dat.tongTien,
+        "maDat": dat.ma_dat_tour,
+        "maKH": dat.ma_khach_hang,
+        "maTour": dat.ma_tour,
+        "soNguoi": dat.so_nguoi,
+        "ngayDat": dat.ngay_dat,
+        "trangThai": dat.trang_thai,
+        "tongTien": dat.tong_tien,
     }
 
 
-def dict_to_dat(data):
+def dict_thanh_dat(data):
     return DatTour(
         data.get("maDat"),
         data.get("maKH"),
@@ -121,45 +134,47 @@ def luu_danh_sach(file_path: Path, data):
 
 
 def tai_tat_ca():
-    tours = tai_danh_sach(TOUR_FILE, dict_to_tour)
-    khs = tai_danh_sach(KH_FILE, dict_to_kh)
-    dats = tai_danh_sach(DAT_FILE, dict_to_dat)
+    tours = tai_danh_sach(TOUR_FILE, dict_thanh_tour)
+    khs = tai_danh_sach(KH_FILE, dict_thanh_khach_hang)
+    dats = tai_danh_sach(DAT_FILE, dict_thanh_dat)
     hdvs = tai_danh_sach(HDV_FILE, lambda item: item)
-    users = tai_danh_sach(
-        USERS_FILE,
-        lambda data: User(
-            data.get("username"),
-            data.get("password"),
-            data.get("role", "user"),
+    def _dict_thanh_nguoi(data):
+        from Class.user import NguoiDung
+
+        return NguoiDung(
+            data.get("tenDangNhap") or data.get("username"),
+            data.get("matKhau") or data.get("password"),
+            data.get("vaiTro") or data.get("role", "user"),
             data.get("maKH"),
-            data.get("fullName"),
-        ),
-    )
+            data.get("tenHienThi") or data.get("fullName"),
+        )
+
+    users = tai_danh_sach(USERS_FILE, _dict_thanh_nguoi)
     return tours, khs, dats, hdvs, users
 
 
 def luu_tat_ca(ql):
-    tours = [tour_to_dict(t) for t in ql.danhSachTour]
-    khs = [kh_to_dict(k) for k in ql.danhSachKhachHang]
-    dats = [dat_to_dict(d) for d in ql.danhSachDatTour]
+    tours = [tour_thanh_dict(t) for t in ql.danh_sach_tour]
+    khs = [khach_hang_thanh_dict(k) for k in ql.danh_sach_khach_hang]
+    dats = [dat_thanh_dict(d) for d in ql.danh_sach_dat_tour]
     try:
         luu_danh_sach(TOUR_FILE, tours)
         luu_danh_sach(KH_FILE, khs)
         luu_danh_sach(DAT_FILE, dats)
-        if hasattr(ql, "danhSachHDV"):
-            luu_danh_sach(HDV_FILE, ql.danhSachHDV)
+        if hasattr(ql, "danh_sach_hdv"):
+            luu_danh_sach(HDV_FILE, ql.danh_sach_hdv)
         def serialize_user(u):
             data = {
-                "username": u.username,
-                "password": u.password,
-                "role": u.role,
-                "maKH": u.maKH,
+                "tenDangNhap": u.ten_dang_nhap,
+                "matKhau": u.mat_khau,
+                "vaiTro": u.vai_tro,
+                "maKH": u.ma_khach_hang,
             }
-            if u.role == "admin":
-                data["fullName"] = u.fullName
+            if u.vai_tro == "admin":
+                data["tenHienThi"] = u.ten_hien_thi
             return data
 
-        users = [serialize_user(u) for u in ql.users]
+        users = [serialize_user(u) for u in ql.danh_sach_nguoi_dung]
         luu_danh_sach(USERS_FILE, users)
         return True
     except Exception:

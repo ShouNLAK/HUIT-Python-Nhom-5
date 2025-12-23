@@ -5,53 +5,53 @@ import os
 import re
 import threading
 from datetime import datetime, timedelta
-from Class.user import User
-from Class.tour import Tour
+from Class.user import NguoiDung
+from Class.tour import TourDuLich
 from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
-from Class.nap_tien import NapTienRequest
-from QuanLy.nap_tien_server import NapTienWebhookServer
+from Class.nap_tien import YeuCauNapTien
+from QuanLy.nap_tien_server import MayChuWebhookNapTien
 
 try:
     import qrcode
 
-    QR_LIB_READY = True
+    THU_VIEN_QR_SAN_SANG = True
 except Exception:
     qrcode = None
-    QR_LIB_READY = False
+    THU_VIEN_QR_SAN_SANG = False
 
 
 class QuanLiDuLich:
-    ROOT_USERNAME_HASH = "4813494d137e1631bba301d5acab6e7bb7aa74ce1185d456565ef51d737677b2"
-    ROOT_PASSWORD_HASH = "18885f27b5af9012df19e496460f9294d5ab76128824c6f993787004f6d9a7db"
-    ROOT_USERNAME_TOKEN = "cm9vdC5zdXBlcnZpc29y"
-    ROOT_DISPLAY_NAME = "Root Operator"
-    DEFAULT_ADMIN_USERNAME = "admin"
-    DEFAULT_ADMIN_PASSWORD = "Admin@123"
-    DEFAULT_ADMIN_NAME = "Quản trị viên"
-    DEFAULT_QR_EXPIRE_MINUTES = 15
-    DEFAULT_WEBHOOK_HOST = "0.0.0.0"
-    DEFAULT_WEBHOOK_PORT = 5050
+    BAM_MA_TEN_DANG_NHAP_ROOT = "4813494d137e1631bba301d5acab6e7bb7aa74ce1185d456565ef51d737677b2"
+    BAM_MA_MAT_KHAU_ROOT = "18885f27b5af9012df19e496460f9294d5ab76128824c6f993787004f6d9a7db"
+    MA_TEN_DANG_NHAP_ROOT = "cm9vdC5zdXBlcnZpc29y"
+    TEN_HIEN_THI_ROOT = "Root Operator"
+    TEN_DANG_NHAP_ADMIN_MAC_DINH = "admin"
+    MAT_KHAU_ADMIN_MAC_DINH = "Admin@123"
+    TEN_ADMIN_MAC_DINH = "Quản trị viên"
+    PHUT_HET_HAN_QR_MAC_DINH = 15
+    HOST_WEBHOOK_MAC_DINH = "0.0.0.0"
+    CONG_WEBHOOK_MAC_DINH = 5050
     def __init__(self):
-        self.danhSachTour = []
-        self.danhSachKhachHang = []
-        self.danhSachDatTour = []
-        self.danhSachHDV = []
-        self.users = []
-        self.currentUser = None
-        self.danhSachNapTien = []
-        self._nap_tien_lock = threading.Lock()
-        self._nap_tien_server = None
-        self._auto_save_handler = None
-        self._qr_base_url = None
+        self.danh_sach_tour = []
+        self.danh_sach_khach_hang = []
+        self.danh_sach_dat_tour = []
+        self.danh_sach_hdv = []
+        self.danh_sach_nguoi_dung = []
+        self.nguoi_dung_hien_tai = None
+        self.danh_sach_nap_tien = []
+        self._khoa_nap_tien = threading.Lock()
+        self._may_chu_nap_tien = None
+        self._xu_ly_tu_dong_luu = None
+        self._url_qr_co_so = None
 
     def set_auto_save(self, handler):
-        self._auto_save_handler = handler
+        self._xu_ly_tu_dong_luu = handler
 
     def _trigger_auto_save(self):
-        if callable(self._auto_save_handler):
+        if callable(self._xu_ly_tu_dong_luu):
             try:
-                self._auto_save_handler()
+                self._xu_ly_tu_dong_luu()
             except Exception:
                 pass
 
@@ -59,7 +59,6 @@ class QuanLiDuLich:
         if not value:
             return None
         text = str(value).strip()
-        # Nhận dạng nhập tắt: 8 chữ số liên tục → DD/MM/YYYY
         if text.isdigit() and len(text) == 8:
             try:
                 dd = int(text[:2])
@@ -68,7 +67,6 @@ class QuanLiDuLich:
                 return datetime(yyyy, mm, dd)
             except Exception:
                 pass
-        # Thử các định dạng chuẩn: DD/MM/YYYY (preferred), DD-MM-YYYY, YYYY-MM-DD
         for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"):
             try:
                 return datetime.strptime(text[:10], fmt)
@@ -96,12 +94,12 @@ class QuanLiDuLich:
         thu = thu_map.get(date_obj.weekday(), "")
         return f"{thu}, ngày {date_obj.day:02d} tháng {date_obj.month:02d} năm {date_obj.year}"
 
-    def kiem_tra_khung_ngay(self, ngayDi, ngayVe):
-        start = self.phan_tich_ngay(ngayDi) if ngayDi else None
-        end = self.phan_tich_ngay(ngayVe) if ngayVe else None
-        if ngayDi and not start:
+    def kiem_tra_khung_ngay(self, ngay_di, ngay_ve):
+        start = self.phan_tich_ngay(ngay_di) if ngay_di else None
+        end = self.phan_tich_ngay(ngay_ve) if ngay_ve else None
+        if ngay_di and not start:
             return False, None, None, "Ngày đi không đúng định dạng (DD/MM/YYYY)"
-        if ngayVe and not end:
+        if ngay_ve and not end:
             return False, None, None, "Ngày về không đúng định dạng (DD/MM/YYYY)"
         if start and end and end < start:
             return False, None, None, "Ngày về phải sau hoặc bằng ngày đi"
@@ -110,19 +108,19 @@ class QuanLiDuLich:
             return False, None, None, "Ngày đi phải từ hôm nay trở đi"
         return True, start, end, ""
 
-    def kiem_tra_lich_trinh(self, lichTrinh, start_date, end_date):
-        if not lichTrinh:
+    def kiem_tra_lich_trinh(self, lich_trinh, start_date, end_date):
+        if not lich_trinh:
             return True, ""
-        if not isinstance(lichTrinh, list):
+        if not isinstance(lich_trinh, list):
             return False, "Lịch trình phải là danh sách các chặng"
         if not (start_date and end_date):
             return False, "Cần thiết lập Ngày đi và Ngày về trước khi thêm lịch trình"
         previous = None
-        for idx, entry in enumerate(lichTrinh, start=1):
+        for idx, entry in enumerate(lich_trinh, start=1):
             if not isinstance(entry, dict):
                 return False, f"Mục lịch trình #{idx} không hợp lệ"
             ngay = entry.get("ngay")
-            diem = (entry.get("diaDiem") or "").strip()
+            diem = (entry.get("diaDiem") or entry.get('dia_diem', '') or "").strip()
             if not ngay:
                 return False, f"Mục lịch trình #{idx} thiếu ngày"
             ngay_dt = self.phan_tich_ngay(ngay)
@@ -140,8 +138,8 @@ class QuanLiDuLich:
 
     def trang_thai_tour(self, tour, today=None):
         today = today or datetime.today().date()
-        start = self.phan_tich_ngay(getattr(tour, "ngayDi", None))
-        end = self.phan_tich_ngay(getattr(tour, "ngayVe", None))
+        start = self.phan_tich_ngay(getattr(tour, "ngay_di", None))
+        end = self.phan_tich_ngay(getattr(tour, "ngay_ve", None))
         if not start:
             return "chua_len_lich"
         if end is None:
@@ -181,230 +179,283 @@ class QuanLiDuLich:
             return False
         return phone[:3] in dau_so_hop_le and phone.isdigit()
 
-    def _expected_link_name(self, role, ma):
-        if role == "user":
-            kh = self.TimKhacHang(ma)
-            if kh and kh.tenKH:
-                return kh.tenKH.strip()
-        elif role == "hdv":
-            hdv = self.TimHDV(ma)
-            if hdv and hdv.get("tenHDV"):
-                return hdv.get("tenHDV").strip()
+    def _ten_lien_ket_du_kien(self, vai_tro, ma):
+        if vai_tro == "user":
+            kh = self.tim_khach_hang(ma)
+            if kh and kh.ten_khach_hang:
+                return kh.ten_khach_hang.strip()
+        elif vai_tro == "hdv":
+            hdv = self.tim_hdv(ma)
+            if hdv and hdv.get("ten_hdv"):
+                return hdv.get("ten_hdv").strip()
         return None
 
-    def _sync_user_fullname(self, ma, role, new_name):
-        if not new_name:
+    def _dong_bo_ten_nguoi_dung_day_du(self, ma, vai_tro, ten_moi):
+        if not ten_moi:
             return
-        user = self.TimUserTheoMa(ma, [role])
-        if user:
-            user.fullName = new_name.strip()
+        nguoi_dung = self.tim_nguoi_dung_theo_ma(ma, [vai_tro])
+        if nguoi_dung:
+            nguoi_dung.ten_day_du = ten_moi.strip()
 
-    def DongBoTenTuKhach(self, maKH):
-        ten = self._expected_link_name("user", maKH)
+    def dong_bo_ten_tu_khach(self, ma_khach_hang):
+        ten = self._ten_lien_ket_du_kien("user", ma_khach_hang)
         if ten:
-            self._sync_user_fullname(maKH, "user", ten)
+            self._dong_bo_ten_nguoi_dung_day_du(ma_khach_hang, "user", ten)
 
-    def DongBoTenTuHDV(self, maHDV):
-        ten = self._expected_link_name("hdv", maHDV)
+    def dong_bo_ten_tu_hdv(self, ma_hdv):
+        ten = self._ten_lien_ket_du_kien("hdv", ma_hdv)
         if ten:
-            self._sync_user_fullname(maHDV, "hdv", ten)
+            self._dong_bo_ten_nguoi_dung_day_du(ma_hdv, "hdv", ten)
 
-    def _sanitize_username_seed(self, seed, fallback="user"):
-        cleaned = re.sub(r"[^a-z0-9]+", "", (seed or "").lower())
-        return cleaned or fallback
+    def _lam_sach_ten_dang_nhap_goc(self, goc, mac_dinh="user"):
+        da_lam_sach = re.sub(r"[^a-z0-9]+", "", (goc or "").lower())
+        return da_lam_sach or mac_dinh
 
-    def _generate_unique_username(self, seed):
-        base = self._sanitize_username_seed(seed)
-        candidate = base
-        counter = 1
-        while self.TimUser(candidate):
-            candidate = f"{base}{counter}"
-            counter += 1
-        return candidate
+    def _tao_ten_dang_nhap_duy_nhat(self, goc):
+        co_so = self._lam_sach_ten_dang_nhap_goc(goc)
+        ung_vien = co_so
+        dem = 1
+        while self.tim_nguoi_dung(ung_vien):
+            ung_vien = f"{co_so}{dem}"
+            dem += 1
+        return ung_vien
 
-    def _utcnow_iso(self):
+    def _thoi_gian_utc_hien_tai_iso(self):
         return datetime.utcnow().replace(microsecond=0).isoformat()
 
-    def _generate_request_token(self):
-        raw = base64.urlsafe_b64encode(os.urandom(12)).decode("ascii")
-        return raw.rstrip("=")
+    def _tao_ma_yeu_cau(self):
+        nguyen_thuy = base64.urlsafe_b64encode(os.urandom(12)).decode("ascii")
+        return nguyen_thuy.rstrip("=")
 
-    def _ensure_webhook_running(self):
-        if self._nap_tien_server and self._nap_tien_server.running:
+    def _dam_bao_webhook_chay(self):
+        if self._may_chu_nap_tien and self._may_chu_nap_tien.running:
             return True
-        return self.khoi_dong_webhook_server()
+        return self.khoi_dong_may_chu_webhook()
 
-    def _build_qr_url(self, request_id, token):
-        base_url = (
-            (self._nap_tien_server.public_base_url if self._nap_tien_server else None)
-            or self._qr_base_url
+    def _xay_dung_url_qr(self, id_yeu_cau, ma):
+        url_co_so = (
+            (self._may_chu_nap_tien.public_base_url if self._may_chu_nap_tien else None)
+            or self._url_qr_co_so
             or os.environ.get("NAP_TIEN_PUBLIC_URL")
-            or f"http://127.0.0.1:{self.DEFAULT_WEBHOOK_PORT}"
+            or f"http://127.0.0.1:{self.CONG_WEBHOOK_MAC_DINH}"
         )
-        self._qr_base_url = base_url
-        return f"{base_url.rstrip('/')}/nap-tien?code={request_id}&token={token}"
+        self._url_qr_co_so = url_co_so
+        return f"{url_co_so.rstrip('/')}/nap-tien?code={id_yeu_cau}&token={ma}"
 
-    def _generate_qr_image(self, content, request_id):
-        if not QR_LIB_READY or not qrcode:
+    def _tao_anh_qr(self, noi_dung, id_yeu_cau):
+        if not THU_VIEN_QR_SAN_SANG or not qrcode:
             return None, "Thiếu thư viện qrcode. Chạy: pip install qrcode[pil]"
         try:
             qr = qrcode.QRCode(box_size=10, border=2)
-            qr.add_data(content)
+            qr.add_data(noi_dung)
             qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white")
-            buf = io.BytesIO()
-            img.save(buf, format="PNG")
-            encoded = base64.b64encode(buf.getvalue()).decode("ascii")
-            data_uri = f"data:image/png;base64,{encoded}"
-            return data_uri, ""
+            anh = qr.make_image(fill_color="black", back_color="white")
+            bo_dem = io.BytesIO()
+            anh.save(bo_dem, format="PNG")
+            ma_hoa = base64.b64encode(bo_dem.getvalue()).decode("ascii")
+            du_lieu_uri = f"data:image/png;base64,{ma_hoa}"
+            return du_lieu_uri, ""
         except Exception as exc:
             return None, f"Không thể tạo QR: {exc}"
 
     def _tao_ma_nap_tien(self):
-        prefix = datetime.utcnow().strftime("NT%Y%m%d%H%M%S")
-        existing = {req.maGD for req in getattr(self, "danhSachNapTien", [])}
-        idx = 1
-        candidate = f"{prefix}{idx:03d}"
-        while candidate in existing:
-            idx += 1
-            candidate = f"{prefix}{idx:03d}"
-        return candidate
+        tien_to = datetime.utcnow().strftime("NT%Y%m%d%H%M%S")
+        ton_tai = {req.ma_giao_dich for req in getattr(self, "danh_sach_nap_tien", [])}
+        chi_so = 1
+        ung_vien = f"{tien_to}{chi_so:03d}"
+        while ung_vien in ton_tai:
+            chi_so += 1
+            ung_vien = f"{tien_to}{chi_so:03d}"
+        return ung_vien
 
-    def TimYeuCauNapTien(self, maGD):
-        for req in getattr(self, "danhSachNapTien", []):
-            if req.maGD == maGD:
-                return req
+    def tim_yeu_cau_nap_tien(self, ma_giao_dich):
+        for yeu_cau in getattr(self, "danh_sach_nap_tien", []):
+            if yeu_cau.ma_giao_dich == ma_giao_dich:
+                return yeu_cau
         return None
 
-    def LayNapTienTheoKhach(self, maKH):
-        return [req for req in getattr(self, "danhSachNapTien", []) if req.maKH == maKH]
+    def lay_nap_tien_theo_khach(self, ma_khach_hang):
+        return [yeu_cau for yeu_cau in getattr(self, "danh_sach_nap_tien", []) if yeu_cau.ma_khach_hang == ma_khach_hang]
 
     def _loai_bo_yeu_cau_het_han(self):
-        changed = False
-        for req in getattr(self, "danhSachNapTien", []):
-            if req.trangThai == NapTienRequest.STATUS_PENDING and req.is_expired():
-                req.mark_expired()
-                changed = True
-        if changed:
+        da_thay_doi = False
+        for yeu_cau in getattr(self, "danh_sach_nap_tien", []):
+            if yeu_cau.trang_thai == YeuCauNapTien.TRANG_THAI_CHO and yeu_cau.da_het_han():
+                yeu_cau.danh_dau_het_han()
+                da_thay_doi = True
+        if da_thay_doi:
             self._trigger_auto_save()
 
-    def khoi_dong_webhook_server(self, host=None, port=None, public_base_url=None):
-        host = host or self.DEFAULT_WEBHOOK_HOST
-        port = port or self.DEFAULT_WEBHOOK_PORT
-        if self._nap_tien_server and self._nap_tien_server.running:
+    def khoi_dong_webhook_server(self, host=None, cong=None, url_co_so_cong_khai=None):
+        host = host or self.HOST_WEBHOOK_MAC_DINH
+        cong = cong or self.CONG_WEBHOOK_MAC_DINH
+        if self._may_chu_nap_tien and self._may_chu_nap_tien.dang_chay:
             return True
         try:
-            self._nap_tien_server = NapTienWebhookServer(self, host=host, port=port, public_base_url=public_base_url)
-            self._nap_tien_server.start()
-            self._qr_base_url = self._nap_tien_server.public_base_url
-            print(f"Máy chủ webhook nạp tiền đang lắng nghe tại {self._qr_base_url}")
+            self._may_chu_nap_tien = MayChuWebhookNapTien(self, host=host, cong=cong, url_co_so_cong_khai=url_co_so_cong_khai)
+            self._may_chu_nap_tien.khoi_dong()
+            self._url_qr_co_so = self._may_chu_nap_tien.url_co_so_cong_khai
+            print(f"Máy chủ webhook nạp tiền đang lắng nghe tại {self._url_qr_co_so}")
             return True
         except Exception as exc:
             print(f"Không thể khởi động webhook nạp tiền: {exc}")
-            self._nap_tien_server = None
+            self._may_chu_nap_tien = None
             return False
 
     def dung_webhook_nap_tien(self):
-        if self._nap_tien_server:
-            self._nap_tien_server.stop()
-            self._nap_tien_server = None
+        if self._may_chu_nap_tien:
+            self._may_chu_nap_tien.dung()
+            self._may_chu_nap_tien = None
 
-    def TaoYeuCauNapTien(self, maKH, soTien, expire_minutes=None):
+    def tao_yeu_cau_nap_tien(self, ma_khach_hang, so_tien, phut_het_han=None):
         self._loai_bo_yeu_cau_het_han()
-        if not self.currentUser:
+        if not self.nguoi_dung_hien_tai:
             return False, "Bạn phải đăng nhập"
-        if self.currentUser.role == "user" and str(self.currentUser.maKH) != str(maKH):
+        if self.nguoi_dung_hien_tai.vai_tro == "user" and str(self.nguoi_dung_hien_tai.ma_khach_hang) != str(ma_khach_hang):
             return False, "Bạn chỉ có thể nạp tiền cho tài khoản của mình"
         try:
-            soTien = float(soTien)
+            so_tien = float(so_tien)
         except Exception:
             return False, "Số tiền không hợp lệ"
-        if soTien <= 0:
+        if so_tien <= 0:
             return False, "Số tiền phải lớn hơn 0"
-        kh = self.TimKhacHang(maKH)
+        kh = self.tim_khach_hang(ma_khach_hang)
         if not kh:
             return False, "Không tìm thấy khách hàng"
-        expire_minutes = expire_minutes or self.DEFAULT_QR_EXPIRE_MINUTES
-        if not self._ensure_webhook_running():
+        phut_het_han = phut_het_han or self.PHUT_HET_HAN_QR_MAC_DINH
+        if not self._dam_bao_webhook_chay():
             return False, "Không thể khởi động webhook nạp tiền"
-        request_id = self._tao_ma_nap_tien()
-        token = self._generate_request_token()
-        qr_url = self._build_qr_url(request_id, token)
-        qr_data_uri, error = self._generate_qr_image(qr_url, request_id)
-        if not qr_data_uri:
-            return False, error
-        expires_at = (datetime.utcnow() + timedelta(minutes=expire_minutes)).replace(microsecond=0).isoformat()
-        request = NapTienRequest(
-            maGD=request_id,
-            maKH=maKH,
-            soTien=soTien,
-            token=token,
-            qrContent=qr_url,
-            qrFile=None,
-            qrDataUri=qr_data_uri,
-            expiresAt=expires_at,
+        id_yeu_cau = self._tao_ma_nap_tien()
+        ma = self._tao_ma_yeu_cau()
+        url_qr = self._xay_dung_url_qr(id_yeu_cau, ma)
+        du_lieu_uri_qr, loi = self._tao_anh_qr(url_qr, id_yeu_cau)
+        if not du_lieu_uri_qr:
+            return False, loi
+        thoi_gian_het_han = (datetime.utcnow() + timedelta(minutes=phut_het_han)).replace(microsecond=0).isoformat()
+        yeu_cau = YeuCauNapTien(
+            ma_giao_dich=id_yeu_cau,
+            so_tien=so_tien,
+            noi_dung=url_qr,
+            trang_thai=YeuCauNapTien.TRANG_THAI_CHO,
+            thoi_gian_het_han=thoi_gian_het_han,
+            du_lieu_qr=du_lieu_uri_qr,
         )
-        with self._nap_tien_lock:
-            self.danhSachNapTien.append(request)
+        with self._khoa_nap_tien:
+            self.danh_sach_nap_tien.append(yeu_cau)
         self._trigger_auto_save()
         return True, {
-            "maGiaoDich": request_id,
-            "qrDataUri": qr_data_uri,
-            "qrUrl": qr_url,
-            "expiresAt": expires_at,
-            "soTien": soTien,
+            "ma_giao_dich": id_yeu_cau,
+            "du_lieu_uri_qr": du_lieu_uri_qr,
+            "url_qr": url_qr,
+            "thoi_gian_het_han": thoi_gian_het_han,
+            "so_tien": so_tien,
         }
 
-    def LayThongTinNapTien(self, maGD):
-        req = self.TimYeuCauNapTien(maGD)
-        if not req:
+    def lay_thong_tin_nap_tien(self, ma_giao_dich):
+        yeu_cau = self.tim_yeu_cau_nap_tien(ma_giao_dich)
+        if not yeu_cau:
             return None
         return {
-            "maGiaoDich": req.maGD,
-            "maKH": req.maKH,
-            "soTien": req.soTien,
-            "trangThai": req.trangThai,
-            "expiresAt": req.expiresAt,
-            "qrPath": req.qrFile,
-            "qrDataUri": req.qrDataUri or req.qrFile,
-            "qrUrl": req.qrContent,
+            "ma_giao_dich": yeu_cau.ma_giao_dich,
+            "ma_khach_hang": yeu_cau.ma_khach_hang,
+            "so_tien": yeu_cau.so_tien,
+            "trang_thai": yeu_cau.trang_thai,
+            "thoi_gian_het_han": yeu_cau.thoi_gian_het_han,
+            "du_lieu_qr": yeu_cau.du_lieu_qr,
+            "url_qr": yeu_cau.noi_dung_qr,
         }
 
-    def XuLyWebhookNapTien(self, request_id, token):
+    def xu_ly_webhook_nap_tien(self, id_yeu_cau, ma):
         self._loai_bo_yeu_cau_het_han()
-        with self._nap_tien_lock:
-            req = self.TimYeuCauNapTien(request_id)
-            if not req:
+        with self._khoa_nap_tien:
+            yeu_cau = self.tim_yeu_cau_nap_tien(id_yeu_cau)
+            if not yeu_cau:
                 return False, "Không tìm thấy giao dịch"
-            if req.trangThai == NapTienRequest.STATUS_CONFIRMED:
+            if yeu_cau.trang_thai == YeuCauNapTien.TRANG_THAI_XAC_NHAN:
                 return True, "Giao dịch đã được xác nhận trước đó"
-            if req.trangThai == NapTienRequest.STATUS_EXPIRED:
-                return False, "Mã QR đã hết hạn"
-            if token != req.token:
-                return False, "Token không hợp lệ"
-            if req.is_expired():
-                req.mark_expired()
+            if yeu_cau.da_het_han():
+                yeu_cau.danh_dau_het_han()
                 self._trigger_auto_save()
                 return False, "Mã QR đã hết hạn"
-            kh = self.TimKhacHang(req.maKH)
+            if ma != yeu_cau.token:
+                return False, "Token không hợp lệ"
+            kh = self.tim_khach_hang(yeu_cau.ma_khach_hang)
             if not kh:
                 return False, "Không tìm thấy khách hàng"
-            kh.soDu += req.soTien
-            req.mark_confirmed()
-            req.metadata["confirmedAt"] = self._utcnow_iso()
-        self._trigger_auto_save()
-        return True, "Đã cộng tiền vào ví của bạn"
+            kh.so_du += yeu_cau.so_tien
+            yeu_cau.danh_dau_xac_nhan()
+            yeu_cau.thong_tin_bo_sung["xac_nhan_tai"] = self._thoi_gian_utc_hien_tai_iso()
+            self._trigger_auto_save()
+            return True, self.phan_hoi_website(yeu_cau)
+
+    def phan_hoi_website(self, yeu_cau_hoac_id):
+        yeu_cau = yeu_cau_hoac_id
+        if isinstance(yeu_cau_hoac_id, (str, int)):
+            try:
+                yeu_cau = self.tim_yeu_cau_nap_tien(str(yeu_cau_hoac_id))
+            except Exception:
+                yeu_cau = None
+        if not yeu_cau:
+            html = '<!doctype html><html><body><h2>Không tìm thấy giao dịch</h2></body></html>'
+            return html
+        so_tien = getattr(yeu_cau, 'so_tien', 0)
+        ma_giao_dich = getattr(yeu_cau, 'ma_giao_dich', '')
+        ma_khach_hang = getattr(yeu_cau, 'ma_khach_hang', '')
+        xac_nhan_tai = yeu_cau.thong_tin_bo_sung.get('xac_nhan_tai', '') if hasattr(yeu_cau, 'thong_tin_bo_sung') else ''
+        kh = self.tim_khach_hang(ma_khach_hang)
+        ten = kh.ten_khach_hang if kh else (str(ma_khach_hang) or 'Khách hàng')
+        html = f'''<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thanh toán thành công</title>
+<style>
+body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;padding:0;display:flex;align-items:center;justify-content:center;height:100vh}}
+.card{{background:#fff;border-radius:12px;padding:28px;box-shadow:0 8px 30px rgba(20,30,50,0.08);max-width:720px;width:90%}}
+.check{{width:96px;height:96px;border-radius:50%;background:#e6fbf3;display:flex;align-items:center;justify-content:center;margin:0 auto}}
+.check svg{{width:56px;height:56px;stroke:#12a454;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;fill:none}}
+.title{{font-size:20px;font-weight:700;color:#123}}
+.meta{{color:#556; margin-top:8px}}
+.details{{margin-top:18px;padding:12px;background:#fbfdff;border-radius:8px;border:1px solid #eef3ff}}
+.label{{font-weight:600;color:#334;display:block}}
+.value{{color:#0b1640;margin-top:6px}}
+@keyframes pop{{0%{{transform:scale(.8);opacity:0}}60%{{transform:scale(1.06);opacity:1}}100%{{transform:scale(1);opacity:1}}}}
+.check{{animation:pop .6s ease}}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="check">
+<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+</div>
+<h1 class="title" style="text-align:center;margin-top:12px">Thanh toán thành công</h1>
+<p class="meta" style="text-align:center">Giao dịch đã được xác nhận tự động trên hệ thống</p>
+<div class="details">
+<span class="label">Mã giao dịch</span>
+<div class="value">{ma_giao_dich}</div>
+<span class="label">Tên khách</span>
+<div class="value">{ten}</div>
+<span class="label">Số tiền</span>
+<div class="value">{int(so_tien):,} VND</div>
+<span class="label">Thời gian xác nhận</span>
+<div class="value">{xac_nhan_tai}</div>
+</div>
+</div>
+</body>
+</html>'''
+        return html
 
     def ensure_user_for_khach(self, kh: KhachHang, default_password="123"):
-        if not kh or not kh.maKH:
+        if not kh or not kh.ma_khach_hang:
             return None
-        code = str(kh.maKH).strip()
-        existing = self.TimUserTheoMa(code, ["user"])
+        code = str(kh.ma_khach_hang).strip()
+        existing = self.tim_nguoi_dung_theo_ma(code, ["user"])
         if existing:
-            existing.fullName = kh.tenKH
-            return existing.username
-        username = self._generate_unique_username(code)
-        self.users.append(User(username, default_password, "user", code, kh.tenKH))
+            existing.ten_hien_thi = kh.ten_khach_hang
+            return existing.ten_dang_nhap
+        username = self._tao_ten_dang_nhap_duy_nhat(code)
+        self.danh_sach_nguoi_dung.append(NguoiDung(username, default_password, "user", code, kh.ten_khach_hang))
         return username
 
     def ensure_user_for_hdv(self, hdv, default_password="123"):
@@ -417,380 +468,379 @@ class QuanLiDuLich:
             ten = (hdv.get("tenHDV") or "").strip() or None
         if not ma:
             return None
-        existing = self.TimUserTheoMa(ma, ["hdv"])
+        existing = self.tim_nguoi_dung_theo_ma(ma, ["hdv"])
         if existing:
-            existing.fullName = ten or existing.fullName
-            return existing.username
-        username = self._generate_unique_username(ma)
-        self.users.append(User(username, default_password, "hdv", ma, ten or username))
+            existing.ten_hien_thi = ten or existing.ten_hien_thi
+            return existing.ten_dang_nhap
+        username = self._tao_ten_dang_nhap_duy_nhat(ma)
+        self.danh_sach_nguoi_dung.append(NguoiDung(username, default_password, "hdv", ma, ten or username))
         return username
 
     def dong_bo_tai_khoan_lien_ket(self):
-        for kh in self.danhSachKhachHang:
+        for kh in self.danh_sach_khach_hang:
             self.ensure_user_for_khach(kh)
-        for hdv in getattr(self, "danhSachHDV", []) or []:
+        for hdv in getattr(self, "danh_sach_hdv", []) or []:
             self.ensure_user_for_hdv(hdv)
         def is_valid(u):
-            if u.role == "admin" or u.role == "root":
+            if u.vai_tro == "admin" or u.vai_tro == "root":
                 return True
-            if u.role == "user":
-                return self.TimKhacHang(u.maKH) is not None
-            if u.role == "hdv":
-                return self.TimHDV(u.maKH) is not None
+            if u.vai_tro == "user":
+                return self.tim_khach_hang(u.ma_khach_hang) is not None
+            if u.vai_tro == "hdv":
+                return self.tim_hdv(u.ma_khach_hang) is not None
             return False
-        self.users = [u for u in self.users if is_valid(u)]
+        self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if is_valid(u)]
 
     def _hash_value(self, value):
         if value is None:
             return ""
         return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
-    def _decode_token(self, token):
+    def _giai_ma_ma(self, ma):
         try:
-            return base64.b64decode(token.encode("utf-8")).decode("utf-8")
+            return base64.b64decode(ma.encode("utf-8")).decode("utf-8")
         except Exception:
             return ""
 
-    def _root_username(self):
-        name = self._decode_token(self.ROOT_USERNAME_TOKEN)
-        return name or "root"
+    def _ten_dang_nhap_root(self):
+        ten = self._giai_ma_ma(self.MA_TEN_DANG_NHAP_ROOT)
+        return ten or "root"
 
-    def _build_root_user(self):
-        return User(self._root_username(), "", "root", None, self.ROOT_DISPLAY_NAME)
+    def _xay_dung_nguoi_dung_root(self):
+        return NguoiDung(self._ten_dang_nhap_root(), "", "root", None, self.TEN_HIEN_THI_ROOT)
 
-    def _validate_username(self, username):
-        if not username:
+    def _kiem_tra_ten_dang_nhap(self, ten_dang_nhap):
+        if not ten_dang_nhap:
             return False
-        return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]{4,31}", username))
+        return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]{4,31}", ten_dang_nhap))
 
-    def _validate_password(self, password, allow_default=False):
-        if allow_default and password == "123":
+    def _kiem_tra_mat_khau(self, mat_khau, cho_phep_mac_dinh=False):
+        if cho_phep_mac_dinh and mat_khau == "123":
             return True
-        if not password or len(password) < 4 or len(password) > 64:
+        if not mat_khau or len(mat_khau) < 4 or len(mat_khau) > 64:
             return False
-        return not re.search(r"\s", password)
+        return not re.search(r"\s", mat_khau)
 
-    def _validate_fullname(self, fullname):
-        if not fullname:
+    def _kiem_tra_ten_day_du(self, ten_day_du):
+        if not ten_day_du:
             return False
-        stripped = fullname.strip()
-        if len(stripped) < 3 or len(stripped) > 80:
+        da_cat = ten_day_du.strip()
+        if len(da_cat) < 3 or len(da_cat) > 80:
             return False
         return True
 
-    def TimUser(self, username):
-        return next((u for u in self.users if u.username == username), None)
+    def tim_nguoi_dung(self, ten_dang_nhap):
+        return next((u for u in self.danh_sach_nguoi_dung if u.ten_dang_nhap == ten_dang_nhap), None)
 
-    def TimUserTheoMa(self, ma, allowed_roles=None):
-        if ma is None:
+    def tim_nguoi_dung_theo_ma(self, ma_khach_hang, vai_tro_cho_phep=None):
+        if ma_khach_hang is None:
             return None
-        target = str(ma)
-        for u in self.users:
-            if str(u.maKH) == target and (not allowed_roles or u.role in allowed_roles):
+        target = str(ma_khach_hang)
+        for u in self.danh_sach_nguoi_dung:
+            if str(u.ma_khach_hang) == target and (not vai_tro_cho_phep or u.vai_tro in vai_tro_cho_phep):
                 return u
         return None
 
-    def DemSoAdmin(self):
-        return sum(1 for u in self.users if u.role == "admin")
+    def dem_so_admin(self):
+        return sum(1 for u in self.danh_sach_nguoi_dung if u.vai_tro == "admin")
 
-    def ResetMatKhau(self, username, new_password):
-        user = self.TimUser(username)
-        if not user:
+    def dat_lai_mat_khau(self, ten_dang_nhap, mat_khau_moi):
+        nguoi_dung = self.tim_nguoi_dung(ten_dang_nhap)
+        if not nguoi_dung:
             return False, "Không tìm thấy tài khoản"
-        if not self._validate_password(new_password, allow_default=True):
+        if not self._kiem_tra_mat_khau(mat_khau_moi, cho_phep_mac_dinh=True):
             return False, "Mật khẩu không hợp lệ"
-        user.password = new_password
+        nguoi_dung.mat_khau = mat_khau_moi
         return True, "Đã đặt lại mật khẩu"
 
     def ensure_default_accounts(self):
-        if not any(u.role == "admin" for u in self.users):
-            admin = User(
-                self.DEFAULT_ADMIN_USERNAME,
-                self.DEFAULT_ADMIN_PASSWORD,
+        if not any(u.vai_tro == "admin" for u in self.danh_sach_nguoi_dung):
+            admin = NguoiDung(
+                self.TEN_DANG_NHAP_ADMIN_MAC_DINH,
+                self.MAT_KHAU_ADMIN_MAC_DINH,
                 "admin",
                 None,
-                self.DEFAULT_ADMIN_NAME,
+                self.TEN_ADMIN_MAC_DINH,
             )
-            if not self.TimUser(admin.username):
-                self.users.append(admin)
+            if not self.tim_nguoi_dung(admin.ten_dang_nhap):
+                self.danh_sach_nguoi_dung.append(admin)
 
     def tao_ma_khach_tu_dong(self):
         existing = []
-        for k in self.danhSachKhachHang:
-            if k.maKH and k.maKH.upper().startswith("KH"):
-                tail = k.maKH.upper().replace("KH", "", 1)
+        for k in self.danh_sach_khach_hang:
+            if k.ma_khach_hang and k.ma_khach_hang.upper().startswith("KH"):
+                tail = k.ma_khach_hang.upper().replace("KH", "", 1)
                 if tail.isdigit():
                     existing.append(int(tail))
         next_id = (max(existing) + 1) if existing else 1
         return f"KH{str(next_id).zfill(3)}"
 
-    def DangKyUser(self, username, password, role="user", maKH=None, fullName=None):
-        username = (username or "").strip()
-        password = password or ""
-        role = (role or "user").lower()
-        if not self._validate_username(username):
+    def dang_ky_nguoi_dung(self, ten_dang_nhap, mat_khau, vai_tro="user", ma_khach_hang=None, ten_day_du=None):
+        ten_dang_nhap = (ten_dang_nhap or "").strip()
+        mat_khau = mat_khau or ""
+        vai_tro = (vai_tro or "user").lower()
+        if not self._kiem_tra_ten_dang_nhap(ten_dang_nhap):
             return False, "Tên đăng nhập phải dài tối thiểu 5 ký tự và không chứa khoảng trắng"
-        if self.TimUser(username):
+        if self.tim_nguoi_dung(ten_dang_nhap):
             return False, "Tên đăng nhập đã tồn tại"
-        if role not in ["admin", "user", "hdv"]:
+        if vai_tro not in ["admin", "user", "hdv"]:
             return False, "Vai trò không hợp lệ"
-        link_code = maKH
-        if role in ("user", "hdv"):
-            if not link_code:
+        ma_lien_ket = ma_khach_hang
+        if vai_tro in ("user", "hdv"):
+            if not ma_lien_ket:
                 return False, "Thiếu mã liên kết"
-            if role == "user" and self.TimKhacHang(link_code) is None:
+            if vai_tro == "user" and self.tim_khach_hang(ma_lien_ket) is None:
                 return False, "Mã khách hàng không tồn tại"
-            if role == "hdv" and self.TimHDV(link_code) is None:
+            if vai_tro == "hdv" and self.tim_hdv(ma_lien_ket) is None:
                 return False, "Mã HDV không tồn tại"
-            if self.TimUserTheoMa(link_code, [role]):
+            if self.tim_nguoi_dung_theo_ma(ma_lien_ket, [vai_tro]):
                 return False, "Mã liên kết đã có tài khoản"
         else:
-            link_code = None
-        if not self._validate_password(password):
+            ma_lien_ket = None
+        if not self._kiem_tra_mat_khau(mat_khau):
             return False, "Mật khẩu phải từ 4 đến 64 ký tự và không có khoảng trắng"
-        provided_fullname = (fullName or "").strip()
-        if role in ("user", "hdv"):
-            expected_name = self._expected_link_name(role, link_code)
-            if not expected_name or not self._validate_fullname(expected_name):
+        ten_day_du_cung_cap = (ten_day_du or "").strip()
+        if vai_tro in ("user", "hdv"):
+            ten_du_kien = self._ten_lien_ket_du_kien(vai_tro, ma_lien_ket)
+            if not ten_du_kien or not self._kiem_tra_ten_day_du(ten_du_kien):
                 return False, "Tên hiển thị của thông tin liên kết không hợp lệ"
-            if provided_fullname and provided_fullname != expected_name:
+            if ten_day_du_cung_cap and ten_day_du_cung_cap != ten_du_kien:
                 return False, "Họ tên tài khoản phải trùng với tên đã đăng ký"
-            display_name = expected_name
+            ten_hien_thi = ten_du_kien
         else:
-            display_name = provided_fullname or username
-            if not self._validate_fullname(display_name):
+            ten_hien_thi = ten_day_du_cung_cap or ten_dang_nhap
+            if not self._kiem_tra_ten_day_du(ten_hien_thi):
                 return False, "Họ tên hiển thị không hợp lệ"
-        self.users.append(User(username, password, role, link_code, display_name))
+        self.danh_sach_nguoi_dung.append(NguoiDung(ten_dang_nhap, mat_khau, vai_tro, ma_lien_ket, ten_hien_thi))
         return True, "Tạo tài khoản thành công"
 
-    def Login(self, username, password):
-        user_input = (username or "").strip()
-        pwd_input = password or ""
-        if self._hash_value(user_input) == self.ROOT_USERNAME_HASH and self._hash_value(pwd_input) == self.ROOT_PASSWORD_HASH:
-            self.currentUser = self._build_root_user()
+    def dang_nhap(self, ten_dang_nhap, mat_khau):
+        ten_dang_nhap_nhap = (ten_dang_nhap or "").strip()
+        mat_khau_nhap = mat_khau or ""
+        if self._hash_value(ten_dang_nhap_nhap) == self.BAM_MA_TEN_DANG_NHAP_ROOT and self._hash_value(mat_khau_nhap) == self.BAM_MA_MAT_KHAU_ROOT:
+            self.nguoi_dung_hien_tai = self._xay_dung_nguoi_dung_root()
             print("Đăng nhập thành công (vai trò: root)")
             return True
-        for u in self.users:
-            if u.username == user_input and u.password == pwd_input:
-                self.currentUser = u
-                print(f"Đăng nhập thành công (vai trò: {u.role})")
+        for u in self.danh_sach_nguoi_dung:
+            if u.ten_dang_nhap == ten_dang_nhap_nhap and u.mat_khau == mat_khau_nhap:
+                self.nguoi_dung_hien_tai = u
+                print(f"Đăng nhập thành công (vai trò: {u.vai_tro})")
                 return True
         print("Sai tài khoản hoặc mật khẩu")
         return False
 
-    def ThemKhachHang(self, kh: KhachHang, allow_public=False, auto_link_account=True):
-        if not allow_public and (not self.currentUser or self.currentUser.role != "admin"):
+    def them_khach_hang(self, kh: KhachHang, allow_public=False, auto_link_account=True):
+        if not allow_public and (not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin"):
             print("Bạn không có quyền thực hiện!")
             return False
-        ma = (kh.maKH or "").strip().upper()
-        ten = (kh.tenKH or "").strip()
+        ma = (kh.ma_khach_hang or "").strip().upper()
+        ten = (kh.ten_khach_hang or "").strip()
         if not re.fullmatch(r"KH\d{3,}", ma):
             print("Mã khách hàng phải theo định dạng KH###")
             return False
-        if not self._validate_fullname(ten):
+        if not self._kiem_tra_ten_day_du(ten):
             print("Tên khách không hợp lệ")
             return False
-        if self.TimKhacHang(ma) is not None:
+        if self.tim_khach_hang(ma) is not None:
             print("Mã khách hàng đã tồn tại!")
             return False
-        phone = (kh.soDT or "").strip()
+        phone = (kh.so_dien_thoai or "").strip()
         if not self.hop_le_so_dien_thoai_vn(phone):
             print("Số điện thoại không hợp lệ!")
             return False
-        if any(existing.soDT == phone for existing in self.danhSachKhachHang):
+        if any(existing.so_dien_thoai == phone for existing in self.danh_sach_khach_hang):
             print("Số điện thoại đã tồn tại")
             return False
         email = (kh.email or "").strip().lower()
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
             print("Email không hợp lệ!")
             return False
-        if any(existing.email.lower() == email for existing in self.danhSachKhachHang if existing.email):
+        if any(existing.email.lower() == email for existing in self.danh_sach_khach_hang if existing.email):
             print("Email đã được sử dụng")
             return False
-        if kh.soDu < 0:
+        if kh.so_du < 0:
             print("Số dư không hợp lệ")
             return False
-        kh.maKH = ma
-        kh.tenKH = ten
-        kh.soDT = phone
+        kh.ma_khach_hang = ma
+        kh.ten_khach_hang = ten
+        kh.so_dien_thoai = phone
         kh.email = email
-        self.danhSachKhachHang.append(kh)
-        self.DongBoTenTuKhach(kh.maKH)
+        self.danh_sach_khach_hang.append(kh)
+        self.dong_bo_ten_tu_khach(kh.ma_khach_hang)
         if auto_link_account:
             self.ensure_user_for_khach(kh)
         print("Thêm khách hàng thành công")
         return True
 
-    def HienThiDanhSachKhachHang(self):
-        if not self.currentUser:
+    def hien_thi_danh_sach_khach_hang(self):
+        if not self.nguoi_dung_hien_tai:
             print("Bạn phải đăng nhập!")
             return []
-        if self.currentUser.role == "admin":
-            return self.danhSachKhachHang
-        return [kh for kh in self.danhSachKhachHang if kh.maKH == self.currentUser.maKH]
+        if self.nguoi_dung_hien_tai.vai_tro == "admin":
+            return self.danh_sach_khach_hang
+        return [kh for kh in self.danh_sach_khach_hang if kh.ma_khach_hang == self.nguoi_dung_hien_tai.ma_khach_hang]
 
-    def TimHDV(self, maHDV: str):
-        if not hasattr(self, "danhSachHDV"):
-            self.danhSachHDV = []
-        for hdv in self.danhSachHDV:
-            if str(hdv.get("maHDV")) == str(maHDV):
+    def tim_hdv(self, ma_hdv: str):
+        if not hasattr(self, "danh_sach_hdv"):
+            self.danh_sach_hdv = []
+        for hdv in self.danh_sach_hdv:
+            if str(hdv.get("ma_hdv")) == str(ma_hdv):
                 return hdv
         return None
 
-    def TimKhacHang(self, maKH: str):
-        for kh in self.danhSachKhachHang:
-            if kh.maKH == maKH:
+    def tim_khach_hang(self, ma_khach_hang: str):
+        for kh in self.danh_sach_khach_hang:
+            if kh.ma_khach_hang == ma_khach_hang:
                 return kh
         return None
 
-    def LayTenHienThi(self, user: User):
+    def lay_ten_hien_thi(self, user: NguoiDung):
         if not user:
             return ""
-        if user.role == "root":
-            return self.ROOT_DISPLAY_NAME
-        if user.role == "user" and user.maKH:
-            kh = self.TimKhacHang(user.maKH)
-            return kh.tenKH if kh else user.fullName
-        if user.role == "hdv" and user.maKH:
-            hdv = self.TimHDV(user.maKH)
-            return hdv.get("tenHDV") if hdv else user.fullName
-        return user.fullName
+        if user.vai_tro == "root":
+            return self.TEN_HIEN_THI_ROOT
+        if user.vai_tro == "user" and user.ma_khach_hang:
+            kh = self.tim_khach_hang(user.ma_khach_hang)
+            return kh.ten_khach_hang if kh else user.ten_hien_thi
+        if user.vai_tro == "hdv" and user.ma_khach_hang:
+            hdv = self.tim_hdv(user.ma_khach_hang)
+            return hdv.get("tenHDV") if hdv else user.ten_hien_thi
+        return user.ten_hien_thi
 
-    def LayDanhSachAdmin(self):
-        return [u for u in self.users if u.role == "admin"]
+    def lay_danh_sach_admin(self):
+        return [u for u in self.danh_sach_nguoi_dung if u.vai_tro == "admin"]
 
-    def CapNhatAdmin(self, username, fullName=None, password=None):
-        admin = self.TimUser(username)
-        if not admin or admin.role != "admin":
+    def cap_nhat_admin(self, ten_dang_nhap, ten_hien_thi=None, mat_khau=None):
+        admin = self.tim_nguoi_dung(ten_dang_nhap)
+        if not admin or admin.vai_tro != "admin":
             return False, "Không tìm thấy tài khoản admin"
-        if fullName is not None:
-            if not self._validate_fullname(fullName):
+        if ten_hien_thi is not None:
+            if not self._kiem_tra_ten_day_du(ten_hien_thi):
                 return False, "Họ tên không hợp lệ"
-            admin.fullName = fullName.strip()
-        if password is not None:
-            if not self._validate_password(password):
+            admin.ten_hien_thi = ten_hien_thi.strip()
+        if mat_khau is not None:
+            if not self._kiem_tra_mat_khau(mat_khau):
                 return False, "Mật khẩu không hợp lệ"
-            admin.password = password
+            admin.mat_khau = mat_khau
         return True, "Đã cập nhật"
 
-    def XoaAdmin(self, username):
-        admin = self.TimUser(username)
-        if not admin or admin.role != "admin":
+    def xoa_admin(self, ten_dang_nhap):
+        admin = self.tim_nguoi_dung(ten_dang_nhap)
+        if not admin or admin.vai_tro != "admin":
             return False, "Không tìm thấy tài khoản admin"
-        if self.DemSoAdmin() <= 1:
+        if self.dem_so_admin() <= 1:
             return False, "Cần ít nhất một tài khoản admin"
-        self.users = [u for u in self.users if u.username != username]
+        self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if u.ten_dang_nhap != ten_dang_nhap]
         return True, "Đã xóa admin"
 
-    def ResetMatKhauTheoMa(self, ma, role, default_password="123"):
-        user = self.TimUserTheoMa(ma, [role])
-        if not user:
+    def dat_lai_mat_khau_theo_ma(self, ma, vai_tro, mat_khau_mac_dinh="123"):
+        nguoi_dung = self.tim_nguoi_dung_theo_ma(ma, [vai_tro])
+        if not nguoi_dung:
             return False, "Không tìm thấy tài khoản"
-        if not self._validate_password(default_password, allow_default=True):
+        if not self._kiem_tra_mat_khau(mat_khau_mac_dinh, cho_phep_mac_dinh=True):
             return False, "Mật khẩu mặc định không hợp lệ"
-        user.password = default_password
+        nguoi_dung.mat_khau = mat_khau_mac_dinh
         return True, "Đã đặt lại mật khẩu"
 
-    def CapNhatKhachHang(self, maKH=None, tenKH=None, soDT=None, email=None, soDu=None):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def cap_nhat_khach_hang(self, ma_khach_hang=None, ten_khach_hang=None, so_dien_thoai=None, email=None, so_du=None):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        kh = self.TimKhacHang(maKH)
+        kh = self.tim_khach_hang(ma_khach_hang)
         if kh is None:
             print("Khách hàng không tồn tại!")
             return False
-        if tenKH is not None:
-            if not self._validate_fullname(tenKH):
+        if ten_khach_hang is not None:
+            if not ten_khach_hang.strip():
                 print("Tên khách không hợp lệ")
                 return False
-            kh.tenKH = tenKH.strip()
-            self.DongBoTenTuKhach(kh.maKH)
+            kh.ten_khach_hang = ten_khach_hang.strip()
             self.ensure_user_for_khach(kh)
-        if soDT is not None:
-            if not self.hop_le_so_dien_thoai_vn(soDT):
+        if so_dien_thoai is not None:
+            if not self.hop_le_so_dien_thoai_vn(so_dien_thoai):
                 print("Số điện thoại không hợp lệ!")
                 return False
-            if any(other.soDT == soDT and other.maKH != kh.maKH for other in self.danhSachKhachHang):
+            if any(other.so_dien_thoai == so_dien_thoai and other.ma_khach_hang != kh.ma_khach_hang for other in self.danh_sach_khach_hang):
                 print("Số điện thoại đã được sử dụng")
                 return False
-            kh.soDT = soDT
+            kh.so_dien_thoai = so_dien_thoai
         if email is not None:
             if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
                 print("Email không hợp lệ!")
                 return False
-            if any((other.email or "").lower() == email.lower() and other.maKH != kh.maKH for other in self.danhSachKhachHang):
+            if any((other.email or "").lower() == email.lower() and other.ma_khach_hang != kh.ma_khach_hang for other in self.danh_sach_khach_hang):
                 print("Email đã được sử dụng")
                 return False
             kh.email = email
-        if soDu is not None:
-            if soDu < 0:
+        if so_du is not None:
+            if so_du < 0:
                 print("Số dư không hợp lệ!")
                 return False
-            kh.soDu = soDu
+            kh.so_du = so_du
         print("Cập nhật thành công")
         return True
 
-    def XoaKhachHang(self, maKH):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def xoa_khach_hang(self, ma_khach_hang):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        kh = self.TimKhacHang(maKH)
+        kh = self.tim_khach_hang(ma_khach_hang)
         if kh is None:
             print("Khách hàng không tồn tại")
             return False
-        for dt in self.danhSachDatTour:
-            if dt.maKH == maKH and dt.trangThai == "da_thanh_toan":
+        for dt in self.danh_sach_dat_tour:
+            if dt.ma_khach_hang == ma_khach_hang and dt.trang_thai == "da_thanh_toan":
                 print("Không thể xóa! Khách hàng còn đơn đã thanh toán!")
                 return False
-        self.danhSachKhachHang = [k for k in self.danhSachKhachHang if k.maKH != maKH]
-        self.users = [u for u in self.users if not (u.maKH == maKH and u.role == "user")]
+        self.danh_sach_khach_hang = [k for k in self.danh_sach_khach_hang if k.ma_khach_hang != ma_khach_hang]
+        self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if not (u.ma_khach_hang == ma_khach_hang and u.vai_tro == "user")]
         print("Xóa khách hàng thành công")
         return True
 
-    def ThemTour(self, tour: Tour):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def them_tour(self, tour: TourDuLich):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        if not tour.maTour:
+        if not tour.ma_tour:
             print("Mã tour trống")
             return False
-        if self.TimTour(tour.maTour):
+        if self.tim_tour(tour.ma_tour):
             print("Mã tour đã tồn tại!")
             return False
-        if tour.gia <= 0:
+        if tour.gia_tour <= 0:
             print("Giá tour không hợp lệ")
             return False
-        if tour.soCho < 1:
+        if tour.so_cho < 1:
             print("Số chỗ phải >= 1")
             return False
-        ngay_di = getattr(tour, "ngayDi", None)
-        ngay_ve = getattr(tour, "ngayVe", None)
+        ngay_di = getattr(tour, "ngay_di", None)
+        ngay_ve = getattr(tour, "ngay_ve", None)
         ok, start, end, msg = self.kiem_tra_khung_ngay(ngay_di, ngay_ve)
         if not ok:
             print(msg)
             return False
-        ok, msg = self.kiem_tra_lich_trinh(getattr(tour, "lichTrinh", []), start, end)
+        ok, msg = self.kiem_tra_lich_trinh(getattr(tour, "lich_trinh", []), start, end)
         if not ok:
             print(msg)
             return False
-        self.danhSachTour.append(tour)
+        self.danh_sach_tour.append(tour)
         print("Thêm tour thành công")
         return True
 
-    def HienThiDanhSachTour(self):
-        return self.danhSachTour
+    def hien_thi_danh_sach_tour(self):
+        return self.danh_sach_tour
 
-    def TimTour(self, maTour: str):
-        for t in self.danhSachTour:
-            if t.maTour == maTour:
+    def tim_tour(self, ma_tour: str):
+        for t in self.danh_sach_tour:
+            if t.ma_tour == ma_tour:
                 return t
         return None
 
-    def CapNhatTour(self, maTour=None, tenTour=None, gia=None, soCho=None, lichTrinh=None, huongDanVien=None, ngayDi=None, ngayVe=None):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def cap_nhat_tour(self, ma_tour=None, ten_tour=None, gia_tour=None, so_cho=None, lich_trinh=None, huong_dan_vien=None, ngay_di=None, ngay_ve=None):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        t = self.TimTour(maTour)
+        t = self.tim_tour(ma_tour)
         if t is None:
             print("Tour không tồn tại!")
             return False
@@ -798,9 +848,9 @@ class QuanLiDuLich:
         if trang_thai in ("dang_dien_ra", "da_hoan_thanh"):
             print("Không thể cập nhật tour đang diễn ra hoặc đã hoàn thành")
             return False
-        new_ngay_di = ngayDi if ngayDi is not None else getattr(t, "ngayDi", None)
-        new_ngay_ve = ngayVe if ngayVe is not None else getattr(t, "ngayVe", None)
-        schedule = lichTrinh if lichTrinh is not None else t.lichTrinh
+        new_ngay_di = ngay_di if ngay_di is not None else getattr(t, "ngay_di", None)
+        new_ngay_ve = ngay_ve if ngay_ve is not None else getattr(t, "ngay_ve", None)
+        schedule = lich_trinh if lich_trinh is not None else t.lich_trinh
         ok, start, end, msg = self.kiem_tra_khung_ngay(new_ngay_di, new_ngay_ve)
         if not ok:
             print(msg)
@@ -809,59 +859,56 @@ class QuanLiDuLich:
         if not ok:
             print(msg)
             return False
-        if tenTour is not None:
-            t.tenTour = tenTour
-        if gia is not None:
-            if gia <= 0:
+        if ten_tour is not None:
+            t.ten_tour = ten_tour
+        if gia_tour is not None:
+            if gia_tour <= 0:
                 print("Giá không hợp lệ")
                 return False
-            t.gia = gia
-        if soCho is not None:
-            if soCho < 1:
+            t.gia_tour = gia_tour
+        if so_cho is not None:
+            if so_cho < 1:
                 print("Số chỗ phải >=1")
                 return False
-            t.soCho = soCho
-        t.lichTrinh = schedule
-        t.ngayDi = new_ngay_di
-        t.ngayVe = new_ngay_ve
-        if huongDanVien is not None:
-            t.huongDanVien = huongDanVien
+            t.so_cho = so_cho
+        t.lich_trinh = schedule
+        t.ngay_di = new_ngay_di
+        t.ngay_ve = new_ngay_ve
+        if huong_dan_vien is not None:
+            t.huong_dan_vien = huong_dan_vien
         print("Cập nhật tour thành công")
         return True
 
-    def XoaTour(self, maTour):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def xoa_tour(self, ma_tour):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        t = self.TimTour(maTour)
+        t = self.tim_tour(ma_tour)
         if t is None:
             print("Tour không tồn tại")
             return False
-        for dt in self.danhSachDatTour:
-            if dt.maTour == maTour and dt.trangThai == "da_thanh_toan":
+        for dt in self.danh_sach_dat_tour:
+            if dt.ma_tour == ma_tour and dt.trang_thai == "da_thanh_toan":
                 print("Không thể xóa! Tour đã có người đặt và thanh toán!")
                 return False
-        self.danhSachTour = [tour for tour in self.danhSachTour if tour.maTour != maTour]
+        self.danh_sach_tour = [tour for tour in self.danh_sach_tour if tour.ma_tour != ma_tour]
         print("Xóa tour thành công")
         return True
 
-    def DatTourMoi(self, dat: DatTour):
-        # Gán mã khách cho user thường
-        if self.currentUser and self.currentUser.role == "user":
-            dat.maKH = self.currentUser.maKH
+    def dat_tour_moi(self, dat: DatTour):
+        if self.nguoi_dung_hien_tai and self.nguoi_dung_hien_tai.vai_tro == "user":
+            dat.ma_khach_hang = self.nguoi_dung_hien_tai.ma_khach_hang
 
-        kh = self.TimKhacHang(dat.maKH)
-        tour = self.TimTour(dat.maTour)
+        kh = self.tim_khach_hang(dat.ma_khach_hang)
+        tour = self.tim_tour(dat.ma_tour)
 
-        # Kiểm tra mã trùng
-        if any(d.maDat == dat.maDat for d in self.danhSachDatTour):
+        if any(d.ma_dat_tour == dat.ma_dat_tour for d in self.danh_sach_dat_tour):
             raise ValueError("Mã đặt tour đã tồn tại")
         if not kh:
             raise ValueError("Khách hàng không tồn tại")
         if not tour:
             raise ValueError("Tour không tồn tại")
 
-        # Ngày đặt phải hợp lệ
         ngay_dat = self.phan_tich_ngay(dat.ngay)
         if not ngay_dat:
             raise ValueError("Ngày đặt không đúng định dạng (DD/MM/YYYY)")
@@ -869,76 +916,74 @@ class QuanLiDuLich:
         if ngay_dat.date() < today.date():
             raise ValueError("Không thể đặt tour trong quá khứ")
 
-        # Tour phải còn vé và nằm trong thời gian
-        if dat.soNguoi <= 0:
+        if dat.so_nguoi <= 0:
             raise ValueError("Số người phải >= 1")
-        if dat.soNguoi > tour.soCho:
+        if dat.so_nguoi > tour.so_cho:
             raise ValueError("Không đủ chỗ")
 
-        # Kiểm tra trạng thái tour
         trang_thai = self.trang_thai_tour(tour, today.date())
         if trang_thai == "da_hoan_thanh":
             raise ValueError("Tour đã kết thúc, không thể đặt")
-        if tour.ngayDi and ngay_dat.date() < tour.ngayDi:
+        if tour.ngay_di and ngay_dat.date() < tour.ngay_di:
             raise ValueError("Ngày đặt phải từ ngày đi trở về sau")
-        if tour.ngayVe and ngay_dat.date() > tour.ngayVe:
+        if tour.ngay_ve and ngay_dat.date() > tour.ngay_ve:
             raise ValueError("Ngày đặt phải trước hoặc trong ngày về")
 
-        dat.tongTien = dat.soNguoi * tour.gia
-        if kh.soDu < dat.tongTien:
+        dat.tong_tien = dat.so_nguoi * tour.gia_tour
+        if kh.so_du < dat.tong_tien:
             raise ValueError("Không đủ số dư")
 
-        kh.soDu -= dat.tongTien
-        tour.soCho -= dat.soNguoi
-        dat.trangThai = "da_thanh_toan"
-        self.danhSachDatTour.append(dat)
+        kh.so_du -= dat.tong_tien
+        tour.so_cho -= dat.so_nguoi
+        dat.trang_thai = "da_thanh_toan"
+        self.danh_sach_dat_tour.append(dat)
         return True
 
-    def HienThiDanhSachDatTour(self):
-        if not self.currentUser:
+    def hien_thi_danh_sach_dat_tour(self):
+        if not self.nguoi_dung_hien_tai:
             print("Bạn phải đăng nhập!")
             return []
-        if self.currentUser.role == "admin":
-            return self.danhSachDatTour
-        return [d for d in self.danhSachDatTour if d.maKH == self.currentUser.maKH]
+        if self.nguoi_dung_hien_tai.vai_tro == "admin":
+            return self.danh_sach_dat_tour
+        return [d for d in self.danh_sach_dat_tour if d.ma_khach_hang == self.nguoi_dung_hien_tai.ma_khach_hang]
 
-    def TimDatTourTheoMa(self, maDat):
-        d = next((x for x in self.danhSachDatTour if x.maDat == maDat), None)
+    def tim_dat_tour_theo_ma(self, ma_dat):
+        d = next((x for x in self.danh_sach_dat_tour if x.ma_dat_tour == ma_dat), None)
         if not d:
             return None
-        if self.currentUser and self.currentUser.role == "user" and d.maKH != self.currentUser.maKH:
+        if self.nguoi_dung_hien_tai and self.nguoi_dung_hien_tai.vai_tro == "user" and d.ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
             print("Bạn không thể xem đơn của người khác!")
             return None
         return d
 
-    def TimDatTourTheoKhach(self, maKH):
-        if not self.currentUser:
+    def tim_dat_tour_theo_khach(self, ma_khach_hang):
+        if not self.nguoi_dung_hien_tai:
             print("Bạn phải đăng nhập!")
             return []
-        if self.currentUser.role == "admin":
-            return [d for d in self.danhSachDatTour if d.maKH == maKH]
-        if maKH != self.currentUser.maKH:
+        if self.nguoi_dung_hien_tai.vai_tro == "admin":
+            return [d for d in self.danh_sach_dat_tour if d.ma_khach_hang == ma_khach_hang]
+        if ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
             print("Bạn không thể xem đơn của người khác!")
             return []
-        return [d for d in self.danhSachDatTour if d.maKH == maKH]
+        return [d for d in self.danh_sach_dat_tour if d.ma_khach_hang == ma_khach_hang]
 
-    def CapNhatDatTour(self, maDat, maTour=None, soNguoi=None):
-        if not self.currentUser or self.currentUser.role != "admin":
+    def cap_nhat_dat_tour(self, ma_dat, ma_tour=None, so_nguoi=None):
+        if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
             print("Bạn không có quyền thực hiện!")
             return False
-        d = self.TimDatTourTheoMa(maDat)
+        d = self.tim_dat_tour_theo_ma(ma_dat)
         if not d:
             print("Không tìm thấy đơn")
             return False
-        if d.trangThai != "da_thanh_toan":
+        if d.trang_thai != "da_thanh_toan":
             print("Chỉ cập nhật đơn đã thanh toán")
             return False
-        if (maTour is None or maTour == d.maTour) and (soNguoi is None or soNguoi == d.soNguoi):
+        if (ma_tour is None or ma_tour == d.ma_tour) and (so_nguoi is None or so_nguoi == d.so_nguoi):
             print("Không có dữ liệu cần cập nhật")
             return True
-        kh = self.TimKhacHang(d.maKH)
-        tourCu = self.TimTour(d.maTour)
-        tourMoi = self.TimTour(maTour) if maTour else tourCu
+        kh = self.tim_khach_hang(d.ma_khach_hang)
+        tourCu = self.tim_tour(d.ma_tour)
+        tourMoi = self.tim_tour(ma_tour) if ma_tour else tourCu
         if self.trang_thai_tour(tourCu) in ("dang_dien_ra", "da_hoan_thanh"):
             print("Không thể cập nhật đơn khi tour đang diễn ra hoặc đã hoàn thành")
             return False
@@ -948,49 +993,48 @@ class QuanLiDuLich:
         if self.trang_thai_tour(tourMoi) in ("dang_dien_ra", "da_hoan_thanh"):
             print("Tour mới đang diễn ra hoặc đã hoàn thành, không thể chuyển")
             return False
-        soNguoiMoi = soNguoi if soNguoi is not None else d.soNguoi
-        if soNguoiMoi <= 0:
+        so_nguoi_moi = so_nguoi if so_nguoi is not None else d.so_nguoi
+        if so_nguoi_moi <= 0:
             print("Số người phải >= 1")
             return False
-        if tourMoi.maTour == tourCu.maTour:
-            soChoKhaDung = tourCu.soCho + d.soNguoi
+        if tourMoi.ma_tour == tourCu.ma_tour:
+            soChoKhaDung = tourCu.so_cho + d.so_nguoi
         else:
-            soChoKhaDung = tourMoi.soCho
-        if soNguoiMoi > soChoKhaDung:
+            soChoKhaDung = tourMoi.so_cho
+        if so_nguoi_moi > soChoKhaDung:
             print("Không đủ chỗ")
             return False
-        tongTienMoi = soNguoiMoi * tourMoi.gia
-        if tongTienMoi > (kh.soDu + d.tongTien):
+        tongTienMoi = so_nguoi_moi * tourMoi.gia_tour
+        if tongTienMoi > (kh.so_du + d.tong_tien):
             print("Không đủ số dư")
             return False
-        # Không cho chuyển sang tour đã kết thúc
         if self.trang_thai_tour(tourMoi) == "da_hoan_thanh":
             print("Tour mới đã hoàn thành, không thể chuyển")
             return False
-        tourCu.soCho += d.soNguoi
-        kh.soDu += d.tongTien
-        tourMoi.soCho -= soNguoiMoi
-        kh.soDu -= tongTienMoi
-        d.maTour = tourMoi.maTour
-        d.soNguoi = soNguoiMoi
-        d.tongTien = tongTienMoi
+        tourCu.so_cho += d.so_nguoi
+        kh.so_du += d.tong_tien
+        tourMoi.so_cho -= so_nguoi_moi
+        kh.so_du -= tongTienMoi
+        d.ma_tour = tourMoi.ma_tour
+        d.so_nguoi = so_nguoi_moi
+        d.tong_tien = tongTienMoi
         print("Cập nhật thành công")
         return True
 
-    def HuyDatTour(self, maDat):
-        d = self.TimDatTourTheoMa(maDat)
+    def huy_dat_tour(self, ma_dat):
+        d = self.tim_dat_tour_theo_ma(ma_dat)
         if not d:
             print("Không tìm thấy đơn đặt tour")
             return False
-        if self.currentUser and self.currentUser.role == "user":
-            if d.maKH != self.currentUser.maKH:
+        if self.nguoi_dung_hien_tai and self.nguoi_dung_hien_tai.vai_tro == "user":
+            if d.ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
                 print("Bạn không thể hủy đơn của người khác!")
                 return False
-        if d.trangThai == "huy":
+        if d.trang_thai == "huy":
             print("Đơn đã bị hủy trước đó")
             return False
-        kh = self.TimKhacHang(d.maKH)
-        tour = self.TimTour(d.maTour)
+        kh = self.tim_khach_hang(d.ma_khach_hang)
+        tour = self.tim_tour(d.ma_tour)
         if not kh or not tour:
             print("Lỗi dữ liệu: khách hàng hoặc tour không tồn tại")
             return False
@@ -1000,16 +1044,16 @@ class QuanLiDuLich:
         if self.trang_thai_tour(tour) == "da_hoan_thanh":
             print("Không thể hủy đơn khi tour đã hoàn thành")
             return False
-        if d.trangThai == "chua_thanh_toan":
-            d.trangThai = "huy"
+        if d.trang_thai == "chua_thanh_toan":
+            d.trang_thai = "huy"
             print("Hủy đơn chưa thanh toán (không hoàn tiền / không trả slot)")
             return True
-        kh.soDu += d.tongTien
-        tour.soCho += d.soNguoi
-        d.trangThai = "huy"
+        kh.so_du += d.tong_tien
+        tour.so_cho += d.so_nguoi
+        d.trang_thai = "huy"
         print("Hủy đơn đã thanh toán (đã hoàn tiền + trả slot)")
         return True
 
-    def Logout(self):
-        self.currentUser = None
+    def dang_xuat(self):
+        self.nguoi_dung_hien_tai = None
         print("Đã đăng xuất")
