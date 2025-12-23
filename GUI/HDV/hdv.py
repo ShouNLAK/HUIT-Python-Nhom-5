@@ -31,7 +31,7 @@ def hdv_xem_khach(self):
     self.apply_zebra(tv)
 
 
-def hdv_xem_lich_trinh(self):
+def hdv_xem_lich_trinh(self, event=None):
     sel = self.tv_tour.selection()
     if not sel:
         messagebox.showerror('Lỗi', 'Chưa chọn tour')

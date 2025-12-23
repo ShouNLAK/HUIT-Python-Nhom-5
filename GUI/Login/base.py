@@ -569,7 +569,7 @@ class GiaoDienCoSo:
                 self.start_balance_updater()
             except Exception:
                 pass
-        if role != 'hdv':
+        if role in ('admin', 'user', 'hdv'):
             self.tv_tour.bind('<Double-Button-1>', self.show_tour_details)
         if getattr(self, 'tv_kh', None):
             self.tv_kh.bind('<Double-Button-1>', self.hien_thi_chi_tiet_kh)

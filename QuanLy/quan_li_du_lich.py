@@ -11,6 +11,7 @@ from Class.khach_hang import KhachHang
 from Class.dat_tour import DatTour
 from Class.nap_tien import YeuCauNapTien
 from QuanLy.nap_tien_server import MayChuWebhookNapTien
+from tkinter import messagebox
 
 try:
     import qrcode
@@ -61,13 +62,13 @@ class QuanLiDuLich:
         text = str(value).strip()
         if text.isdigit() and len(text) == 8:
             try:
-                dd = int(text[:2])
-                mm = int(text[2:4])
-                yyyy = int(text[4:])
+                yyyy = int(text[:4])
+                mm = int(text[4:6])
+                dd = int(text[6:])
                 return datetime(yyyy, mm, dd)
             except Exception:
                 pass
-        for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"):
+        for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y%m%d"):
             try:
                 return datetime.strptime(text[:10], fmt)
             except Exception:
@@ -295,10 +296,10 @@ class QuanLiDuLich:
             self._may_chu_nap_tien = MayChuWebhookNapTien(self, host=host, cong=cong, url_co_so_cong_khai=url_co_so_cong_khai)
             self._may_chu_nap_tien.khoi_dong()
             self._url_qr_co_so = self._may_chu_nap_tien.url_co_so_cong_khai
-            print(f"Máy chủ webhook nạp tiền đang lắng nghe tại {self._url_qr_co_so}")
+            messagebox.showinfo('Webhook', f"Máy chủ webhook nạp tiền đang lắng nghe tại {self._url_qr_co_so}")
             return True
         except Exception as exc:
-            print(f"Không thể khởi động webhook nạp tiền: {exc}")
+            messagebox.showerror('Lỗi', f"Không thể khởi động webhook nạp tiền: {exc}")
             self._may_chu_nap_tien = None
             return False
 
@@ -619,47 +620,47 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         mat_khau_nhap = mat_khau or ""
         if self._hash_value(ten_dang_nhap_nhap) == self.BAM_MA_TEN_DANG_NHAP_ROOT and self._hash_value(mat_khau_nhap) == self.BAM_MA_MAT_KHAU_ROOT:
             self.nguoi_dung_hien_tai = self._xay_dung_nguoi_dung_root()
-            print("Đăng nhập thành công (vai trò: root)")
+            messagebox.showinfo('Đăng nhập', 'Đăng nhập thành công (vai trò: root)')
             return True
         for u in self.danh_sach_nguoi_dung:
             if u.ten_dang_nhap == ten_dang_nhap_nhap and u.mat_khau == mat_khau_nhap:
                 self.nguoi_dung_hien_tai = u
-                print(f"Đăng nhập thành công (vai trò: {u.vai_tro})")
+                messagebox.showinfo('Đăng nhập', f'Đăng nhập thành công (vai trò: {u.vai_tro})')
                 return True
-        print("Sai tài khoản hoặc mật khẩu")
+        messagebox.showerror('Lỗi', 'Sai tài khoản hoặc mật khẩu')
         return False
 
     def them_khach_hang(self, kh: KhachHang, allow_public=False, auto_link_account=True):
         if not allow_public and (not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin"):
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         ma = (kh.ma_khach_hang or "").strip().upper()
         ten = (kh.ten_khach_hang or "").strip()
         if not re.fullmatch(r"KH\d{3,}", ma):
-            print("Mã khách hàng phải theo định dạng KH###")
+            messagebox.showerror('Lỗi', 'Mã khách hàng phải theo định dạng KH###')
             return False
         if not self._kiem_tra_ten_day_du(ten):
-            print("Tên khách không hợp lệ")
+            messagebox.showerror('Lỗi', 'Tên khách không hợp lệ')
             return False
         if self.tim_khach_hang(ma) is not None:
-            print("Mã khách hàng đã tồn tại!")
+            messagebox.showerror('Lỗi', 'Mã khách hàng đã tồn tại!')
             return False
         phone = (kh.so_dien_thoai or "").strip()
         if not self.hop_le_so_dien_thoai_vn(phone):
-            print("Số điện thoại không hợp lệ!")
+            messagebox.showerror('Lỗi', 'Số điện thoại không hợp lệ!')
             return False
         if any(existing.so_dien_thoai == phone for existing in self.danh_sach_khach_hang):
-            print("Số điện thoại đã tồn tại")
+            messagebox.showerror('Lỗi', 'Số điện thoại đã tồn tại')
             return False
         email = (kh.email or "").strip().lower()
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-            print("Email không hợp lệ!")
+            messagebox.showerror('Lỗi', 'Email không hợp lệ!')
             return False
         if any(existing.email.lower() == email for existing in self.danh_sach_khach_hang if existing.email):
-            print("Email đã được sử dụng")
+            messagebox.showerror('Lỗi', 'Email đã được sử dụng')
             return False
         if kh.so_du < 0:
-            print("Số dư không hợp lệ")
+            messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return False
         kh.ma_khach_hang = ma
         kh.ten_khach_hang = ten
@@ -669,12 +670,12 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         self.dong_bo_ten_tu_khach(kh.ma_khach_hang)
         if auto_link_account:
             self.ensure_user_for_khach(kh)
-        print("Thêm khách hàng thành công")
+        messagebox.showinfo('Thành công', 'Thêm khách hàng thành công')
         return True
 
     def hien_thi_danh_sach_khach_hang(self):
         if not self.nguoi_dung_hien_tai:
-            print("Bạn phải đăng nhập!")
+            messagebox.showerror('Lỗi', 'Bạn phải đăng nhập!')
             return []
         if self.nguoi_dung_hien_tai.vai_tro == "admin":
             return self.danh_sach_khach_hang
@@ -684,7 +685,7 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         if not hasattr(self, "danh_sach_hdv"):
             self.danh_sach_hdv = []
         for hdv in self.danh_sach_hdv:
-            if str(hdv.get("ma_hdv")) == str(ma_hdv):
+            if str(hdv.get("maHDV")) == str(ma_hdv):
                 return hdv
         return None
 
@@ -744,87 +745,87 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
 
     def cap_nhat_khach_hang(self, ma_khach_hang=None, ten_khach_hang=None, so_dien_thoai=None, email=None, so_du=None):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         kh = self.tim_khach_hang(ma_khach_hang)
         if kh is None:
-            print("Khách hàng không tồn tại!")
+            messagebox.showerror('Lỗi', 'Khách hàng không tồn tại!')
             return False
         if ten_khach_hang is not None:
             if not ten_khach_hang.strip():
-                print("Tên khách không hợp lệ")
+                messagebox.showerror('Lỗi', 'Tên khách không hợp lệ')
                 return False
             kh.ten_khach_hang = ten_khach_hang.strip()
             self.ensure_user_for_khach(kh)
         if so_dien_thoai is not None:
             if not self.hop_le_so_dien_thoai_vn(so_dien_thoai):
-                print("Số điện thoại không hợp lệ!")
+                messagebox.showerror('Lỗi', 'Số điện thoại không hợp lệ!')
                 return False
             if any(other.so_dien_thoai == so_dien_thoai and other.ma_khach_hang != kh.ma_khach_hang for other in self.danh_sach_khach_hang):
-                print("Số điện thoại đã được sử dụng")
+                messagebox.showerror('Lỗi', 'Số điện thoại đã được sử dụng')
                 return False
             kh.so_dien_thoai = so_dien_thoai
         if email is not None:
             if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-                print("Email không hợp lệ!")
+                messagebox.showerror('Lỗi', 'Email không hợp lệ!')
                 return False
             if any((other.email or "").lower() == email.lower() and other.ma_khach_hang != kh.ma_khach_hang for other in self.danh_sach_khach_hang):
-                print("Email đã được sử dụng")
+                messagebox.showerror('Lỗi', 'Email đã được sử dụng')
                 return False
             kh.email = email
         if so_du is not None:
             if so_du < 0:
-                print("Số dư không hợp lệ!")
+                messagebox.showerror('Lỗi', 'Số dư không hợp lệ!')
                 return False
             kh.so_du = so_du
-        print("Cập nhật thành công")
+        messagebox.showinfo('Thành công', 'Cập nhật thành công')
         return True
 
     def xoa_khach_hang(self, ma_khach_hang):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         kh = self.tim_khach_hang(ma_khach_hang)
         if kh is None:
-            print("Khách hàng không tồn tại")
+            messagebox.showerror('Lỗi', 'Khách hàng không tồn tại')
             return False
         for dt in self.danh_sach_dat_tour:
             if dt.ma_khach_hang == ma_khach_hang and dt.trang_thai == "da_thanh_toan":
-                print("Không thể xóa! Khách hàng còn đơn đã thanh toán!")
+                messagebox.showerror('Lỗi', 'Không thể xóa! Khách hàng còn đơn đã thanh toán!')
                 return False
         self.danh_sach_khach_hang = [k for k in self.danh_sach_khach_hang if k.ma_khach_hang != ma_khach_hang]
         self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if not (u.ma_khach_hang == ma_khach_hang and u.vai_tro == "user")]
-        print("Xóa khách hàng thành công")
+        messagebox.showinfo('Thành công', 'Xóa khách hàng thành công')
         return True
 
     def them_tour(self, tour: TourDuLich):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         if not tour.ma_tour:
-            print("Mã tour trống")
+            messagebox.showerror('Lỗi', 'Mã tour trống')
             return False
         if self.tim_tour(tour.ma_tour):
-            print("Mã tour đã tồn tại!")
+            messagebox.showerror('Lỗi', 'Mã tour đã tồn tại!')
             return False
         if tour.gia_tour <= 0:
-            print("Giá tour không hợp lệ")
+            messagebox.showerror('Lỗi', 'Giá tour không hợp lệ')
             return False
         if tour.so_cho < 1:
-            print("Số chỗ phải >= 1")
+            messagebox.showerror('Lỗi', 'Số chỗ phải >= 1')
             return False
         ngay_di = getattr(tour, "ngay_di", None)
         ngay_ve = getattr(tour, "ngay_ve", None)
         ok, start, end, msg = self.kiem_tra_khung_ngay(ngay_di, ngay_ve)
         if not ok:
-            print(msg)
+            messagebox.showerror('Lỗi', msg)
             return False
         ok, msg = self.kiem_tra_lich_trinh(getattr(tour, "lich_trinh", []), start, end)
         if not ok:
-            print(msg)
+            messagebox.showerror('Lỗi', msg)
             return False
         self.danh_sach_tour.append(tour)
-        print("Thêm tour thành công")
+        messagebox.showinfo('Thành công', 'Thêm tour thành công')
         return True
 
     def hien_thi_danh_sach_tour(self):
@@ -838,37 +839,37 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
 
     def cap_nhat_tour(self, ma_tour=None, ten_tour=None, gia_tour=None, so_cho=None, lich_trinh=None, huong_dan_vien=None, ngay_di=None, ngay_ve=None):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         t = self.tim_tour(ma_tour)
         if t is None:
-            print("Tour không tồn tại!")
+            messagebox.showerror('Lỗi', 'Tour không tồn tại!')
             return False
         trang_thai = self.trang_thai_tour(t)
         if trang_thai in ("dang_dien_ra", "da_hoan_thanh"):
-            print("Không thể cập nhật tour đang diễn ra hoặc đã hoàn thành")
+            messagebox.showerror('Lỗi', 'Không thể cập nhật tour đang diễn ra hoặc đã hoàn thành')
             return False
         new_ngay_di = ngay_di if ngay_di is not None else getattr(t, "ngay_di", None)
         new_ngay_ve = ngay_ve if ngay_ve is not None else getattr(t, "ngay_ve", None)
         schedule = lich_trinh if lich_trinh is not None else t.lich_trinh
         ok, start, end, msg = self.kiem_tra_khung_ngay(new_ngay_di, new_ngay_ve)
         if not ok:
-            print(msg)
+            messagebox.showerror('Lỗi', msg)
             return False
         ok, msg = self.kiem_tra_lich_trinh(schedule, start, end)
         if not ok:
-            print(msg)
+            messagebox.showerror('Lỗi', msg)
             return False
         if ten_tour is not None:
             t.ten_tour = ten_tour
         if gia_tour is not None:
             if gia_tour <= 0:
-                print("Giá không hợp lệ")
+                messagebox.showerror('Lỗi', 'Giá không hợp lệ')
                 return False
             t.gia_tour = gia_tour
         if so_cho is not None:
             if so_cho < 1:
-                print("Số chỗ phải >=1")
+                messagebox.showerror('Lỗi', 'Số chỗ phải >=1')
                 return False
             t.so_cho = so_cho
         t.lich_trinh = schedule
@@ -876,23 +877,23 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         t.ngay_ve = new_ngay_ve
         if huong_dan_vien is not None:
             t.huong_dan_vien = huong_dan_vien
-        print("Cập nhật tour thành công")
+        messagebox.showinfo('Thành công', 'Cập nhật tour thành công')
         return True
 
     def xoa_tour(self, ma_tour):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         t = self.tim_tour(ma_tour)
         if t is None:
-            print("Tour không tồn tại")
+            messagebox.showerror('Lỗi', 'Tour không tồn tại')
             return False
         for dt in self.danh_sach_dat_tour:
             if dt.ma_tour == ma_tour and dt.trang_thai == "da_thanh_toan":
-                print("Không thể xóa! Tour đã có người đặt và thanh toán!")
+                messagebox.showerror('Lỗi', 'Không thể xóa! Tour đã có người đặt và thanh toán!')
                 return False
         self.danh_sach_tour = [tour for tour in self.danh_sach_tour if tour.ma_tour != ma_tour]
-        print("Xóa tour thành công")
+        messagebox.showinfo('Thành công', 'Xóa tour thành công')
         return True
 
     def dat_tour_moi(self, dat: DatTour):
@@ -941,7 +942,7 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
 
     def hien_thi_danh_sach_dat_tour(self):
         if not self.nguoi_dung_hien_tai:
-            print("Bạn phải đăng nhập!")
+            messagebox.showerror('Lỗi', 'Bạn phải đăng nhập!')
             return []
         if self.nguoi_dung_hien_tai.vai_tro == "admin":
             return self.danh_sach_dat_tour
@@ -952,64 +953,64 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         if not d:
             return None
         if self.nguoi_dung_hien_tai and self.nguoi_dung_hien_tai.vai_tro == "user" and d.ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
-            print("Bạn không thể xem đơn của người khác!")
+            messagebox.showerror('Lỗi', 'Bạn không thể xem đơn của người khác!')
             return None
         return d
 
     def tim_dat_tour_theo_khach(self, ma_khach_hang):
         if not self.nguoi_dung_hien_tai:
-            print("Bạn phải đăng nhập!")
+            messagebox.showerror('Lỗi', 'Bạn phải đăng nhập!')
             return []
         if self.nguoi_dung_hien_tai.vai_tro == "admin":
             return [d for d in self.danh_sach_dat_tour if d.ma_khach_hang == ma_khach_hang]
         if ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
-            print("Bạn không thể xem đơn của người khác!")
+            messagebox.showerror('Lỗi', 'Bạn không thể xem đơn của người khác!')
             return []
         return [d for d in self.danh_sach_dat_tour if d.ma_khach_hang == ma_khach_hang]
 
     def cap_nhat_dat_tour(self, ma_dat, ma_tour=None, so_nguoi=None):
         if not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin":
-            print("Bạn không có quyền thực hiện!")
+            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
             return False
         d = self.tim_dat_tour_theo_ma(ma_dat)
         if not d:
-            print("Không tìm thấy đơn")
+            messagebox.showerror('Lỗi', 'Không tìm thấy đơn')
             return False
         if d.trang_thai != "da_thanh_toan":
-            print("Chỉ cập nhật đơn đã thanh toán")
+            messagebox.showerror('Lỗi', 'Chỉ cập nhật đơn đã thanh toán')
             return False
         if (ma_tour is None or ma_tour == d.ma_tour) and (so_nguoi is None or so_nguoi == d.so_nguoi):
-            print("Không có dữ liệu cần cập nhật")
+            messagebox.showinfo('Thông báo', 'Không có dữ liệu cần cập nhật')
             return True
         kh = self.tim_khach_hang(d.ma_khach_hang)
         tourCu = self.tim_tour(d.ma_tour)
         tourMoi = self.tim_tour(ma_tour) if ma_tour else tourCu
         if self.trang_thai_tour(tourCu) in ("dang_dien_ra", "da_hoan_thanh"):
-            print("Không thể cập nhật đơn khi tour đang diễn ra hoặc đã hoàn thành")
+            messagebox.showerror('Lỗi', 'Không thể cập nhật đơn khi tour đang diễn ra hoặc đã hoàn thành')
             return False
         if not tourMoi:
-            print("Tour mới không tồn tại")
+            messagebox.showerror('Lỗi', 'Tour mới không tồn tại')
             return False
         if self.trang_thai_tour(tourMoi) in ("dang_dien_ra", "da_hoan_thanh"):
-            print("Tour mới đang diễn ra hoặc đã hoàn thành, không thể chuyển")
+            messagebox.showerror('Lỗi', 'Tour mới đang diễn ra hoặc đã hoàn thành, không thể chuyển')
             return False
         so_nguoi_moi = so_nguoi if so_nguoi is not None else d.so_nguoi
         if so_nguoi_moi <= 0:
-            print("Số người phải >= 1")
+            messagebox.showerror('Lỗi', 'Số người phải >= 1')
             return False
         if tourMoi.ma_tour == tourCu.ma_tour:
             soChoKhaDung = tourCu.so_cho + d.so_nguoi
         else:
             soChoKhaDung = tourMoi.so_cho
         if so_nguoi_moi > soChoKhaDung:
-            print("Không đủ chỗ")
+            messagebox.showerror('Lỗi', 'Không đủ chỗ')
             return False
         tongTienMoi = so_nguoi_moi * tourMoi.gia_tour
         if tongTienMoi > (kh.so_du + d.tong_tien):
-            print("Không đủ số dư")
+            messagebox.showerror('Lỗi', 'Không đủ số dư')
             return False
         if self.trang_thai_tour(tourMoi) == "da_hoan_thanh":
-            print("Tour mới đã hoàn thành, không thể chuyển")
+            messagebox.showerror('Lỗi', 'Tour mới đã hoàn thành, không thể chuyển')
             return False
         tourCu.so_cho += d.so_nguoi
         kh.so_du += d.tong_tien
@@ -1018,42 +1019,42 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         d.ma_tour = tourMoi.ma_tour
         d.so_nguoi = so_nguoi_moi
         d.tong_tien = tongTienMoi
-        print("Cập nhật thành công")
+        messagebox.showinfo('Thành công', 'Cập nhật thành công')
         return True
 
     def huy_dat_tour(self, ma_dat):
         d = self.tim_dat_tour_theo_ma(ma_dat)
         if not d:
-            print("Không tìm thấy đơn đặt tour")
+            messagebox.showerror('Lỗi', 'Không tìm thấy đơn đặt tour')
             return False
         if self.nguoi_dung_hien_tai and self.nguoi_dung_hien_tai.vai_tro == "user":
             if d.ma_khach_hang != self.nguoi_dung_hien_tai.ma_khach_hang:
-                print("Bạn không thể hủy đơn của người khác!")
+                messagebox.showerror('Lỗi', 'Bạn không thể hủy đơn của người khác!')
                 return False
         if d.trang_thai == "huy":
-            print("Đơn đã bị hủy trước đó")
+            messagebox.showinfo('Thông báo', 'Đơn đã bị hủy trước đó')
             return False
         kh = self.tim_khach_hang(d.ma_khach_hang)
         tour = self.tim_tour(d.ma_tour)
         if not kh or not tour:
-            print("Lỗi dữ liệu: khách hàng hoặc tour không tồn tại")
+            messagebox.showerror('Lỗi', 'Lỗi dữ liệu: khách hàng hoặc tour không tồn tại')
             return False
         if self.trang_thai_tour(tour) == "dang_dien_ra":
-            print("Không thể hủy đơn khi tour đang diễn ra")
+            messagebox.showerror('Lỗi', 'Không thể hủy đơn khi tour đang diễn ra')
             return False
         if self.trang_thai_tour(tour) == "da_hoan_thanh":
-            print("Không thể hủy đơn khi tour đã hoàn thành")
+            messagebox.showerror('Lỗi', 'Không thể hủy đơn khi tour đã hoàn thành')
             return False
         if d.trang_thai == "chua_thanh_toan":
             d.trang_thai = "huy"
-            print("Hủy đơn chưa thanh toán (không hoàn tiền / không trả slot)")
+            messagebox.showinfo('Thông báo', 'Hủy đơn chưa thanh toán (không hoàn tiền / không trả slot)')
             return True
         kh.so_du += d.tong_tien
         tour.so_cho += d.so_nguoi
         d.trang_thai = "huy"
-        print("Hủy đơn đã thanh toán (đã hoàn tiền + trả slot)")
+        messagebox.showinfo('Thông báo', 'Hủy đơn đã thanh toán (đã hoàn tiền + trả slot)')
         return True
 
     def dang_xuat(self):
         self.nguoi_dung_hien_tai = None
-        print("Đã đăng xuất")
+        messagebox.showinfo('Thông báo', 'Đã đăng xuất')

@@ -267,7 +267,11 @@ def _fetch_place_preview(self, place, date_str=None):
     try:
         if getattr(self, '_place_preview_cache', None) is not None and key in self._place_preview_cache:
             return self._place_preview_cache[key]
-        display_name, lat, lon = self.geocode(place)
+        display_name, lat, lon = None, None, None
+        for attempt in range(5):
+            display_name, lat, lon = self.geocode(place)
+            if display_name and lat and lon:
+                break
         map_bytes = None
         map_url = None
         if _BING_MAP_CLIENT and lat and lon:
@@ -292,15 +296,18 @@ def _fetch_place_preview(self, place, date_str=None):
             photo_bytes = self.download_image_bytes(photo_url)
         weather = None
         if lat and lon:
-            try:
-                if date_str:
-                    weather = self.get_weather_for_date(lat, lon, date_str)
-                if not weather:
-                    cur, ttime = self.get_weather(lat, lon)
-                    if cur is not None:
-                        weather = {'current': cur, 'time': ttime}
-            except Exception:
-                weather = None
+            for attempt in range(5):
+                try:
+                    if date_str:
+                        weather = self.get_weather_for_date(lat, lon, date_str)
+                    if not weather:
+                        cur, ttime = self.get_weather(lat, lon)
+                        if cur is not None:
+                            weather = {'current': cur, 'time': ttime}
+                    if weather:
+                        break
+                except Exception:
+                    weather = None
         short = None
         if display_name:
             try:
@@ -806,13 +813,36 @@ def build_inline_lich_editor(self, parent, initial=None):
         dd = e_dd.get().strip()
         mo = e_mo.get().strip()
         pt = e_pt.get().strip()
+        formatted_ng = ng
         if ng:
-            try:
-                datetime.strptime(ng, '%Y-%m-%d')
-            except Exception:
-                messagebox.showerror('Lỗi', 'Ngày không hợp lệ (YYYY-MM-DD)')
+            parsed = self.ql.phan_tich_ngay(ng)
+            if not parsed:
+                messagebox.showerror('Lỗi', 'Ngày không hợp lệ')
                 return
-        tv.insert('', tk.END, values=(ng, dd, mo, pt))
+            formatted_ng = parsed.strftime('%Y-%m-%d')
+        
+        insert_pos = tk.END
+        if formatted_ng:
+            new_date = self.ql.phan_tich_ngay(formatted_ng)
+            children = tv.get_children()
+            for i, child in enumerate(children):
+                existing_ng = tv.item(child, 'values')[0]
+                if existing_ng:
+                    existing_date = self.ql.phan_tich_ngay(existing_ng)
+                    if existing_date and new_date < existing_date:
+                        insert_pos = child
+                        break
+
+        insert_at = 'end'
+        try:
+            if insert_pos != tk.END:
+                insert_at = tv.index(insert_pos)
+            else:
+                insert_at = 'end'
+        except Exception:
+            insert_at = 'end'
+
+        tv.insert('', insert_at, values=(formatted_ng, dd, mo, pt))
         e_ngay.delete(0, tk.END); e_dd.delete(0, tk.END); e_mo.delete(0, tk.END); e_pt.delete(0, tk.END)
         clear_preview()
         try:

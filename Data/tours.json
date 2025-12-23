@@ -7,38 +7,38 @@
     "lichTrinh": [
       {
         "ngay": "2025-12-20",
-        "diaDiem": "Quảng trường Lâm Viên",
-        "moTa": "Tham quan nụ hoa Atiso và chụp hình check-in",
-        "phuongTien": "Xe bus"
+        "dia_diem": "Quảng trường Lâm Viên",
+        "mo_ta": "Tham quan nụ hoa Atiso và chụp hình check-in",
+        "phuong_tien": "Xe bus"
       },
       {
         "ngay": "2025-12-20",
-        "diaDiem": "Vườn hoa thành phố",
-        "moTa": "Ngắm các loài hoa đặc trưng của Đà Lạt",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Vườn hoa thành phố",
+        "mo_ta": "Ngắm các loài hoa đặc trưng của Đà Lạt",
+        "phuong_tien": "Đi bộ"
       },
       {
         "ngay": "2025-12-21",
-        "diaDiem": "Thung lũng tình yêu",
-        "moTa": "Tham quan hồ Đa Thiện và đồi Vọng Cảnh",
-        "phuongTien": "Xe điện"
+        "dia_diem": "Thung lũng tình yêu",
+        "mo_ta": "Tham quan hồ Đa Thiện và đồi Vọng Cảnh",
+        "phuong_tien": "Xe điện"
       },
       {
         "ngay": "2025-12-21",
-        "diaDiem": "Đỉnh Langbiang",
-        "moTa": "Ngắm toàn cảnh thành phố từ trên cao",
-        "phuongTien": "Xe Jeep"
+        "dia_diem": "Đỉnh Langbiang",
+        "mo_ta": "Ngắm toàn cảnh thành phố từ trên cao",
+        "phuong_tien": "Xe Jeep"
       },
       {
         "ngay": "2025-12-22",
-        "diaDiem": "Chợ Đà Lạt",
-        "moTa": "Mua sắm đặc sản và quà lưu niệm",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Chợ Đà Lạt",
+        "mo_ta": "Mua sắm đặc sản và quà lưu niệm",
+        "phuong_tien": "Đi bộ"
       }
     ],
     "huongDanVien": "HDV001",
-    "ngayDi": "2025-12-20",
-    "ngayVe": "2025-12-22"
+    "ngayDi": "20-12-2025",
+    "ngayVe": "22-12-2025"
   },
   {
     "maTour": "T002",
@@ -48,44 +48,44 @@
     "lichTrinh": [
       {
         "ngay": "2025-12-24",
-        "diaDiem": "Grand World Phú Quốc",
-        "moTa": "Tham quan thành phố không ngủ",
-        "phuongTien": "Xe điện"
+        "dia_diem": "Grand World Phú Quốc",
+        "mo_ta": "Tham quan thành phố không ngủ",
+        "phuong_tien": "Xe điện"
       },
       {
         "ngay": "2025-12-25",
-        "diaDiem": "VinWonders",
-        "moTa": "Vui chơi tại công viên chủ đề lớn nhất Việt Nam",
-        "phuongTien": "Xe bus"
+        "dia_diem": "VinWonders",
+        "mo_ta": "Vui chơi tại công viên chủ đề lớn nhất Việt Nam",
+        "phuong_tien": "Xe bus"
       },
       {
         "ngay": "2025-12-25",
-        "diaDiem": "Vinpearl Safari",
-        "moTa": "Tham quan vườn thú bán hoang dã",
-        "phuongTien": "Xe bus"
+        "dia_diem": "Vinpearl Safari",
+        "mo_ta": "Tham quan vườn thú bán hoang dã",
+        "phuong_tien": "Xe bus"
       },
       {
         "ngay": "2025-12-26",
-        "diaDiem": "Bãi Sao",
-        "moTa": "Tắm biển và thưởng thức hải sản",
-        "phuongTien": "Tàu du lịch"
+        "dia_diem": "Bãi Sao",
+        "mo_ta": "Tắm biển và thưởng thức hải sản",
+        "phuong_tien": "Tàu du lịch"
       },
       {
         "ngay": "2025-12-26",
-        "diaDiem": "Hòn Thơm",
-        "moTa": "Trải nghiệm cáp treo vượt biển dài nhất thế giới",
-        "phuongTien": "Cáp treo"
+        "dia_diem": "Hòn Thơm",
+        "mo_ta": "Trải nghiệm cáp treo vượt biển dài nhất thế giới",
+        "phuong_tien": "Cáp treo"
       },
       {
         "ngay": "2025-12-27",
-        "diaDiem": "Chợ đêm Phú Quốc",
-        "moTa": "Thưởng thức ẩm thực đường phố",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Chợ đêm Phú Quốc",
+        "mo_ta": "Thưởng thức ẩm thực đường phố",
+        "phuong_tien": "Đi bộ"
       }
     ],
     "huongDanVien": "HDV002",
-    "ngayDi": "2025-12-24",
-    "ngayVe": "2025-12-27"
+    "ngayDi": "24-12-2025",
+    "ngayVe": "27-12-2025"
   },
   {
     "maTour": "T003",
@@ -95,32 +95,32 @@
     "lichTrinh": [
       {
         "ngay": "2025-12-30",
-        "diaDiem": "Dinh Độc Lập",
-        "moTa": "Mở đầu trang sử mới",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Dinh Độc Lập",
+        "mo_ta": "Mở đầu trang sử mới",
+        "phuong_tien": "Đi bộ"
       },
       {
         "ngay": "2025-12-30",
-        "diaDiem": "Bến Nhà Rồng",
-        "moTa": "Tìm hiểu nơi Người ra đi tìm đường cứu nước",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Bến Nhà Rồng",
+        "mo_ta": "Tìm hiểu nơi Người ra đi tìm đường cứu nước",
+        "phuong_tien": "Đi bộ"
       },
       {
         "ngay": "2025-12-31",
-        "diaDiem": "Bitexco Building",
-        "moTa": "Cột mốc mở đầu thời kỳ mới",
-        "phuongTien": "Xe buýt"
+        "dia_diem": "Bitexco Building",
+        "mo_ta": "Cột mốc mở đầu thời kỳ mới",
+        "phuong_tien": "Xe buýt"
       },
       {
         "ngay": "2025-12-31",
-        "diaDiem": "Landmark 81 Saigon",
-        "moTa": "Thời kỳ vươn mình",
-        "phuongTien": "Xe buýt"
+        "dia_diem": "Landmark 81 Saigon",
+        "mo_ta": "Thời kỳ vươn mình",
+        "phuong_tien": "Xe buýt"
       }
     ],
     "huongDanVien": "HDV003",
-    "ngayDi": "2025-12-30",
-    "ngayVe": "2025-12-31"
+    "ngayDi": "30-12-2025",
+    "ngayVe": "31-12-2025"
   },
   {
     "maTour": "T004",
@@ -130,26 +130,26 @@
     "lichTrinh": [
       {
         "ngay": "2026-01-01",
-        "diaDiem": "Vịnh Hạ Long",
-        "moTa": "Du thuyền tham quan vịnh",
-        "phuongTien": "Du thuyền"
+        "dia_diem": "Vịnh Hạ Long",
+        "mo_ta": "Du thuyền tham quan vịnh",
+        "phuong_tien": "Du thuyền"
       },
       {
         "ngay": "2026-01-01",
-        "diaDiem": "Hang Sửng Sốt",
-        "moTa": "Khám phá hang động đẹp nhất vịnh",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Hang Sửng Sốt",
+        "mo_ta": "Khám phá hang động đẹp nhất vịnh",
+        "phuong_tien": "Đi bộ"
       },
       {
         "ngay": "2026-01-02",
-        "diaDiem": "Đảo Ti Tốp",
-        "moTa": "Tắm biển và leo núi ngắm cảnh",
-        "phuongTien": "Tàu nhỏ"
+        "dia_diem": "Đảo Ti Tốp",
+        "mo_ta": "Tắm biển và leo núi ngắm cảnh",
+        "phuong_tien": "Tàu nhỏ"
       }
     ],
     "huongDanVien": "HDV004",
-    "ngayDi": "2026-01-01",
-    "ngayVe": "2026-01-02"
+    "ngayDi": "01-01-2026",
+    "ngayVe": "02-01-2026"
   },
   {
     "maTour": "T005",
@@ -159,37 +159,60 @@
     "lichTrinh": [
       {
         "ngay": "2026-01-05",
-        "diaDiem": "Bán đảo Sơn Trà",
-        "moTa": "Viếng chùa Linh Ứng",
-        "phuongTien": "Xe bus"
+        "dia_diem": "Bán đảo Sơn Trà",
+        "mo_ta": "Viếng chùa Linh Ứng",
+        "phuong_tien": "Xe bus"
       },
       {
         "ngay": "2026-01-05",
-        "diaDiem": "Biển Mỹ Khê",
-        "moTa": "Tắm biển",
-        "phuongTien": "Đi bộ"
+        "dia_diem": "Biển Mỹ Khê",
+        "mo_ta": "Tắm biển",
+        "phuong_tien": "Đi bộ"
       },
       {
         "ngay": "2026-01-06",
-        "diaDiem": "Núi Bà Nà",
-        "moTa": "Tham quan Cầu Vàng, Làng Pháp",
-        "phuongTien": "Cáp treo"
+        "dia_diem": "Núi Bà Nà",
+        "mo_ta": "Tham quan Cầu Vàng, Làng Pháp",
+        "phuong_tien": "Cáp treo"
       },
       {
         "ngay": "2026-01-07",
-        "diaDiem": "Phố cổ Hội An",
-        "moTa": "Tham quan phố cổ, thả đèn hoa đăng",
-        "phuongTien": "Xe bus"
+        "dia_diem": "Phố cổ Hội An",
+        "mo_ta": "Tham quan phố cổ, thả đèn hoa đăng",
+        "phuong_tien": "Xe bus"
       },
       {
         "ngay": "2026-01-08",
-        "diaDiem": "Ngũ Hành Sơn",
-        "moTa": "Tham quan hang động và làng đá mỹ nghệ",
-        "phuongTien": "Xe bus"
+        "dia_diem": "Ngũ Hành Sơn",
+        "mo_ta": "Tham quan hang động và làng đá mỹ nghệ",
+        "phuong_tien": "Xe bus"
       }
     ],
     "huongDanVien": "HDV005",
-    "ngayDi": "2026-01-05",
-    "ngayVe": "2026-01-08"
+    "ngayDi": "05-01-2026",
+    "ngayVe": "08-01-2026"
+  },
+  {
+    "maTour": "A",
+    "tenTour": "A",
+    "gia": 100000.0,
+    "soCho": 2,
+    "lichTrinh": [
+      {
+        "ngay": "2026-01-01",
+        "dia_diem": "Đầm sen TPHCM",
+        "mo_ta": "",
+        "phuong_tien": ""
+      },
+      {
+        "ngay": "2026-12-30",
+        "dia_diem": "Bảy Hiền TPHCM",
+        "mo_ta": "",
+        "phuong_tien": ""
+      }
+    ],
+    "huongDanVien": "HDV004",
+    "ngayDi": "01-01-2026",
+    "ngayVe": "31-12-2026"
   }
 ]
