@@ -878,7 +878,7 @@ def dang_ky_guest(self):
         if not success:
             messagebox.showerror('Lỗi', msg)
             return
-        success, msg = self.ql.dang_ky_nguoi_dung(username, password, role='user', ma_khach_hang=ma, ten_day_du=tenthat)
+        success, msg = self.ql.dang_ky_nguoi_dung(username, password, vai_tro='user', ma_khach_hang=ma, ten_day_du=tenthat)
         if success:
             luu_tat_ca(self.ql)
             messagebox.showinfo('Thông báo', f'Đăng ký thành công. Tài khoản: {username}')
@@ -1097,3 +1097,4 @@ GiaoDienCoSo.dat_tour = dat_tour
 GiaoDienCoSo.huy_dat = huy_dat
 GiaoDienCoSo.dang_xuat = dang_xuat
 GiaoDienCoSo.quyen_admin = quyen_admin
+
