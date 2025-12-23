@@ -620,48 +620,36 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         mat_khau_nhap = mat_khau or ""
         if self._hash_value(ten_dang_nhap_nhap) == self.BAM_MA_TEN_DANG_NHAP_ROOT and self._hash_value(mat_khau_nhap) == self.BAM_MA_MAT_KHAU_ROOT:
             self.nguoi_dung_hien_tai = self._xay_dung_nguoi_dung_root()
-            messagebox.showinfo('Đăng nhập', 'Đăng nhập thành công (vai trò: root)')
             return True
         for u in self.danh_sach_nguoi_dung:
             if u.ten_dang_nhap == ten_dang_nhap_nhap and u.mat_khau == mat_khau_nhap:
                 self.nguoi_dung_hien_tai = u
-                messagebox.showinfo('Đăng nhập', f'Đăng nhập thành công (vai trò: {u.vai_tro})')
                 return True
-        messagebox.showerror('Lỗi', 'Sai tài khoản hoặc mật khẩu')
         return False
 
     def them_khach_hang(self, kh: KhachHang, allow_public=False, auto_link_account=True):
         if not allow_public and (not self.nguoi_dung_hien_tai or self.nguoi_dung_hien_tai.vai_tro != "admin"):
-            messagebox.showerror('Lỗi', 'Bạn không có quyền thực hiện!')
-            return False
+            return False, 'Bạn không có quyền thực hiện!'
         ma = (kh.ma_khach_hang or "").strip().upper()
         ten = (kh.ten_khach_hang or "").strip()
         if not re.fullmatch(r"KH\d{3,}", ma):
-            messagebox.showerror('Lỗi', 'Mã khách hàng phải theo định dạng KH###')
-            return False
+            return False, 'Mã khách hàng phải theo định dạng KH###'
         if not self._kiem_tra_ten_day_du(ten):
-            messagebox.showerror('Lỗi', 'Tên khách không hợp lệ')
-            return False
+            return False, 'Tên khách không hợp lệ'
         if self.tim_khach_hang(ma) is not None:
-            messagebox.showerror('Lỗi', 'Mã khách hàng đã tồn tại!')
-            return False
+            return False, 'Mã khách hàng đã tồn tại!'
         phone = (kh.so_dien_thoai or "").strip()
         if not self.hop_le_so_dien_thoai_vn(phone):
-            messagebox.showerror('Lỗi', 'Số điện thoại không hợp lệ!')
-            return False
+            return False, 'Số điện thoại không hợp lệ!'
         if any(existing.so_dien_thoai == phone for existing in self.danh_sach_khach_hang):
-            messagebox.showerror('Lỗi', 'Số điện thoại đã tồn tại')
-            return False
+            return False, 'Số điện thoại đã tồn tại'
         email = (kh.email or "").strip().lower()
         if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-            messagebox.showerror('Lỗi', 'Email không hợp lệ!')
-            return False
+            return False, 'Email không hợp lệ!'
         if any(existing.email.lower() == email for existing in self.danh_sach_khach_hang if existing.email):
-            messagebox.showerror('Lỗi', 'Email đã được sử dụng')
-            return False
+            return False, 'Email đã được sử dụng'
         if kh.so_du < 0:
-            messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
-            return False
+            return False, 'Số dư không hợp lệ'
         kh.ma_khach_hang = ma
         kh.ten_khach_hang = ten
         kh.so_dien_thoai = phone
@@ -670,8 +658,7 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         self.dong_bo_ten_tu_khach(kh.ma_khach_hang)
         if auto_link_account:
             self.ensure_user_for_khach(kh)
-        messagebox.showinfo('Thành công', 'Thêm khách hàng thành công')
-        return True
+        return True, 'Thêm khách hàng thành công'
 
     def hien_thi_danh_sach_khach_hang(self):
         if not self.nguoi_dung_hien_tai:
