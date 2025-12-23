@@ -165,6 +165,30 @@ class QuanLiDuLich:
         }
         return mapping.get(ma, "Chưa lên lịch")
 
+    def dong_bo_trang_thai_dat_theo_tour(self, save=True):
+        changed = []
+        today = datetime.today().date()
+        for d in list(self.danh_sach_dat_tour):
+            try:
+                if getattr(d, 'trang_thai', '') != 'chua_thanh_toan':
+                    continue
+                tour = self.tim_tour(getattr(d, 'ma_tour', None))
+                if not tour:
+                    continue
+                st = self.trang_thai_tour(tour, today)
+                if st in ('dang_dien_ra', 'da_hoan_thanh'):
+                    d.trang_thai = 'huy'
+                    changed.append(getattr(d, 'ma_dat_tour', None) or getattr(d, 'maDat', None))
+            except Exception:
+                continue
+        if changed and save:
+            try:
+                from QuanLy.storage import luu_tat_ca
+                luu_tat_ca(self)
+            except Exception:
+                pass
+        return changed
+
     def hop_le_so_dien_thoai_vn(self, phone):
         if not phone:
             return False
@@ -229,13 +253,13 @@ class QuanLiDuLich:
         return nguyen_thuy.rstrip("=")
 
     def _dam_bao_webhook_chay(self):
-        if self._may_chu_nap_tien and self._may_chu_nap_tien.running:
+        if self._may_chu_nap_tien and self._may_chu_nap_tien.dang_chay:
             return True
         return self.khoi_dong_may_chu_webhook()
 
     def _xay_dung_url_qr(self, id_yeu_cau, ma):
         url_co_so = (
-            (self._may_chu_nap_tien.public_base_url if self._may_chu_nap_tien else None)
+            (self._may_chu_nap_tien.url_co_so_cong_khai if self._may_chu_nap_tien else None)
             or self._url_qr_co_so
             or os.environ.get("NAP_TIEN_PUBLIC_URL")
             or f"http://127.0.0.1:{self.CONG_WEBHOOK_MAC_DINH}"
@@ -335,8 +359,10 @@ class QuanLiDuLich:
         thoi_gian_het_han = (datetime.utcnow() + timedelta(minutes=phut_het_han)).replace(microsecond=0).isoformat()
         yeu_cau = YeuCauNapTien(
             ma_giao_dich=id_yeu_cau,
+            ma_khach_hang=ma_khach_hang,
             so_tien=so_tien,
-            noi_dung=url_qr,
+            token=ma,
+            noi_dung_qr=url_qr,
             trang_thai=YeuCauNapTien.TRANG_THAI_CHO,
             thoi_gian_het_han=thoi_gian_het_han,
             du_lieu_qr=du_lieu_uri_qr,
@@ -385,7 +411,7 @@ class QuanLiDuLich:
                 return False, "Không tìm thấy khách hàng"
             kh.so_du += yeu_cau.so_tien
             yeu_cau.danh_dau_xac_nhan()
-            yeu_cau.thong_tin_bo_sung["xac_nhan_tai"] = self._thoi_gian_utc_hien_tai_iso()
+            yeu_cau.du_lieu_phu["xac_nhan_tai"] = self._thoi_gian_utc_hien_tai_iso()
             self._trigger_auto_save()
             return True, self.phan_hoi_website(yeu_cau)
 
@@ -402,7 +428,7 @@ class QuanLiDuLich:
         so_tien = getattr(yeu_cau, 'so_tien', 0)
         ma_giao_dich = getattr(yeu_cau, 'ma_giao_dich', '')
         ma_khach_hang = getattr(yeu_cau, 'ma_khach_hang', '')
-        xac_nhan_tai = yeu_cau.thong_tin_bo_sung.get('xac_nhan_tai', '') if hasattr(yeu_cau, 'thong_tin_bo_sung') else ''
+        xac_nhan_tai = yeu_cau.du_lieu_phu.get('xac_nhan_tai', '') if hasattr(yeu_cau, 'du_lieu_phu') else ''
         kh = self.tim_khach_hang(ma_khach_hang)
         ten = kh.ten_khach_hang if kh else (str(ma_khach_hang) or 'Khách hàng')
         html = f'''<!doctype html>
@@ -912,6 +938,8 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         trang_thai = self.trang_thai_tour(tour, today.date())
         if trang_thai == "da_hoan_thanh":
             raise ValueError("Tour đã kết thúc, không thể đặt")
+        if trang_thai == "dang_dien_ra":
+            raise ValueError("Tour đang diễn ra, không thể đặt")
         if tour.ngay_di and ngay_dat.date() < tour.ngay_di:
             raise ValueError("Ngày đặt phải từ ngày đi trở về sau")
         if tour.ngay_ve and ngay_dat.date() > tour.ngay_ve:

@@ -88,7 +88,10 @@ def nap_tien(self):
                 if PIL_AVAILABLE:
                     from PIL import Image, ImageTk
                     img = Image.open(io.BytesIO(raw))
-                    img = img.resize((280, 280))
+                    try:
+                        img = img.resize((280, 280))
+                    except Exception:
+                        pass
                     photo = ImageTk.PhotoImage(img)
                 else:
                     photo = tk.PhotoImage(data=encoded, format='png')
@@ -117,7 +120,7 @@ def nap_tien(self):
             status_var.set('Không tìm thấy yêu cầu, có thể đã bị xóa')
             stop_polling()
             return
-        state = info.get('trangThai')
+        state = info.get('trang_thai')
         if state == 'confirmed':
             try:
                 handle_confirmation(info)
@@ -128,7 +131,7 @@ def nap_tien(self):
             status_var.set('Mã QR đã hết hạn, vui lòng tạo lại')
             stop_polling()
             return
-        expires = info.get('expiresAt') or ''
+        expires = info.get('thoi_gian_het_han') or ''
         status_var.set(f'Đang chờ bạn quét QR... (Hết hạn: {expires})')
         request_state['job'] = self.root.after(2000, poll_status)
 
@@ -144,10 +147,10 @@ def nap_tien(self):
         if not success:
             messagebox.showerror('Lỗi', payload)
             return
-        request_state['id'] = payload['maGiaoDich']
+        request_state['id'] = payload['ma_giao_dich']
         def _on_payment(info):
             try:
-                if info and info.get('maGiaoDich') == request_state.get('id'):
+                if info and info.get('ma_giao_dich') == request_state.get('id'):
                     try:
                         self.root.after(0, lambda: handle_confirmation(info))
                     except Exception:
@@ -161,8 +164,9 @@ def nap_tien(self):
         except Exception:
             request_state['listener'] = None
         status_var.set(f'Đang chờ quét mã QR để nạp {self.format_money(so)}...')
-        url_var.set(payload.get('qrUrl', ''))
-        update_qr_image(payload.get('qrDataUri') or payload.get('qrPath'))
+        url_var.set(payload.get('url_qr', '') or payload.get('url', ''))
+        qr_source = payload.get('du_lieu_uri_qr') or payload.get('du_lieu_qr') or payload.get('qrDataUri') or payload.get('qrPath')
+        update_qr_image(qr_source)
         stop_polling()
         request_state['job'] = self.root.after(2000, poll_status)
 
@@ -175,10 +179,10 @@ def nap_tien(self):
             except Exception:
                 info = None
             if info:
-                text = (f"Mã giao dịch: {info.get('maGiaoDich')}\n"
-                        f"Số tiền: {self.format_money(info.get('soTien', 0))}\n"
-                        f"Trạng thái: {info.get('trangThai')}\n"
-                        f"Hết hạn: {info.get('expiresAt')}\n")
+                text = (f"Mã giao dịch: {info.get('ma_giao_dich')}\n"
+                        f"Số tiền: {self.format_money(info.get('so_tien', 0))}\n"
+                        f"Trạng thái: {info.get('trang_thai')}\n"
+                        f"Hết hạn: {info.get('thoi_gian_het_han')}\n")
                 messagebox.showinfo('Chi tiết hoá đơn', text)
         stop_polling()
         top.destroy()
@@ -189,7 +193,7 @@ def nap_tien(self):
         except Exception:
             pass
         try:
-            amount = info.get('soTien', 0)
+            amount = info.get('so_tien', 0)
             luu_tat_ca(self.ql)
             self.hien_thi_khach_user()
             self.refresh_lists()
@@ -201,11 +205,11 @@ def nap_tien(self):
         except Exception:
             pass
         try:
-            ma = info.get('maGiaoDich')
+            ma = info.get('ma_giao_dich')
             text = (f"Giao dịch {ma}\n"
-                    f"Số tiền: {self.format_money(info.get('soTien', 0))}\n"
-                    f"Trạng thái: {info.get('trangThai')}\n"
-                    f"Hết hạn: {info.get('expiresAt')}\n")
+                    f"Số tiền: {self.format_money(info.get('so_tien', 0))}\n"
+                    f"Trạng thái: {info.get('trang_thai')}\n"
+                    f"Hết hạn: {info.get('thoi_gian_het_han')}\n")
             messagebox.showinfo('Nạp tiền thành công', text)
         except Exception:
             pass
@@ -341,11 +345,15 @@ def book_selected_tour_for_user(self):
         except Exception:
             messagebox.showerror('Lỗi', 'Số người không hợp lệ')
             return
+        trang_thai = self.ql.trang_thai_tour(tour)
+        if trang_thai in ("da_hoan_thanh", "dang_dien_ra"):
+            messagebox.showerror('Lỗi', 'Tour đã kết thúc hoặc đang diễn ra, không thể đặt')
+            return
         ma_khach_hang = self.ql.nguoi_dung_hien_tai.ma_khach_hang
         existing = [int(d.ma_dat_tour.replace('D','')) for d in self.ql.danh_sach_dat_tour if d.ma_dat_tour and d.ma_dat_tour.startswith('D')]
         nxt = (max(existing)+1) if existing else 1
         ma_dat = f'D{str(nxt).zfill(4)}'
-        dt = DatTour(ma_dat, ma_khach_hang, ma_tour, so, 'now')
+        dt = DatTour(ma_dat, ma_khach_hang, ma_tour, so, datetime.now().strftime("%Y-%m-%d"))
         dt.trang_thai = 'chua_thanh_toan'
         dt.tong_tien = so * tour.gia_tour
         if pay_now:

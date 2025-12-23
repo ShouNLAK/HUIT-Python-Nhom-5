@@ -12,6 +12,11 @@ def chay():
     ql.danh_sach_hdv = hdvs
     ql.danh_sach_nguoi_dung = users or []
     ql.danh_sach_nap_tien = []
+    # Đồng bộ trạng thái đơn: hủy các đơn chờ nếu tour đang diễn ra/đã hoàn thành
+    try:
+        ql.dong_bo_trang_thai_dat_theo_tour(save=True)
+    except Exception:
+        pass
     ql.set_auto_save(lambda: luu_tat_ca(ql))
     ql.ensure_default_accounts()
     ql.dong_bo_tai_khoan_lien_ket()

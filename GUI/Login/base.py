@@ -387,15 +387,26 @@ class GiaoDienCoSo:
         self._run_async = _run_async
         self._place_preview_cache = {}
         role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
+        active = getattr(self, 'active_section', 'Tour') if role == 'admin' else None
         paned = ttk.Panedwindow(self.frame, orient='horizontal')
         paned.pack(fill='both', expand=True, padx=24, pady=18)
         left_panel = ttk.Frame(paned, style='Card.TFrame', padding=16)
         right_panel = ttk.Frame(paned, style='Card.TFrame', padding=16)
-        paned.add(left_panel, weight=3)
-        paned.add(right_panel, weight=2)
+        if role == 'admin':
+            paned.add(left_panel, weight=1)
+        else:
+            paned.add(left_panel, weight=3)
+            paned.add(right_panel, weight=2)
         left_head = ttk.Frame(left_panel)
         left_head.pack(fill='x', pady=(0,12))
-        ttk.Label(left_head, text='Danh sách tour', style='Title.TLabel').pack(side='left')
+        active = getattr(self, 'active_section', 'Tour') if role == 'admin' else 'Tour'
+        title_text = {
+            'Tour': 'Danh sách tour',
+            'Khách hàng': 'Danh sách khách hàng',
+            'Hướng dẫn viên': 'Danh sách hướng dẫn viên',
+            'Hệ thống': 'Quản lý hệ thống'
+        }.get(active, 'Danh sách tour')
+        ttk.Label(left_head, text=title_text, style='Title.TLabel').pack(side='left')
         tour_frame = ttk.Frame(left_panel)
         tour_frame.pack(fill='both', expand=True)
         self.tv_tour = ttk.Treeview(tour_frame, columns=('ma_tour','ten_tour','gia','so_cho','trang_thai','hdv'), show='headings')
@@ -411,9 +422,15 @@ class GiaoDienCoSo:
         tour_scroll = ttk.Scrollbar(tour_frame, orient='vertical', command=self.tv_tour.yview)
         self.tv_tour.configure(yscrollcommand=tour_scroll.set)
         self.tv_tour.pack(side='left', fill='both', expand=True)
-        tour_scroll.pack(side='right', fill='y')
+        self.tour_scroll = tour_scroll
         self.tv_tour.bind('<<TreeviewSelect>>', self.on_tour_select)
-        self.tour_context = ttk.Label(left_panel, text='Chọn tour để xem thông tin', style='Body.TLabel')
+        context_text = {
+            'Tour': 'Chọn tour để xem thông tin',
+            'Khách hàng': 'Chọn khách hàng để xem chi tiết',
+            'Hướng dẫn viên': 'Chọn hướng dẫn viên để xem chi tiết',
+            'Hệ thống': 'Quản lý đặt tour và thống kê'
+        }.get(active, 'Chọn tour để xem thông tin')
+        self.tour_context = ttk.Label(left_panel, text=context_text, style='Body.TLabel')
         self.tour_context.pack(fill='x', pady=(12,0))
         self.right_panel = right_panel
         role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
@@ -425,52 +442,68 @@ class GiaoDienCoSo:
         if role == 'admin':
             self.kh_search_var = tk.StringVar()
             self.hdv_search_var = tk.StringVar()
-            admin_tabs = ttk.Notebook(right_panel)
-            admin_tabs.pack(fill='both', expand=True)
-            kh_tab = ttk.Frame(admin_tabs, style='App.TFrame', padding=6)
-            hdv_tab = ttk.Frame(admin_tabs, style='App.TFrame', padding=6)
-            dat_tab = ttk.Frame(admin_tabs, style='App.TFrame', padding=6)
-            admin_tabs.add(kh_tab, text='Khách hàng')
-            admin_tabs.add(hdv_tab, text='Hướng dẫn viên')
-            admin_tabs.add(dat_tab, text='Đơn đặt')
-            kh_tools = ttk.Frame(kh_tab, padding=(0,0,0,8))
-            kh_tools.pack(fill='x')
-            ttk.Entry(kh_tools, textvariable=self.kh_search_var, font=self.font_body).pack(side='left', fill='x', expand=True, padx=(0,8))
-            ttk.Button(kh_tools, text='Tìm', style='Accent.TButton', command=self.search_khach).pack(side='left')
-            ttk.Button(kh_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_khach).pack(side='left', padx=(6,0))
-            kh_body = ttk.Frame(kh_tab)
-            kh_body.pack(fill='both', expand=True)
-            self.tv_kh = ttk.Treeview(kh_body, columns=('ma_khach_hang','ten','so_dien_thoai'), show='headings')
-            for col, text, width in (('ma_khach_hang','Mã KH',110),('ten','Tên',200),('so_dien_thoai','SĐT',130)):
-                self.tv_kh.heading(col, text=text)
-                self.tv_kh.column(col, width=width, anchor='center' if col != 'ten' else 'w')
-            kh_scroll = ttk.Scrollbar(kh_body, orient='vertical', command=self.tv_kh.yview)
-            self.tv_kh.configure(yscrollcommand=kh_scroll.set)
-            self.tv_kh.pack(side='left', fill='both', expand=True)
-            kh_scroll.pack(side='right', fill='y')
-            hdv_tools = ttk.Frame(hdv_tab, padding=(0,0,0,8))
-            hdv_tools.pack(fill='x')
-            ttk.Entry(hdv_tools, textvariable=self.hdv_search_var, font=self.font_body).pack(side='left', fill='x', expand=True, padx=(0,8))
-            ttk.Button(hdv_tools, text='Tìm', style='Accent.TButton', command=self.search_hdv).pack(side='left')
-            ttk.Button(hdv_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_hdv).pack(side='left', padx=(6,0))
-            hdv_body = ttk.Frame(hdv_tab)
-            hdv_body.pack(fill='both', expand=True)
-            self.tv_hdv = ttk.Treeview(hdv_body, columns=('ma_hdv','ten_hdv','sdt','kinh_nghiem'), show='headings')
-            for col, text, width in (('ma_hdv','Mã HDV',110),('ten_hdv','Tên',200),('sdt','SĐT',140),('kinh_nghiem','Kinh nghiệm',120)):
-                self.tv_hdv.heading(col, text=text)
-                self.tv_hdv.column(col, width=width, anchor='center' if col != 'ten_hdv' else 'w')
-            hdv_scroll = ttk.Scrollbar(hdv_body, orient='vertical', command=self.tv_hdv.yview)
-            self.tv_hdv.configure(yscrollcommand=hdv_scroll.set)
-            self.tv_hdv.pack(side='left', fill='both', expand=True)
-            hdv_scroll.pack(side='right', fill='y')
-            self.tv_dat = ttk.Treeview(dat_tab, columns=('ma_dat','ma_tour','ma_khach_hang','so_nguoi','trang_thai','tong'), show='headings')
-            for col, text, width in (('ma_dat','Mã Đặt',110),('ma_tour','Mã Tour',110),('ma_khach_hang','Mã KH',110),('so_nguoi','Số người',90),('trang_thai','Trạng thái',120),('tong','Tổng tiền',140)):
-                self.tv_dat.heading(col, text=text)
-                self.tv_dat.column(col, width=width, anchor='center')
-            dat_scroll = ttk.Scrollbar(dat_tab, orient='vertical', command=self.tv_dat.yview)
-            self.tv_dat.configure(yscrollcommand=dat_scroll.set)
-            self.tv_dat.pack(side='left', fill='both', expand=True)
-            dat_scroll.pack(side='right', fill='y')
+            active = getattr(self, 'active_section', 'Tour')
+            if active == 'Tour':
+                self.tv_kh = None
+                self.tv_hdv = None
+                self.tv_dat = None
+                try:
+                    if getattr(self, 'tv_tour', None):
+                        self.tv_tour.pack(side='left', fill='both', expand=True)
+                        self.tour_scroll.pack(side='right', fill='y')
+                except Exception:
+                    pass
+            else:
+                try:
+                    if getattr(self, 'tv_tour', None):
+                        self.tv_tour.pack_forget()
+                except Exception:
+                    pass
+                if active == 'Khách hàng':
+                    kh_tools = ttk.Frame(tour_frame, padding=(0,0,0,8))
+                    kh_tools.pack(fill='x')
+                    ttk.Entry(kh_tools, textvariable=self.kh_search_var, font=self.font_body).pack(side='left', fill='x', expand=True, padx=(0,8))
+                    ttk.Button(kh_tools, text='Tìm', style='Accent.TButton', command=self.search_khach).pack(side='left')
+                    ttk.Button(kh_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_khach).pack(side='left', padx=(6,0))
+                    kh_body = ttk.Frame(tour_frame)
+                    kh_body.pack(fill='both', expand=True)
+                    self.tv_kh = ttk.Treeview(kh_body, columns=('ma_khach_hang','ten','so_dien_thoai'), show='headings')
+                    for col, text, width in (('ma_khach_hang','Mã KH',110),('ten','Tên',200),('so_dien_thoai','SĐT',130)):
+                        self.tv_kh.heading(col, text=text)
+                        self.tv_kh.column(col, width=width, anchor='center' if col != 'ten' else 'w')
+                    kh_scroll = ttk.Scrollbar(kh_body, orient='vertical', command=self.tv_kh.yview)
+                    self.tv_kh.configure(yscrollcommand=kh_scroll.set)
+                    self.tv_kh.pack(side='left', fill='both', expand=True)
+                    kh_scroll.pack(side='right', fill='y')
+                elif active == 'Hướng dẫn viên':
+                    hdv_tools = ttk.Frame(tour_frame, padding=(0,0,0,8))
+                    hdv_tools.pack(fill='x')
+                    ttk.Entry(hdv_tools, textvariable=self.hdv_search_var, font=self.font_body).pack(side='left', fill='x', expand=True, padx=(0,8))
+                    ttk.Button(hdv_tools, text='Tìm', style='Accent.TButton', command=self.search_hdv).pack(side='left')
+                    ttk.Button(hdv_tools, text='Hiển thị tất cả', style='Ghost.TButton', command=self.hien_thi_hdv).pack(side='left', padx=(6,0))
+                    hdv_body = ttk.Frame(tour_frame)
+                    hdv_body.pack(fill='both', expand=True)
+                    self.tv_hdv = ttk.Treeview(hdv_body, columns=('ma_hdv','ten_hdv','sdt','kinh_nghiem'), show='headings')
+                    for col, text, width in (('ma_hdv','Mã HDV',110),('ten_hdv','Tên',200),('sdt','SĐT',140),('kinh_nghiem','Kinh nghiệm',120)):
+                        self.tv_hdv.heading(col, text=text)
+                        self.tv_hdv.column(col, width=width, anchor='center' if col != 'ten_hdv' else 'w')
+                    hdv_scroll = ttk.Scrollbar(hdv_body, orient='vertical', command=self.tv_hdv.yview)
+                    self.tv_hdv.configure(yscrollcommand=hdv_scroll.set)
+                    self.tv_hdv.pack(side='left', fill='both', expand=True)
+                    hdv_scroll.pack(side='right', fill='y')
+                else:
+                    dat_tools = ttk.Frame(tour_frame, padding=(0,0,0,8))
+                    dat_tools.pack(fill='x')
+                    dat_body = ttk.Frame(tour_frame)
+                    dat_body.pack(fill='both', expand=True)
+                    self.tv_dat = ttk.Treeview(dat_body, columns=('ma_dat','ma_tour','ma_khach_hang','so_nguoi','trang_thai','tong'), show='headings')
+                    for col, text, width in (('ma_dat','Mã Đặt',110),('ma_tour','Mã Tour',110),('ma_khach_hang','Mã KH',110),('so_nguoi','Số người',90),('trang_thai','Trạng thái',120),('tong','Tổng tiền',140)):
+                        self.tv_dat.heading(col, text=text)
+                        self.tv_dat.column(col, width=width, anchor='center')
+                    dat_scroll = ttk.Scrollbar(dat_body, orient='vertical', command=self.tv_dat.yview)
+                    self.tv_dat.configure(yscrollcommand=dat_scroll.set)
+                    self.tv_dat.pack(side='left', fill='both', expand=True)
+                    dat_scroll.pack(side='right', fill='y')
         else:
             self.context_hdr = ttk.Frame(right_panel)
             self.context_hdr.pack(fill='x', pady=(0,12))
@@ -779,14 +812,21 @@ class GiaoDienCoSo:
         role = self.ql.nguoi_dung_hien_tai.vai_tro if self.ql.nguoi_dung_hien_tai else ''
         if role == 'hdv':
             self.hien_thi_tour_hdv()
-        else:
-            self.hien_thi_tour()
+            return
         if role == 'admin':
-            self.hien_thi_khach()
-            self.hien_thi_hdv()
-            self.hien_thi_dat_admin()
+            active = getattr(self, 'active_section', 'Tour')
+            if active == 'Tour':
+                self.hien_thi_tour()
+            elif active == 'Khách hàng':
+                self.hien_thi_khach()
+            elif active == 'Hướng dẫn viên':
+                self.hien_thi_hdv()
+            else:
+                self.hien_thi_dat_admin()
             self.refresh_stats_tab()
-        elif role == 'user':
+            return
+        self.hien_thi_tour()
+        if role == 'user':
             self.hien_thi_khach_user()
 
     def search_tour(self, event=None):
@@ -919,7 +959,9 @@ class GiaoDienCoSo:
             return
         self.clear_tree(self.tv_dat)
         for d in self.ql.danh_sach_dat_tour:
-            self.tv_dat.insert('', tk.END, values=(d.ma_dat_tour, d.ma_tour, d.ma_khach_hang, d.so_nguoi, d.trang_thai, d.tong_tien))
+            trang_thai_formatted = d.trang_thai.replace('_', ' ').title() if d.trang_thai else ''
+            tong_formatted = self.format_money(d.tong_tien)
+            self.tv_dat.insert('', tk.END, values=(d.ma_dat_tour, d.ma_tour, d.ma_khach_hang, d.so_nguoi, trang_thai_formatted, tong_formatted))
         self.apply_zebra(self.tv_dat)
 
     def hien_thi_tour(self, dataset=None):

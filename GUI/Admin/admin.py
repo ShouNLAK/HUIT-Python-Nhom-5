@@ -215,7 +215,7 @@ def thong_ke(self):
         status_counts[status] += 1
         amount = safe_amount(getattr(o, 'tong_tien', 0))
         seats = safe_int(getattr(o, 'so_nguoi', 0))
-        dt = parse_date(getattr(o, 'ngay', None))
+        dt = parse_date(getattr(o, 'ngay', None) or getattr(o, 'ngay_dat', None))
         if dt:
             month_key = dt.strftime('%Y-%m')
             if status == 'da_thanh_toan':
@@ -239,7 +239,7 @@ def thong_ke(self):
         months_sorted = months_sorted[-6:]
     month_chart = [(datetime.strptime(m, '%Y-%m').strftime('%m/%Y'), monthly_revenue[m]) for m in months_sorted]
     top_tours = sorted(tour_stats.items(), key=lambda item: (-item[1]['revenue'], -item[1]['paid'], item[0]))[:5]
-    top_customers = sorted(customer_stats.items(), key=lambda item: (-item[1]['spend'], item[0]))[:5]
+    top_customers = sorted(customer_stats.items(), key=lambda item: (-item[1]['spend'], item[0]))[:15]
 
     def format_rate(num, den):
         return (num / den * 100) if den else 0
@@ -446,7 +446,7 @@ def thong_ke(self):
         tv2.heading(col, text=text)
         tv2.column(col, width=w, anchor='center' if col not in ('Ten',) else 'w')
     scr2 = ttk.Scrollbar(right_panel, orient='vertical', command=tv2.yview)
-    tv2.configure(yscrollcommand=scr2.set, height=8)
+    tv2.configure(yscrollcommand=scr2.set, height=15)
     tv2.pack(side='left', fill='both', expand=True, pady=(6, 0))
     scr2.pack(side='left', fill='y', padx=(2, 0))
     for rank, (ma, stat) in enumerate(top_customers, start=1):

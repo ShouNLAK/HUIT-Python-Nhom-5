@@ -72,15 +72,15 @@ class YeuCauNapTien:
             du_lieu_phu=data.get("du_lieu_phu"),
         )
 
-    def mark_confirmed(self) -> None:
+    def danh_dau_xac_nhan(self) -> None:
         self.trang_thai = self.TRANG_THAI_XAC_NHAN
         self.thoi_gian_cap_nhat = datetime.utcnow().replace(microsecond=0).isoformat()
 
-    def mark_expired(self) -> None:
+    def danh_dau_het_han(self) -> None:
         self.trang_thai = self.TRANG_THAI_HET_HAN
         self.thoi_gian_cap_nhat = datetime.utcnow().replace(microsecond=0).isoformat()
 
-    def is_expired(self) -> bool:
+    def da_het_han(self) -> bool:
         if not self.thoi_gian_het_han:
             return False
         try:
