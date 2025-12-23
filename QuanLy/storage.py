@@ -8,7 +8,6 @@ from Class.dat_tour import DatTour
 
 
 def _resolve_data_dir() -> Path:
-    """Tìm đường dẫn Data phù hợp trong mọi chế độ chạy."""
     candidates = []
     if hasattr(sys, "_MEIPASS"):
         candidates.append(Path(sys._MEIPASS) / "Data")
@@ -114,6 +113,29 @@ def dict_thanh_dat(data):
     )
 
 
+def dict_thanh_nguoi(data):
+    from Class.user import NguoiDung
+    return NguoiDung(
+        data.get("tenDangNhap") or data.get("username"),
+        data.get("matKhau") or data.get("password"),
+        data.get("vaiTro") or data.get("role", "user"),
+        data.get("maKH"),
+        data.get("tenHienThi") or data.get("fullName"),
+    )
+
+
+def serialize_user(u):
+    data = {
+        "tenDangNhap": u.ten_dang_nhap,
+        "matKhau": u.mat_khau,
+        "vaiTro": u.vai_tro,
+        "maKH": u.ma_khach_hang,
+    }
+    if getattr(u, 'vai_tro', None) == "admin":
+        data["tenHienThi"] = getattr(u, 'ten_hien_thi', '')
+    return data
+
+
 def tai_danh_sach(file_path: Path, converter):
     try:
         with file_path.open("r", encoding="utf-8") as handle:
@@ -134,45 +156,22 @@ def luu_danh_sach(file_path: Path, data):
 
 
 def tai_tat_ca():
-    tours = tai_danh_sach(TOUR_FILE, dict_thanh_tour)
-    khs = tai_danh_sach(KH_FILE, dict_thanh_khach_hang)
-    dats = tai_danh_sach(DAT_FILE, dict_thanh_dat)
-    hdvs = tai_danh_sach(HDV_FILE, lambda item: item)
-    def _dict_thanh_nguoi(data):
-        from Class.user import NguoiDung
-
-        return NguoiDung(
-            data.get("tenDangNhap") or data.get("username"),
-            data.get("matKhau") or data.get("password"),
-            data.get("vaiTro") or data.get("role", "user"),
-            data.get("maKH"),
-            data.get("tenHienThi") or data.get("fullName"),
-        )
-
-    users = tai_danh_sach(USERS_FILE, _dict_thanh_nguoi)
-    return tours, khs, dats, hdvs, users
+    return (
+        tai_danh_sach(TOUR_FILE, dict_thanh_tour),
+        tai_danh_sach(KH_FILE, dict_thanh_khach_hang),
+        tai_danh_sach(DAT_FILE, dict_thanh_dat),
+        tai_danh_sach(HDV_FILE, lambda item: item),
+        tai_danh_sach(USERS_FILE, dict_thanh_nguoi),
+    )
 
 
 def luu_tat_ca(ql):
-    tours = [tour_thanh_dict(t) for t in ql.danh_sach_tour]
-    khs = [khach_hang_thanh_dict(k) for k in ql.danh_sach_khach_hang]
-    dats = [dat_thanh_dict(d) for d in ql.danh_sach_dat_tour]
     try:
-        luu_danh_sach(TOUR_FILE, tours)
-        luu_danh_sach(KH_FILE, khs)
-        luu_danh_sach(DAT_FILE, dats)
+        luu_danh_sach(TOUR_FILE, [tour_thanh_dict(t) for t in ql.danh_sach_tour])
+        luu_danh_sach(KH_FILE, [khach_hang_thanh_dict(k) for k in ql.danh_sach_khach_hang])
+        luu_danh_sach(DAT_FILE, [dat_thanh_dict(d) for d in ql.danh_sach_dat_tour])
         if hasattr(ql, "danh_sach_hdv"):
             luu_danh_sach(HDV_FILE, ql.danh_sach_hdv)
-        def serialize_user(u):
-            data = {
-                "tenDangNhap": u.ten_dang_nhap,
-                "matKhau": u.mat_khau,
-                "vaiTro": u.vai_tro,
-                "maKH": u.ma_khach_hang,
-            }
-            if u.vai_tro == "admin":
-                data["tenHienThi"] = u.ten_hien_thi
-            return data
 
         users = [serialize_user(u) for u in ql.danh_sach_nguoi_dung]
         luu_danh_sach(USERS_FILE, users)

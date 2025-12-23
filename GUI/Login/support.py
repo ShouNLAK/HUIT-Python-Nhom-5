@@ -296,18 +296,15 @@ def _fetch_place_preview(self, place, date_str=None):
             photo_bytes = self.download_image_bytes(photo_url)
         weather = None
         if lat and lon:
-            for attempt in range(5):
-                try:
-                    if date_str:
-                        weather = self.get_weather_for_date(lat, lon, date_str)
-                    if not weather:
-                        cur, ttime = self.get_weather(lat, lon)
-                        if cur is not None:
-                            weather = {'current': cur, 'time': ttime}
-                    if weather:
-                        break
-                except Exception:
-                    weather = None
+            try:
+                if date_str:
+                    weather = self.get_weather_for_date(lat, lon, date_str)
+                if not weather:
+                    cur, ttime = self.get_weather(lat, lon)
+                    if cur is not None:
+                        weather = {'current': cur, 'time': ttime}
+            except Exception:
+                weather = None
         short = None
         if display_name:
             try:

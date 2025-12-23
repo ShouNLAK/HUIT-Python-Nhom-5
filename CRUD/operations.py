@@ -10,8 +10,11 @@ from QuanLy.storage import luu_tat_ca
 from GUI.Login.base import GiaoDienCoSo
 
 
+def _trich_chu_so_tho(s):
+    return re.sub(r'[^\d.]', '', s)
+
+
 def tu_dong_dinh_dang_ngay(entry_widget):
-    """Auto-format date entry: when user types 8 digits (e.g., 02122025), auto-insert slashes to make DD/MM/YYYY."""
     def on_key_release(event=None):
         content = entry_widget.get().strip()
         if len(content) == 8 and content.isdigit():
@@ -95,7 +98,7 @@ def sua_khach(self):
         sdt = entries['sdt'].get().strip()
         email = entries['email'].get().strip()
         try:
-            so_du = float(_raw_digits(entries['sodu'].get()) or 0)
+            so_du = float(_trich_chu_so_tho(entries['sodu'].get()) or 0)
         except Exception:
             messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return
@@ -813,7 +816,7 @@ def them_khach(self):
             if not self.ql.hop_le_so_dien_thoai_vn(sdt):
                 messagebox.showerror('Lỗi', 'Số điện thoại phải 10 số, đúng đầu số VN')
                 return
-            so_du = float(_raw_digits(entries['sodu'].get()) or 0)
+            so_du = float(_trich_chu_so_tho(entries['sodu'].get()) or 0)
         except Exception:
             messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return

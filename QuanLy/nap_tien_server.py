@@ -7,8 +7,6 @@ from urllib.parse import parse_qs, urlparse
 
 
 class MayChuWebhookNapTien:
-    """HTTP server nhận tín hiệu khi mã QR được quét."""
-
     def __init__(self, quan_li, host: str = "0.0.0.0", cong: int = 5050, url_co_so_cong_khai: Optional[str] = None) -> None:
         self.quan_li = quan_li
         self.host = host
