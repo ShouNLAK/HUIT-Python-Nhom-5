@@ -262,13 +262,23 @@ def thong_ke(self):
 
     top, container = self.create_modal('Báo cáo thống kê nâng cao', size=(1180, 780))
 
-    header = ttk.Frame(container, style='Card.TFrame', padding=16)
+    tabs = ttk.Notebook(container)
+    tabs.pack(fill='both', expand=True)
+
+    overview_tab = ttk.Frame(tabs, style='App.TFrame', padding=10)
+    charts_tab = ttk.Frame(tabs, style='App.TFrame', padding=10)
+    rankings_tab = ttk.Frame(tabs, style='App.TFrame', padding=10)
+    tabs.add(overview_tab, text='Tổng quan')
+    tabs.add(charts_tab, text='Biểu đồ')
+    tabs.add(rankings_tab, text='Xếp hạng')
+
+    header = ttk.Frame(overview_tab, style='Card.TFrame', padding=16)
     header.pack(fill='x', pady=(0, 16))
     ttk.Label(header, text='BÁO CÁO THỐNG KÊ HỆ THỐNG QUẢN LÝ DU LỊCH', style='Title.TLabel').pack(anchor='w')
     info_line = f"Dữ liệu cập nhật: {latest_date.strftime('%d/%m/%Y') if latest_date else 'Chưa xác định'}"
     ttk.Label(header, text=info_line, style='Body.TLabel', foreground=palette['muted']).pack(anchor='w')
 
-    cards = ttk.Frame(container, style='App.TFrame')
+    cards = ttk.Frame(overview_tab, style='App.TFrame')
     cards.pack(fill='x', pady=(0, 12))
     cards.columnconfigure((0, 1, 2, 3), weight=1)
 
@@ -286,17 +296,23 @@ def thong_ke(self):
         ttk.Label(card, text=value, font=('Segoe UI', 16, 'bold'), foreground=palette['primary']).pack(anchor='w', pady=(4, 2))
         ttk.Label(card, text=sub, style='Body.TLabel', foreground=palette['muted']).pack(anchor='w')
 
-    charts = ttk.Frame(container, style='App.TFrame')
-    charts.pack(fill='x', pady=(0, 12))
+    insight = ttk.Frame(overview_tab, style='Card.TFrame', padding=12)
+    insight.pack(fill='x', pady=(12, 0))
+    ttk.Label(insight, text='Nhận định nhanh', style='BodyBold.TLabel').pack(anchor='w')
+    best_tour_text = 'Chưa có tour thanh toán' if not top_tours else f"Tour nổi bật: {self.ql.tim_tour(top_tours[0][0]).ten_tour if hasattr(self.ql, 'tim_tour') and self.ql.tim_tour(top_tours[0][0]) else top_tours[0][0]} ({self.format_money(top_tours[0][1]['revenue'])})"
+    best_cus_text = 'Chưa có khách thanh toán' if not top_customers else f"Khách chi tiêu cao nhất: {self.ql.tim_khach_hang(top_customers[0][0]).ten_khach_hang if hasattr(self.ql, 'tim_khach_hang') and self.ql.tim_khach_hang(top_customers[0][0]) else top_customers[0][0]} ({self.format_money(top_customers[0][1]['spend'])})"
+    growth_text = f"Tăng trưởng 30 ngày so với 30 ngày trước: {growth:+.1f}%" if previous_30_revenue else "Chưa đủ dữ liệu so sánh tăng trưởng"
+    bullets = [
+        best_tour_text,
+        best_cus_text,
+        f"Tỉ lệ hủy hiện tại: {cancel_rate:.1f}% (giá trị hủy: {self.format_money(cancelled_value)})",
+        growth_text
+    ]
+    ttk.Label(insight, text='\n'.join(f"• {b}" for b in bullets), style='Body.TLabel').pack(anchor='w', pady=(6, 0))
 
-    left_chart = ttk.Frame(charts, style='Card.TFrame', padding=14)
-    right_chart = ttk.Frame(charts, style='Card.TFrame', padding=14)
-    left_chart.pack(side='left', fill='both', expand=True, padx=(0, 6))
-    right_chart.pack(side='left', fill='both', expand=True, padx=(6, 0))
-
-    ttk.Label(left_chart, text='Doanh thu theo tháng (6 kỳ gần nhất)', style='BodyBold.TLabel').pack(anchor='w')
-    bar_canvas = tk.Canvas(left_chart, height=240, background=palette['surface'], highlightthickness=0)
-    bar_canvas.pack(fill='x', pady=(8, 0))
+    ttk.Label(charts_tab, text='Doanh thu theo tháng (6 kỳ gần nhất)', style='BodyBold.TLabel').pack(anchor='w')
+    bar_canvas = tk.Canvas(charts_tab, height=300, background=palette['surface'], highlightthickness=0)
+    bar_canvas.pack(fill='both', expand=True, pady=(8, 0))
 
     def render_bar_chart(event=None):
         bar_canvas.delete('all')
@@ -304,32 +320,32 @@ def thong_ke(self):
             bar_canvas.create_text(10, 20, anchor='nw', text='Chưa có giao dịch đã thanh toán', font=('Segoe UI', 10), fill=palette['muted'])
             return
         width = bar_canvas.winfo_width() or 540
-        height = bar_canvas.winfo_height() or 240
-        padding_bottom = 40
-        padding_top = 30
-        padding_side = 24
+        height = bar_canvas.winfo_height() or 300
+        padding_bottom = 50
+        padding_top = 40
+        padding_side = 30
         usable_width = width - padding_side * 2
         usable_height = height - padding_top - padding_bottom
         max_val = max(v for _, v in month_chart) or 1
         bar_w = usable_width / len(month_chart)
         for idx, (label, value) in enumerate(month_chart):
-            x0 = padding_side + idx * bar_w + 6
-            x1 = padding_side + (idx + 1) * bar_w - 6
+            x0 = padding_side + idx * bar_w + 8
+            x1 = padding_side + (idx + 1) * bar_w - 8
             bar_h = usable_height * (value / max_val)
             y1 = height - padding_bottom
             y0 = y1 - bar_h
-            bar_canvas.create_rectangle(x0, y0, x1, y1, fill=palette['primary'], width=0)
-            bar_canvas.create_text((x0 + x1) / 2, y1 + 16, text=label, font=('Segoe UI', 9), fill=palette['muted'])
-            if bar_h > 20:
-                bar_canvas.create_text((x0 + x1) / 2, y0 - 10, text=self.format_money(value), font=('Segoe UI', 8), fill='#2d3748')
-        bar_canvas.create_line(padding_side, y1, width - padding_side, y1, fill='#d3d9e3')
+            bar_canvas.create_rectangle(x0, y0, x1, y1, fill=palette['primary'], width=0, outline=palette['primary'])
+            bar_canvas.create_text((x0 + x1) / 2, y1 + 20, text=label, font=('Segoe UI', 9), fill=palette['muted'])
+            if bar_h > 25:
+                bar_canvas.create_text((x0 + x1) / 2, y0 - 15, text=self.format_money(value), font=('Segoe UI', 8, 'bold'), fill='#2d3748')
+        bar_canvas.create_line(padding_side, y1, width - padding_side, y1, fill='#d3d9e3', width=2)
 
     bar_canvas.bind('<Configure>', render_bar_chart)
     render_bar_chart()
 
-    ttk.Label(right_chart, text='Cơ cấu trạng thái đơn', style='BodyBold.TLabel').pack(anchor='w')
-    donut = tk.Canvas(right_chart, height=240, background=palette['surface'], highlightthickness=0)
-    donut.pack(fill='x', pady=(8, 0))
+    ttk.Label(charts_tab, text='Cơ cấu trạng thái đơn', style='BodyBold.TLabel').pack(anchor='w', pady=(20, 0))
+    donut = tk.Canvas(charts_tab, height=300, background=palette['surface'], highlightthickness=0)
+    donut.pack(fill='both', expand=True, pady=(8, 0))
 
     status_mapping = [
         ('da_thanh_toan', 'Đã thanh toán', palette['primary']),
@@ -342,77 +358,78 @@ def thong_ke(self):
         data = [(label, status_counts.get(key, 0), color) for key, label, color in status_mapping]
         total = sum(v for _, v, _ in data)
         w = donut.winfo_width() or 360
-        h = donut.winfo_height() or 240
-        chart_size = min(w - 160, h - 40)
-        cx = 80 + chart_size / 2
+        h = donut.winfo_height() or 300
+        chart_size = min(w - 180, h - 60)
+        cx = 90 + chart_size / 2
         cy = h / 2
-        radius = chart_size / 2 - 10
+        radius = chart_size / 2 - 15
         if total == 0:
-            donut.create_text(cx, cy, text='Chưa có dữ liệu', font=('Segoe UI', 11), fill=palette['muted'])
+            donut.create_text(cx, cy, text='Chưa có dữ liệu', font=('Segoe UI', 12), fill=palette['muted'])
             return
         start = 90
         for _, value, color in data:
             extent = (value / total) * 360 if total else 0
             donut.create_arc(cx - radius, cy - radius, cx + radius, cy + radius,
-                             start=start, extent=-extent, fill=color, outline='')
+                             start=start, extent=-extent, fill=color, outline=palette['surface'], width=2)
             start -= extent
-        inner_r = radius * 0.55
+        inner_r = radius * 0.6
         donut.create_oval(cx - inner_r, cy - inner_r, cx + inner_r, cy + inner_r, fill=palette['surface'], outline=palette['surface'])
-        donut.create_text(cx, cy - 8, text=f"{total} đơn", font=('Segoe UI', 11, 'bold'), fill='#1f2937')
-        donut.create_text(cx, cy + 12, text=f"Hủy: {cancel_rate:.1f}%", font=('Segoe UI', 9), fill=palette['muted'])
-        legend_x = cx + radius + 30
-        legend_y = cy - 40
+        donut.create_text(cx, cy - 10, text=f"{total} đơn", font=('Segoe UI', 14, 'bold'), fill='#1f2937')
+        donut.create_text(cx, cy + 15, text=f"Hủy: {cancel_rate:.1f}%", font=('Segoe UI', 10), fill=palette['muted'])
+        legend_x = cx + radius + 40
+        legend_y = cy - 50
         for label, value, color in data:
-            donut.create_rectangle(legend_x, legend_y - 6, legend_x + 14, legend_y + 6, fill=color, outline=color)
-            donut.create_text(legend_x + 22, legend_y, anchor='w', text=f"{label}: {value}", font=('Segoe UI', 9), fill='#111')
-            legend_y += 28
+            donut.create_rectangle(legend_x, legend_y - 8, legend_x + 16, legend_y + 8, fill=color, outline=color)
+            donut.create_text(legend_x + 24, legend_y, anchor='w', text=f"{label}: {value}", font=('Segoe UI', 10), fill='#111')
+            legend_y += 32
 
     donut.bind('<Configure>', render_donut)
     render_donut()
 
-    lower = ttk.Frame(container, style='App.TFrame')
-    lower.pack(fill='both', expand=True)
+    rankings_tab.rowconfigure(0, weight=1)
+    rankings_tab.columnconfigure(0, weight=1)
+    rankings_tab.columnconfigure(1, weight=1)
 
-    left_panel = ttk.Frame(lower, style='Card.TFrame', padding=14)
-    right_panel = ttk.Frame(lower, style='Card.TFrame', padding=14)
-    left_panel.pack(side='left', fill='both', expand=True, padx=(0, 6))
-    right_panel.pack(side='left', fill='both', expand=True, padx=(6, 0))
+    left_panel = ttk.Frame(rankings_tab, style='Card.TFrame', padding=14)
+    right_panel = ttk.Frame(rankings_tab, style='Card.TFrame', padding=14)
+    left_panel.grid(row=0, column=0, sticky='nsew', padx=(0, 6))
+    right_panel.grid(row=0, column=1, sticky='nsew', padx=(6, 0))
 
     ttk.Label(left_panel, text='Top tour theo doanh thu', style='BodyBold.TLabel').pack(anchor='w')
-    tour_canvas = tk.Canvas(left_panel, height=180, background=palette['surface'], highlightthickness=0)
-    tour_canvas.pack(fill='x', pady=(8, 12))
+    tour_canvas = tk.Canvas(left_panel, height=200, background=palette['surface'], highlightthickness=0)
+    tour_canvas.pack(fill='both', expand=True, pady=(8, 12))
 
     def render_top_tour_chart(event=None):
         tour_canvas.delete('all')
         if not top_tours:
-            tour_canvas.create_text(10, 14, anchor='nw', text='Chưa có tour sinh doanh thu', font=('Segoe UI', 10), fill=palette['muted'])
+            tour_canvas.create_text(10, 20, anchor='nw', text='Chưa có tour sinh doanh thu', font=('Segoe UI', 10), fill=palette['muted'])
             return
         width = tour_canvas.winfo_width() or 520
-        height = tour_canvas.winfo_height() or 180
+        height = tour_canvas.winfo_height() or 200
         max_val = max(stat['revenue'] for _, stat in top_tours) or 1
-        bar_height = 26
-        padding_left = 14
-        padding_top = 10
-        available_width = width - 220
+        bar_height = 30
+        padding_left = 16
+        padding_top = 12
+        available_width = width - 240
         for idx, (ma, stat) in enumerate(top_tours):
-            y0 = padding_top + idx * (bar_height + 8)
+            y0 = padding_top + idx * (bar_height + 10)
             y1 = y0 + bar_height
             if y1 > height:
                 break
             bar_len = available_width * (stat['revenue'] / max_val)
-            tour_canvas.create_rectangle(160, y0, 160 + bar_len, y1, fill=palette['primary'], outline='')
+            tour_canvas.create_rectangle(180, y0, 180 + bar_len, y1, fill=palette['primary'], outline='', width=0)
             tour_obj = self.ql.tim_tour(ma) if hasattr(self.ql, 'tim_tour') else None
             name = tour_obj.ten_tour if tour_obj else ma
-            if len(name) > 18:
-                name = name[:16] + '..'
-            tour_canvas.create_text(padding_left, y0 + bar_height / 2, anchor='w', text=name, font=('Segoe UI', 9, 'bold'), fill='#1f2933')
-            tour_canvas.create_text(160 + bar_len + 8, y0 + bar_height / 2, anchor='w',
-                                     text=self.format_money(stat['revenue']), font=('Segoe UI', 8), fill=palette['muted'])
+            if len(name) > 20:
+                name = name[:18] + '..'
+            tour_canvas.create_text(padding_left, y0 + bar_height / 2, anchor='w', text=name, font=('Segoe UI', 10, 'bold'), fill='#1f2933')
+            tour_canvas.create_text(180 + bar_len + 10, y0 + bar_height / 2, anchor='w',
+                                     text=self.format_money(stat['revenue']), font=('Segoe UI', 9, 'bold'), fill=palette['primary'])
 
     tour_canvas.bind('<Configure>', render_top_tour_chart)
     render_top_tour_chart()
 
-    ttk.Label(left_panel, text='Bảng xếp hạng tour (doanh thu / lượt đặt / số chỗ)', style='Body.TLabel').pack(anchor='w')
+    ttk.Label(left_panel, text='Bảng chi tiết tour', style='Body.TLabel').pack(anchor='w', pady=(12, 0))
     tv1 = ttk.Treeview(left_panel, columns=('Rank', 'MaTour', 'Ten', 'Dat', 'ThanhToan', 'DoanhThu', 'Cho'), show='headings')
     for col, text, w in (
         ('Rank', '#', 40),
@@ -454,20 +471,6 @@ def thong_ke(self):
         name = kh.ten_khach_hang if kh else ma
         tv2.insert('', tk.END, values=(rank, ma, name, stat['orders'], stat['paid_orders'], self.format_money(stat['spend'])))
     self.apply_zebra(tv2)
-
-    insight = ttk.Frame(container, style='Card.TFrame', padding=12)
-    insight.pack(fill='x', pady=(12, 0))
-    ttk.Label(insight, text='Nhận định nhanh', style='BodyBold.TLabel').pack(anchor='w')
-    best_tour_text = 'Chưa có tour thanh toán' if not top_tours else f"Tour nổi bật: {self.ql.tim_tour(top_tours[0][0]).ten_tour if hasattr(self.ql, 'tim_tour') and self.ql.tim_tour(top_tours[0][0]) else top_tours[0][0]} ({self.format_money(top_tours[0][1]['revenue'])})"
-    best_cus_text = 'Chưa có khách thanh toán' if not top_customers else f"Khách chi tiêu cao nhất: {self.ql.tim_khach_hang(top_customers[0][0]).ten_khach_hang if hasattr(self.ql, 'tim_khach_hang') and self.ql.tim_khach_hang(top_customers[0][0]) else top_customers[0][0]} ({self.format_money(top_customers[0][1]['spend'])})"
-    growth_text = f"Tăng trưởng 30 ngày so với 30 ngày trước: {growth:+.1f}%" if previous_30_revenue else "Chưa đủ dữ liệu so sánh tăng trưởng"
-    bullets = [
-        best_tour_text,
-        best_cus_text,
-        f"Tỉ lệ hủy hiện tại: {cancel_rate:.1f}% (giá trị hủy: {self.format_money(cancelled_value)})",
-        growth_text
-    ]
-    ttk.Label(insight, text='\n'.join(f"• {b}" for b in bullets), style='Body.TLabel').pack(anchor='w', pady=(6, 0))
 
 def xuat_tour(self):
     sel = self.tv_tour.selection()

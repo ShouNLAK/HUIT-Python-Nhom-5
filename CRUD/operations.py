@@ -821,18 +821,15 @@ def them_khach(self):
             messagebox.showerror('Lỗi', 'Số dư không hợp lệ')
             return
         kh = KhachHang(ma, ten, sdt, email, so_du)
-        success, msg = self.ql.them_khach_hang(kh)
-        if success:
+        if self.ql.them_khach_hang(kh):
             username = self.ql.ensure_user_for_khach(kh)
             luu_tat_ca(self.ql)
             self.hien_thi_khach()
             top.destroy()
             if username:
-                messagebox.showinfo('Thành công', f'{msg}\nTài khoản: {username} / Mật khẩu mặc định: 123')
+                messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}\nTài khoản: {username} / Mật khẩu mặc định: 123')
             else:
-                messagebox.showinfo('Thành công', msg)
-        else:
-            messagebox.showerror('Lỗi', msg)
+                messagebox.showinfo('Thành công', f'Đã thêm khách hàng {ten}')
     
     self.modal_buttons(container, [
         {'text':'Lưu khách hàng', 'style':'Accent.TButton', 'command':ok},
@@ -874,9 +871,8 @@ def dang_ky_guest(self):
         nxt = (max(existing)+1) if existing else 1
         ma = f'KH{str(nxt).zfill(3)}'
         kh = KhachHang(ma, tenthat, phone, email, 0)
-        success, msg = self.ql.them_khach_hang(kh, allow_public=True, auto_link_account=False)
-        if not success:
-            messagebox.showerror('Lỗi', msg)
+        if not self.ql.them_khach_hang(kh, allow_public=True, auto_link_account=False):
+            messagebox.showerror('Lỗi', 'Không tạo được khách hàng mới')
             return
         success, msg = self.ql.dang_ky_nguoi_dung(username, password, role='user', ma_khach_hang=ma, ten_day_du=tenthat)
         if success:

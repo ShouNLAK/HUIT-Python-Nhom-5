@@ -39,34 +39,34 @@ class ChuDeHienDai:
         self.root.configure(bg=self.nen)
         self.kieu.configure('App.TFrame', background=self.nen)
         self.kieu.configure('Card.TFrame', background=self.be_mat, relief='flat')
-        self.kieu.configure('Header.TLabel', background=self.chinh, foreground='white', font=('Segoe UI', 14, 'bold'))
-        self.kieu.configure('Title.TLabel', background=self.nen, foreground=self.van_ban, font=('Segoe UI', 12, 'bold'))
-        self.kieu.configure('Body.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10))
-        self.kieu.configure('BodyBold.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10, 'bold'))
+        self.kieu.configure('Header.TLabel', background=self.chinh, foreground='white', font=('Arial Unicode MS', 14, 'bold'))
+        self.kieu.configure('Title.TLabel', background=self.nen, foreground=self.van_ban, font=('Arial Unicode MS', 12, 'bold'))
+        self.kieu.configure('Body.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Arial Unicode MS', 10))
+        self.kieu.configure('BodyBold.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Arial Unicode MS', 10, 'bold'))
         self.kieu.configure('Context.TFrame', background=self.be_mat)
-        self.kieu.configure('App.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.configure('App.TButton', font=('Arial Unicode MS', 10), padding=6)
         self.kieu.map('App.TButton', background=[('!disabled', self.chinh), ('active', '#0f58a6')], foreground=[('!disabled', 'white')])
-        self.kieu.configure('Accent.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.configure('Accent.TButton', font=('Arial Unicode MS', 10), padding=6)
         self.kieu.map('Accent.TButton', background=[('!disabled', self.nhan_manh), ('active', '#168b8b')], foreground=[('!disabled', 'white')])
-        self.kieu.configure('Danger.TButton', font=('Segoe UI', 10), padding=6)
+        self.kieu.configure('Danger.TButton', font=('Arial Unicode MS', 10), padding=6)
         self.kieu.map('Danger.TButton', background=[('!disabled', self.nguy_hiem), ('active', '#a13224')], foreground=[('!disabled', 'white')])
-        self.kieu.configure('Toolbar.TButton', font=('Segoe UI', 10, 'bold'), padding=(14, 8))
+        self.kieu.configure('Toolbar.TButton', font=('Arial Unicode MS', 10, 'bold'), padding=(14, 8))
         self.kieu.map('Toolbar.TButton', background=[('!disabled', '#1f6feb'), ('active', '#1553b2')], foreground=[('!disabled', 'white')])
-        self.kieu.configure('Ghost.TButton', font=('Segoe UI', 10), padding=(10,6))
+        self.kieu.configure('Ghost.TButton', font=('Arial Unicode MS', 10), padding=(10,6))
         self.kieu.map('Ghost.TButton', background=[('active', '#e6ecf5')], foreground=[('!disabled', self.van_ban)])
-        self.kieu.configure('Mode.TButton', font=('Segoe UI', 10, 'bold'), padding=(10,6), background='#e9f0ff', foreground=self.van_ban)
+        self.kieu.configure('Mode.TButton', font=('Arial Unicode MS', 10, 'bold'), padding=(10,6), background='#e9f0ff', foreground=self.van_ban)
         self.kieu.map('Mode.TButton', background=[('!disabled', '#e9f0ff'), ('active', '#d7e7ff')], foreground=[('!disabled', self.van_ban)])
-        self.kieu.configure('ModeActive.TButton', font=('Segoe UI', 10, 'bold'), padding=(10,6), background=self.chinh, foreground='white')
+        self.kieu.configure('ModeActive.TButton', font=('Arial Unicode MS', 10, 'bold'), padding=(10,6), background=self.chinh, foreground='white')
         self.kieu.map('ModeActive.TButton', background=[('!disabled', self.chinh), ('active', '#1553b2')], foreground=[('!disabled', 'white')])
-        self.kieu.configure('Form.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 10))
-        self.kieu.configure('FormValue.TEntry', font=('Segoe UI', 10))
-        self.kieu.configure('Card.TLabelframe', background=self.be_mat, foreground=self.van_ban, font=('Segoe UI', 11, 'bold'))
+        self.kieu.configure('Form.TLabel', background=self.be_mat, foreground=self.van_ban, font=('Arial Unicode MS', 10))
+        self.kieu.configure('FormValue.TEntry', font=('Arial Unicode MS', 10))
+        self.kieu.configure('Card.TLabelframe', background=self.be_mat, foreground=self.van_ban, font=('Arial Unicode MS', 11, 'bold'))
         self.kieu.configure('Card.TLabelframe.Label', background=self.be_mat, foreground=self.van_ban)
         self.ap_dung_treeview()
 
     def ap_dung_treeview(self):
-        self.kieu.configure('Treeview', font=('Segoe UI', 10), rowheight=26, background='#fdfdfd', fieldbackground='#fdfdfd', bordercolor='#dfe3e8')
-        self.kieu.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), background=self.chinh, foreground='white')
+        self.kieu.configure('Treeview', font=('Arial Unicode MS', 10), rowheight=26, background='#fdfdfd', fieldbackground='#fdfdfd', bordercolor='#dfe3e8')
+        self.kieu.configure('Treeview.Heading', font=('Arial Unicode MS', 10, 'bold'), background=self.chinh, foreground='white')
         self.kieu.map('Treeview', background=[('selected', self.nhan_manh)], foreground=[('selected', 'white')])
 
     def trung_tam(self, win, width, height):
@@ -119,9 +119,9 @@ class GiaoDienCoSo:
         self.ql = ql
         self.root.title('Quản lý tour du lịch')
         self.theme = ChuDeHienDai(self.root)
-        self.font_title = ('Segoe UI', 12, 'bold')
-        self.font_body = ('Segoe UI', 10)
-        self.font_small = ('Segoe UI', 9)
+        self.font_title = ('Arial Unicode MS', 12, 'bold')
+        self.font_body = ('Arial Unicode MS', 10)
+        self.font_small = ('Arial Unicode MS', 9)
         self.modal_geometry = (580, 420)
         self.search_var = tk.StringVar()
         self.frame = None
@@ -623,12 +623,23 @@ class GiaoDienCoSo:
         ttk.Button(header, text='Kiểm tra Data', style='App.TButton', command=self.show_data_status).pack(side='right', padx=(0,8))
         ttk.Label(self.frame, text='Tài khoản root chỉ được thao tác với Admin', style='Body.TLabel').pack(anchor='w', padx=24, pady=(0,12))
         controls = ttk.Frame(self.frame, padding=(24,0,24,12))
+        self.root_tabs = ttk.Notebook(self.frame)
+        self.root_tabs.pack(fill='both', expand=True, padx=24, pady=(0,18))
+        
+        self.build_admin_tab()
+        self.build_user_tab()
+
+    def build_admin_tab(self):
+        admin_tab = ttk.Frame(self.root_tabs, style='App.TFrame')
+        self.root_tabs.add(admin_tab, text='Quản lý Admin')
+        ttk.Label(admin_tab, text='Quản lý tài khoản Admin', style='Body.TLabel').pack(anchor='w', padx=24, pady=(12,0))
+        controls = ttk.Frame(admin_tab, padding=(24,0,24,12))
         controls.pack(fill='x')
         self.root_search_var = tk.StringVar()
         ttk.Entry(controls, textvariable=self.root_search_var, font=self.font_body, width=32).pack(side='left')
         ttk.Button(controls, text='Tìm', style='Accent.TButton', command=self.root_refresh_admins).pack(side='left', padx=6)
         ttk.Button(controls, text='Làm mới', style='App.TButton', command=self.root_clear_search).pack(side='left')
-        table_wrap = ttk.Frame(self.frame, padding=(24,0,24,12))
+        table_wrap = ttk.Frame(admin_tab, padding=(24,0,24,12))
         table_wrap.pack(fill='both', expand=True)
         self.root_admin_tree = ttk.Treeview(table_wrap, columns=('ten_dang_nhap','ho_ten_hien_thi'), show='headings')
         self.root_admin_tree.heading('ten_dang_nhap', text='Tên đăng nhập')
@@ -639,13 +650,157 @@ class GiaoDienCoSo:
         self.root_admin_tree.configure(yscrollcommand=scroll.set)
         self.root_admin_tree.pack(side='left', fill='both', expand=True)
         scroll.pack(side='right', fill='y')
-        action = ttk.Frame(self.frame, padding=(24,0,24,18))
+        action = ttk.Frame(admin_tab, padding=(24,0,24,18))
         action.pack(fill='x')
         ttk.Button(action, text='Tạo admin', style='Toolbar.TButton', command=lambda: self.root_open_admin_form('create')).pack(side='left', padx=4)
         ttk.Button(action, text='Sửa admin', style='App.TButton', command=lambda: self.root_open_admin_form('edit')).pack(side='left', padx=4)
         ttk.Button(action, text='Xóa admin', style='Danger.TButton', command=self.root_delete_admin).pack(side='left', padx=4)
         ttk.Button(action, text='Reset mật khẩu về 123', style='Accent.TButton', command=self.root_reset_admin_password).pack(side='left', padx=4)
         self.root_refresh_admins()
+
+    def build_user_tab(self):
+        user_tab = ttk.Frame(self.root_tabs, style='App.TFrame')
+        self.root_tabs.add(user_tab, text='Quản lý User')
+        ttk.Label(user_tab, text='Quản lý tài khoản User', style='Body.TLabel').pack(anchor='w', padx=24, pady=(12,0))
+        controls = ttk.Frame(user_tab, padding=(24,0,24,12))
+        controls.pack(fill='x')
+        self.root_user_search_var = tk.StringVar()
+        ttk.Entry(controls, textvariable=self.root_user_search_var, font=self.font_body, width=32).pack(side='left')
+        ttk.Button(controls, text='Tìm', style='Accent.TButton', command=self.root_refresh_users).pack(side='left', padx=6)
+        ttk.Button(controls, text='Làm mới', style='App.TButton', command=self.root_clear_user_search).pack(side='left')
+        table_wrap = ttk.Frame(user_tab, padding=(24,0,24,12))
+        table_wrap.pack(fill='both', expand=True)
+        self.root_user_tree = ttk.Treeview(table_wrap, columns=('ten_dang_nhap','vai_tro','ten_hien_thi'), show='headings')
+        self.root_user_tree.heading('ten_dang_nhap', text='Tên đăng nhập')
+        self.root_user_tree.heading('vai_tro', text='Vai trò')
+        self.root_user_tree.heading('ten_hien_thi', text='Tên hiển thị')
+        self.root_user_tree.column('ten_dang_nhap', width=200, anchor='center')
+        self.root_user_tree.column('vai_tro', width=100, anchor='center')
+        self.root_user_tree.column('ten_hien_thi', width=300, anchor='w')
+        scroll = ttk.Scrollbar(table_wrap, orient='vertical', command=self.root_user_tree.yview)
+        self.root_user_tree.configure(yscrollcommand=scroll.set)
+        self.root_user_tree.pack(side='left', fill='both', expand=True)
+        scroll.pack(side='right', fill='y')
+        action = ttk.Frame(user_tab, padding=(24,0,24,18))
+        action.pack(fill='x')
+        ttk.Button(action, text='Tạo user', style='Toolbar.TButton', command=lambda: self.root_open_user_form('create')).pack(side='left', padx=4)
+        ttk.Button(action, text='Sửa user', style='App.TButton', command=lambda: self.root_open_user_form('edit')).pack(side='left', padx=4)
+        ttk.Button(action, text='Xóa user', style='Danger.TButton', command=self.root_delete_user).pack(side='left', padx=4)
+        ttk.Button(action, text='Reset mật khẩu về 123', style='Accent.TButton', command=self.root_reset_user_password).pack(side='left', padx=4)
+        self.root_refresh_users()
+
+    def root_clear_user_search(self):
+        if hasattr(self, 'root_user_search_var'):
+            self.root_user_search_var.set('')
+        self.root_refresh_users()
+
+    def root_refresh_users(self):
+        if not hasattr(self, 'root_user_tree'):
+            return
+        for item in self.root_user_tree.get_children():
+            self.root_user_tree.delete(item)
+        keyword = (getattr(self, 'root_user_search_var', tk.StringVar()).get() or '').strip().lower()
+        users = [u for u in self.ql.danh_sach_nguoi_dung if u.vai_tro != 'admin']
+        if keyword:
+            users = [u for u in users if keyword in u.ten_dang_nhap.lower() or keyword in (getattr(u, 'ten_hien_thi', '') or '').lower()]
+        for user in users:
+            ten_hien_thi = getattr(user, 'ten_hien_thi', '') or getattr(user, 'ten_dang_nhap', '')
+            self.root_user_tree.insert('', tk.END, values=(user.ten_dang_nhap, user.vai_tro, ten_hien_thi))
+        self.apply_zebra(self.root_user_tree)
+
+    def root_get_selected_user(self):
+        if not hasattr(self, 'root_user_tree'):
+            return None
+        sel = self.root_user_tree.selection()
+        if not sel:
+            messagebox.showwarning('Chú ý', 'Chọn một tài khoản user')
+            return None
+        return self.root_user_tree.item(sel[0], 'values')[0]
+
+    def root_reset_user_password(self):
+        username = self.root_get_selected_user()
+        if not username:
+            return
+        success, msg = self.ql.dat_lai_mat_khau(username, '123')
+        if success:
+            luu_tat_ca(self.ql)
+            messagebox.showinfo('Thông báo', 'Đã đặt lại mật khẩu về 123')
+        else:
+            messagebox.showerror('Lỗi', msg)
+
+    def root_delete_user(self):
+        username = self.root_get_selected_user()
+        if not username:
+            return
+        if not messagebox.askyesno('Xác nhận', f'Xóa tài khoản {username}?'):
+            return
+        success, msg = self.ql.xoa_nguoi_dung(username)
+        if success:
+            luu_tat_ca(self.ql)
+            self.root_refresh_users()
+            messagebox.showinfo('Thông báo', msg)
+        else:
+            messagebox.showerror('Lỗi', msg)
+
+    def root_open_user_form(self, mode):
+        target = None
+        if mode == 'edit':
+            username = self.root_get_selected_user()
+            if not username:
+                return
+            target = self.ql.tim_nguoi_dung(username)
+            if not target:
+                messagebox.showerror('Lỗi', 'Không tìm thấy tài khoản')
+                return
+        title = 'Tạo user mới' if mode == 'create' else f'Cập nhật user: {target.ten_dang_nhap}'
+        top, container = self.create_modal(title, size=(480, 360))
+        form = ttk.Frame(container, padding=12)
+        form.pack(fill='both', expand=True)
+        ttk.Label(form, text='Tên đăng nhập', style='Form.TLabel').grid(row=0, column=0, sticky='w', pady=4)
+        username_entry = ttk.Entry(form, font=self.font_body)
+        username_entry.grid(row=0, column=1, sticky='ew', padx=(10,0), pady=4)
+        if target:
+            username_entry.insert(0, target.ten_dang_nhap)
+            username_entry.configure(state='disabled')
+        ttk.Label(form, text='Vai trò', style='Form.TLabel').grid(row=1, column=0, sticky='w', pady=4)
+        role_var = tk.StringVar(value=target.vai_tro if target else 'user')
+        role_combo = ttk.Combobox(form, textvariable=role_var, values=['user', 'hdv'], state='readonly')
+        role_combo.grid(row=1, column=1, sticky='ew', padx=(10,0), pady=4)
+        ttk.Label(form, text='Họ tên hiển thị', style='Form.TLabel').grid(row=2, column=0, sticky='w', pady=4)
+        fullname_entry = ttk.Entry(form, font=self.font_body)
+        fullname_entry.grid(row=2, column=1, sticky='ew', padx=(10,0), pady=4)
+        if target:
+            fullname_entry.insert(0, getattr(target, 'ten_hien_thi', ''))
+        ttk.Label(form, text='Mật khẩu', style='Form.TLabel').grid(row=3, column=0, sticky='w', pady=4)
+        password_entry = ttk.Entry(form, font=self.font_body, show='*')
+        password_entry.grid(row=3, column=1, sticky='ew', padx=(10,0), pady=4)
+        ttk.Label(form, text='Trạng thái giữ nguyên', style='Body.TLabel').grid(row=4, column=0, columnspan=2, sticky='w', pady=(4,0))
+        form.columnconfigure(1, weight=1)
+
+        def save_user():
+            uname = username_entry.get().strip()
+            role = role_var.get()
+            fname = fullname_entry.get().strip()
+            pwd = password_entry.get().strip()
+            if mode == 'create':
+                if not uname or not fname or not pwd:
+                    messagebox.showerror('Lỗi', 'Vui lòng nhập đầy đủ thông tin')
+                    return
+                success, msg = self.ql.dang_ky_nguoi_dung(uname, pwd, vai_tro=role, ten_hien_thi=fname)
+            else:
+                if not fname:
+                    messagebox.showerror('Lỗi', 'Họ tên không được bỏ trống')
+                    return
+                success, msg = self.ql.cap_nhat_nguoi_dung(target.ten_dang_nhap, vai_tro=role, ten_hien_thi=fname, mat_khau=pwd or None)
+            if success:
+                luu_tat_ca(self.ql)
+                self.root_refresh_users()
+                top.destroy()
+                messagebox.showinfo('Thông báo', msg)
+            else:
+                messagebox.showerror('Lỗi', msg)
+
+        ttk.Button(form, text='Lưu', style='Accent.TButton', command=save_user).grid(row=5, column=0, columnspan=2, pady=(12,0))
 
     def show_data_status(self):
         top, container = self.create_modal('Trạng thái Data', size=(640, 520), maximize=False)
@@ -1080,4 +1235,3 @@ class GiaoDienCoSo:
         values = self.tv_kh.item(sel[0], 'values')
         ma = values[0]
         return self.ql.tim_khach_hang(ma)
-

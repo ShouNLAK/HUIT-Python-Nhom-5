@@ -335,5 +335,11 @@
     "matKhau": "123",
     "vaiTro": "hdv",
     "maKH": "HDV015"
+  },
+  {
+    "tenDangNhap": "kh041",
+    "matKhau": "123",
+    "vaiTro": "user",
+    "maKH": "KH041"
   }
 ]

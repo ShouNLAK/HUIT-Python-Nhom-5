@@ -738,6 +738,23 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
             admin.mat_khau = mat_khau
         return True, "Đã cập nhật"
 
+    def cap_nhat_nguoi_dung(self, ten_dang_nhap, vai_tro=None, ten_hien_thi=None, mat_khau=None):
+        user = self.tim_nguoi_dung(ten_dang_nhap)
+        if not user or user.vai_tro == "admin":
+            return False, "Không tìm thấy tài khoản user"
+        if vai_tro is not None:
+            if vai_tro not in ['user', 'hdv']:
+                return False, "Vai trò không hợp lệ"
+            user.vai_tro = vai_tro
+        if ten_hien_thi is not None:
+            if not self._kiem_tra_ten_day_du(ten_hien_thi):
+                return False, "Họ tên không hợp lệ"
+            user.ten_hien_thi = ten_hien_thi.strip()
+        if mat_khau is not None:
+            if not self._kiem_tra_mat_khau(mat_khau):
+                return False, "Mật khẩu không hợp lệ"
+            user.mat_khau = mat_khau
+        return True, "Đã cập nhật"
     def xoa_admin(self, ten_dang_nhap):
         admin = self.tim_nguoi_dung(ten_dang_nhap)
         if not admin or admin.vai_tro != "admin":
@@ -747,6 +764,14 @@ body{{font-family:Segoe UI,Roboto,Arial,sans-serif;background:#f4f7fb;margin:0;p
         self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if u.ten_dang_nhap != ten_dang_nhap]
         return True, "Đã xóa admin"
 
+
+    def xoa_nguoi_dung(self, ten_dang_nhap):
+        user = self.tim_nguoi_dung(ten_dang_nhap)
+        if not user or user.vai_tro == "admin":
+            return False, "Không tìm thấy tài khoản user"
+        self.danh_sach_nguoi_dung = [u for u in self.danh_sach_nguoi_dung if u.ten_dang_nhap != ten_dang_nhap]
+        return True, "Đã xóa người dùng"
+    
     def dat_lai_mat_khau_theo_ma(self, ma, vai_tro, mat_khau_mac_dinh="123"):
         nguoi_dung = self.tim_nguoi_dung_theo_ma(ma, [vai_tro])
         if not nguoi_dung:

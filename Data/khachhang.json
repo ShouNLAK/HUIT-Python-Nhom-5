@@ -4,7 +4,7 @@
     "tenKH": "Đặng Quang Huy",
     "soDT": "0988712554",
     "email": "huy.dang92@gmail.com",
-    "soDu": 840300.0
+    "soDu": 4840300.0
   },
   {
     "maKH": "KH002",
@@ -278,5 +278,12 @@
     "soDT": "0933445566",
     "email": "tien.pham@example.com",
     "soDu": 730000
+  },
+  {
+    "maKH": "KH041",
+    "tenKH": "Nguyễn Lê Anh Khoa",
+    "soDT": "0784659037",
+    "email": "shounlak@gmail.com",
+    "soDu": 0
   }
 ]
